@@ -28,13 +28,23 @@ $app->get('/oauth-url-back', function(Request $request) use ($app, $config) {
             'client_secret' => $config['orcid']['client_secret'],
             'grant_type' => 'authorization_code',
             'code' => $code,
-            'redirect_uri' => $config['base_url'],
+            'redirect_uri' => $config['base_url'].'/oauth-url-back',
         ],
         'headers' => [
             'Accept' => 'application/json',
         ],
     ]);
-    return var_export(json_decode($response->getBody(), true), true);
+    $body = json_decode($response->getBody(), true);
+    $token = $body['access_token'];
+    $orcid = $body['orcid'];
+    $personResponse = $client->request('GET', "https://pub.orcid.org/v2.0/$orcid/person", [
+        'headers' => [
+            'Accept' => 'application/json',
+            'Authorization' => "Bearer $token",
+        ],
+    ]);
+    $person = json_decode($personResponse->getBody(), true);
+    return '<pre>'.var_export($body, true)."\n".var_export($person, true).'</pre>';
 });
 
 $app->get('/ping', function() use($app) {
