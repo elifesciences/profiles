@@ -8,7 +8,7 @@ elifePipeline {
     stage 'Deploy to demo', {
         lock('profiles--demo') {
             builderDeployRevision 'profiles--demo', commit
-            builderSmokeTests 'profiles--end2end', '/srv/profiles'
+            builderSmokeTests 'profiles--demo', '/srv/profiles'
         }
     }
 }
