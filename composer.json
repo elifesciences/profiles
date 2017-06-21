@@ -1,0 +1,23 @@
+{
+    "name": "elife/profiles",
+    "description": "eLife Profiles",
+    "require": {
+        "silex/silex": "^2.0",
+        "guzzlehttp/guzzle": "^6.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "eLife\\Profiles\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "test\\eLife\\Profiles\\": "./test"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require-dev": {
+        "phpunit/phpunit": "^5.5"
+    }
+}
