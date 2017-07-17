@@ -44,7 +44,10 @@ $app->get('/oauth-url-back', function(Request $request) use ($app, $config) {
         ],
     ]);
     $person = json_decode($personResponse->getBody(), true);
-    return '<pre>'.var_export($body, true)."\n".var_export($person, true).'</pre>';
+    return "<h2>Token response</h2>\n"
+        .'<pre>'.var_export($body, true)."</pre>\n"
+        ."<h2>/person API</h2>\n"
+        .'<pre>'.var_export($person, true).'</pre>';
 });
 
 $app->get('/ping', function() use($app) {
