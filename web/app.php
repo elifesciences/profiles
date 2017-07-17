@@ -44,6 +44,13 @@ $app->get('/oauth-url-back', function(Request $request) use ($app, $config) {
         ],
     ]);
     $person = json_decode($personResponse->getBody(), true);
+    $emailResponse = $client->request('GET', "https://pub.orcid.org/v2.0/$orcid/email", [
+        'headers' => [
+            'Accept' => 'application/json',
+            'Authorization' => "Bearer $token",
+        ],
+    ]);
+    $email = json_decode($emailResponse->getBody(), true);
     $employmentsResponse = $client->request('GET', "https://pub.orcid.org/v2.0/$orcid/employments", [
         'headers' => [
             'Accept' => 'application/json',
@@ -55,6 +62,8 @@ $app->get('/oauth-url-back', function(Request $request) use ($app, $config) {
         .'<pre>'.var_export($body, true)."</pre>\n"
         ."<h2>/person API</h2>\n"
         .'<pre>'.var_export($person, true).'</pre>'
+        ."<h2>/email API</h2>\n"
+        .'<pre>'.var_export($email, true).'</pre>'
         ."<h2>/employments API</h2>\n"
         .'<pre>'.var_export($employments, true).'</pre>';
 });
