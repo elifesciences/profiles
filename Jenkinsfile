@@ -20,14 +20,6 @@ elifePipeline {
             }
         }
 
-        // probably remove?
-        stage 'Deploy to demo', {
-            lock('profiles--demo') {
-                builderDeployRevision 'profiles--demo', commit
-                builderSmokeTests 'profiles--demo', '/srv/profiles'
-            }
-        }
-
         stage 'Deploy to continuumtest', {
             lock('profiles--continuumtest') {
                 builderDeployRevision 'profiles--continuumtest', commit
