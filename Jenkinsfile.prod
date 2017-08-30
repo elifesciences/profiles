@@ -1,0 +1,14 @@
+elifePipeline {
+    def commit
+    stage 'Checkout approved', {
+        checkout scm
+        commit = elifeGitRevision()
+    }
+
+    stage 'Deploy to prod', {
+        elifeDeploySlackNotification 'profiles', 'prod'
+        elifeGitMoveToBranch commit, 'master'
+        builderDeployRevision 'profiles--prod', commit
+        builderSmokeTests 'profiles--prod', '/srv/profiles'
+    }
+}
