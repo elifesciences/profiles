@@ -1,2 +1,6 @@
-/vendor/
-/config.php
+/.cache/
+/app.cfg
+/uwsgi.ini
+/venv/
+__pycache__/
+
