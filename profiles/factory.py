@@ -1,6 +1,6 @@
 from http.client import responses
 from flask import Flask, jsonify, make_response
-from profiles.api.ping import ping_bp
+from profiles.api.ping import PING_BP
 from werkzeug.exceptions import HTTPException, InternalServerError
 
 
@@ -8,7 +8,7 @@ def create_app():
     app = Flask(__name__)
     app.TRAP_HTTP_EXCEPTIONS = True
 
-    app.register_blueprint(ping_bp)
+    app.register_blueprint(PING_BP)
 
     def http_error_handler(exception):
         if not isinstance(exception, HTTPException):
