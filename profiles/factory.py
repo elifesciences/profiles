@@ -1,10 +1,10 @@
 from flask import Flask
-from profiles.api.ping import ping_bp
+from profiles.api.ping import PING_BP
 
 
 def create_app():
     app = Flask(__name__)
 
-    app.register_blueprint(ping_bp)
+    app.register_blueprint(PING_BP)
 
     return app
