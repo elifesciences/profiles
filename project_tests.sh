@@ -3,4 +3,4 @@ set -e
 
 source venv/bin/activate
 
-pytest
+python -m pytest
