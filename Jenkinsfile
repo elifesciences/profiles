@@ -28,6 +28,13 @@ elifePipeline {
             }
         }
 
+        stage 'Deploy to continuumtest', {
+            lock('profiles--continuumtest') {
+                builderDeployRevision 'profiles--continuumtest', commit
+                builderSmokeTests 'profiles--continuumtest', '/srv/profiles'
+            }
+        }
+
         stage 'Approval', {
             elifeGitMoveToBranch commit, 'approved'
         }
