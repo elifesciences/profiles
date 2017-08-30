@@ -1,4 +1,4 @@
-from profiles import create_app
+from profiles.factory import create_app
 from pytest import fixture
 
 

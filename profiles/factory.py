@@ -1,5 +1,5 @@
 from flask import Flask
-from .api import ping_bp
+from profiles.api.ping import ping_bp
 
 
 def create_app():
