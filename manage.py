@@ -1,6 +1,6 @@
 from flask_script import Manager, Server, Shell
 
-from profiles import create_app
+from profiles.factory import create_app
 
 app = create_app()
 manager = Manager(app)
