@@ -8,7 +8,7 @@ elifePipeline {
     stage 'Project tests', {
         lock('profiles--ci') {
             builderDeployRevision 'profiles--ci', commit
-            builderProjectTests 'profiles--ci', '/srv/profiles'
+            builderProjectTests 'profiles--ci', '/srv/profiles', ['/srv/profiles/build/pytest.xml']
         }
     }
 
