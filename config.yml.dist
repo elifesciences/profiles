@@ -1,0 +1,12 @@
+oauth2:
+  clients:
+    client-name:
+      id: id
+      secret: secret
+      redirect_uri: http://www.example.com/
+  server:
+    authorize_uri: http://www.example.com/auth
+    token_uri: http://www.example.com/token
+    client_id: client_id
+    client_secret: client_secret
+    scope: profile email

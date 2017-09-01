@@ -1,8 +1,11 @@
+import yaml
 from flask_script import Manager, Server, Shell
 
 from profiles.factory import create_app
 
-app = create_app()
+config = yaml.load(open('config.yml'))
+
+app = create_app(config)
 manager = Manager(app)
 
 
