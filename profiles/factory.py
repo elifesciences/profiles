@@ -18,7 +18,7 @@ def create_app(config):
         if not isinstance(exception, HTTPException):
             exception = InternalServerError(getattr(exception, 'message', None))
 
-        if request.path.startswith('/oauth2/') and not request.path.startswith('/oauth2/token'):
+        if request.path.startswith('/oauth2/authorize') or request.path.startswith('/oauth2/check'):
             return make_response(exception, exception.code)
 
         body = {

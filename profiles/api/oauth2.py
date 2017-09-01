@@ -2,7 +2,7 @@ from json import JSONDecodeError, dumps
 from urllib.parse import urlencode
 import requests
 from flask import Blueprint, current_app, redirect, request, jsonify, url_for, json
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import BadRequest, Unauthorized
 
 OAUTH2_BP = Blueprint('oauth', __name__)
 
@@ -119,3 +119,14 @@ def token():
                           ['access_token', 'expires_in', 'token_type']}
 
     return jsonify(filtered_json_data), response.status_code
+
+
+@OAUTH2_BP.route('/user')
+def user():
+    if 'Authorization' not in request.headers:
+        raise Unauthorized('Requires authorization')
+
+    response = requests.get(url=current_app.config['config']['oauth2']['server']['user_uri'],
+                            headers={'Authorization': request.headers['Authorization']})
+
+    return response.text, response.status_code, {'Content-Type': response.headers['Content-Type']}

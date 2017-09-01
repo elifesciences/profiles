@@ -16,6 +16,7 @@ def app():
             'server': {
                 'authorize_uri': 'http://www.example.com/server/authorize',
                 'token_uri': 'http://www.example.com/server/token',
+                'user_uri': 'http://www.example.com/server/user',
                 'client_id': 'server_client_id',
                 'client_secret': 'server_client_secret',
                 'scope': 'scope'
