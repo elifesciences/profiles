@@ -1,4 +1,3 @@
-from http.client import responses
 from flask import Flask, jsonify, make_response
 from profiles.api.ping import PING_BP
 from werkzeug.exceptions import HTTPException, InternalServerError
@@ -15,7 +14,7 @@ def create_app():
             exception = InternalServerError(getattr(exception, 'message', None))
 
         body = {
-            'title': getattr(exception, 'message', responses[exception.code]),
+            'title': getattr(exception, 'description', exception.name),
         }
         response = make_response(jsonify(body), exception.code)
         response.headers['Content-Type'] = 'application/problem+json'
