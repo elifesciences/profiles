@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, make_response
+from flask import Flask, jsonify, make_response, request
 from profiles.api.oauth2 import OAUTH2_BP
 from profiles.api.ping import PING_BP
 from werkzeug.exceptions import HTTPException, InternalServerError
@@ -17,6 +17,9 @@ def create_app(config):
     def http_error_handler(exception):
         if not isinstance(exception, HTTPException):
             exception = InternalServerError(getattr(exception, 'message', None))
+
+        if request.path.startswith('/oauth2/') and not request.path.startswith('/oauth2/token'):
+            return make_response(exception, exception.code)
 
         body = {
             'title': getattr(exception, 'description', exception.name),

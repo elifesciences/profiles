@@ -8,24 +8,21 @@ def test_authorizing_requires_a_client_id(test_client):
     response = test_client.get('/oauth2/authorize')
 
     assert response.status_code == 400
-    assert response.headers.get('Content-Type') == 'application/problem+json'
-    assert json.loads(response.data.decode('UTF-8')) == {'title': 'Invalid client_id'}
+    assert 'Invalid client_id' in response.data.decode('UTF-8')
 
 
 def test_authorizing_requires_a_valid_client_id(test_client):
     response = test_client.get('/oauth2/authorize?' + urlencode({'client_id': 'foo'}))
 
     assert response.status_code == 400
-    assert response.headers.get('Content-Type') == 'application/problem+json'
-    assert json.loads(response.data.decode('UTF-8')) == {'title': 'Invalid client_id'}
+    assert 'Invalid client_id' in response.data.decode('UTF-8')
 
 
 def test_authorizing_requires_a_redirect_uri(test_client):
     response = test_client.get('/oauth2/authorize?' + urlencode({'client_id': 'client_id'}))
 
     assert response.status_code == 400
-    assert response.headers.get('Content-Type') == 'application/problem+json'
-    assert json.loads(response.data.decode('UTF-8')) == {'title': 'Invalid redirect_uri'}
+    assert 'Invalid redirect_uri' in response.data.decode('UTF-8')
 
 
 def test_authorizing_requires_a_valid_redirect_uri(test_client):
@@ -34,8 +31,7 @@ def test_authorizing_requires_a_valid_redirect_uri(test_client):
             {'client_id': 'client_id', 'redirect_uri': 'http://www.evil.com/'}))
 
     assert response.status_code == 400
-    assert response.headers.get('Content-Type') == 'application/problem+json'
-    assert json.loads(response.data.decode('UTF-8')) == {'title': 'Invalid redirect_uri'}
+    assert 'Invalid redirect_uri' in response.data.decode('UTF-8')
 
 
 def test_it_redirects_when_authorizing(test_client):
@@ -55,16 +51,14 @@ def test_it_requires_a_code_when_checking(test_client):
         '/oauth2/check')
 
     assert response.status_code == 400
-    assert response.headers.get('Content-Type') == 'application/problem+json'
-    assert json.loads(response.data.decode('UTF-8')) == {'title': 'Invalid code'}
+    assert 'Invalid code' in response.data.decode('UTF-8')
 
 
 def test_it_requires_a_state_when_checking(test_client):
     response = test_client.get('/oauth2/check?' + urlencode({'code': 1234}))
 
     assert response.status_code == 400
-    assert response.headers.get('Content-Type') == 'application/problem+json'
-    assert json.loads(response.data.decode('UTF-8')) == {'title': 'Invalid state'}
+    assert 'Invalid state' in response.data.decode('UTF-8')
 
 
 def test_it_requires_a_json_state_when_checking(test_client):
@@ -72,8 +66,7 @@ def test_it_requires_a_json_state_when_checking(test_client):
         '/oauth2/check?' + urlencode({'code': 1234, 'state': 'foo'}))
 
     assert response.status_code == 400
-    assert response.headers.get('Content-Type') == 'application/problem+json'
-    assert json.loads(response.data.decode('UTF-8')) == {'title': 'Invalid state'}
+    assert 'Invalid state' in response.data.decode('UTF-8')
 
 
 def test_it_requires_client_id_in_state_when_checking(test_client):
@@ -82,8 +75,7 @@ def test_it_requires_client_id_in_state_when_checking(test_client):
          'original': ''})}))
 
     assert response.status_code == 400
-    assert response.headers.get('Content-Type') == 'application/problem+json'
-    assert json.loads(response.data.decode('UTF-8')) == {'title': 'Invalid state (client_id)'}
+    assert 'Invalid state (client_id)' in response.data.decode('UTF-8')
 
 
 def test_it_requires_redirect_uri_in_state_when_checking(test_client):
@@ -92,8 +84,7 @@ def test_it_requires_redirect_uri_in_state_when_checking(test_client):
             {'redirect_uri': 'http://www.evil.com', 'client_id': 'client_id', 'original': ''})}))
 
     assert response.status_code == 400
-    assert response.headers.get('Content-Type') == 'application/problem+json'
-    assert json.loads(response.data.decode('UTF-8')) == {'title': 'Invalid state (redirect_uri)'}
+    assert 'Invalid state (redirect_uri)' in response.data.decode('UTF-8')
 
 
 def test_it_requires_original_in_state_when_checking(test_client):
@@ -102,8 +93,7 @@ def test_it_requires_original_in_state_when_checking(test_client):
             {'redirect_uri': 'http://www.example.com/client/redirect', 'client_id': 'client_id'})}))
 
     assert response.status_code == 400
-    assert response.headers.get('Content-Type') == 'application/problem+json'
-    assert json.loads(response.data.decode('UTF-8')) == {'title': 'Invalid state (original)'}
+    assert 'Invalid state (original)' in response.data.decode('UTF-8')
 
 
 def test_it_redirects_when_checking(test_client):
