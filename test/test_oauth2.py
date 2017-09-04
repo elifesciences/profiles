@@ -18,13 +18,6 @@ def test_authorizing_requires_a_valid_client_id(test_client):
     assert 'Invalid client_id' in response.data.decode('UTF-8')
 
 
-def test_authorizing_requires_a_redirect_uri(test_client):
-    response = test_client.get('/oauth2/authorize', query_string={'client_id': 'client_id'})
-
-    assert response.status_code == 400
-    assert 'Invalid redirect_uri' in response.data.decode('UTF-8')
-
-
 def test_authorizing_requires_a_valid_redirect_uri(test_client):
     response = test_client.get('/oauth2/authorize',
                                query_string={'client_id': 'client_id',
@@ -35,11 +28,7 @@ def test_authorizing_requires_a_valid_redirect_uri(test_client):
 
 
 def test_it_redirects_when_authorizing(test_client):
-    response = test_client.get('/oauth2/authorize',
-                               query_string={
-                                   'client_id': 'client_id',
-                                   'redirect_uri': 'http://www.example.com/client/redirect',
-                               })
+    response = test_client.get('/oauth2/authorize', query_string={'client_id': 'client_id'})
 
     assert response.status_code == 302
     assert response.headers['Location'] == 'http://www.example.com/server/authorize?' + urlencode(
@@ -51,11 +40,7 @@ def test_it_redirects_when_authorizing(test_client):
 
 def test_it_redirects_with_the_original_state_when_authorizing(test_client):
     response = test_client.get('/oauth2/authorize',
-                               query_string={
-                                   'client_id': 'client_id',
-                                   'redirect_uri': 'http://www.example.com/client/redirect',
-                                   'state': 'foo',
-                               })
+                               query_string={'client_id': 'client_id', 'state': 'foo'})
 
     assert response.status_code == 302
     assert response.headers['Location'] == 'http://www.example.com/server/authorize?' + urlencode(

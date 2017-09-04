@@ -32,7 +32,7 @@ def authorize():
     except KeyError:
         raise BadRequest('Invalid client_id')
 
-    if request.args.get('redirect_uri') != client['redirect_uri']:
+    if request.args.get('redirect_uri', client['redirect_uri']) != client['redirect_uri']:
         raise BadRequest('Invalid redirect_uri')
 
     state = remove_none_values({
