@@ -11,4 +11,3 @@
     user_uri = http://www.example.com/user
     client_id = client_id
     client_secret = client_secret
-    scope = profile email

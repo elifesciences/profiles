@@ -43,7 +43,7 @@ def test_it_redirects_when_authorizing(test_client):
 
     assert response.status_code == 302
     assert response.headers['Location'] == 'http://www.example.com/server/authorize?' + urlencode(
-        {'client_id': 'server_client_id', 'response_type': 'code', 'scope': 'scope',
+        {'client_id': 'server_client_id', 'response_type': 'code', 'scope': 'profile email',
          'redirect_uri': 'http://localhost/oauth2/check',
          'state': dumps({'redirect_uri': 'http://www.example.com/client/redirect',
                          'client_id': 'client_id'})})
@@ -59,7 +59,7 @@ def test_it_redirects_with_the_original_state_when_authorizing(test_client):
 
     assert response.status_code == 302
     assert response.headers['Location'] == 'http://www.example.com/server/authorize?' + urlencode(
-        {'client_id': 'server_client_id', 'response_type': 'code', 'scope': 'scope',
+        {'client_id': 'server_client_id', 'response_type': 'code', 'scope': 'profile email',
          'redirect_uri': 'http://localhost/oauth2/check',
          'state': dumps({'redirect_uri': 'http://www.example.com/client/redirect',
                          'client_id': 'client_id', 'original': 'foo'})})

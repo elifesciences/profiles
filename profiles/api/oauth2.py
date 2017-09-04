@@ -45,7 +45,7 @@ def authorize():
         current_app.config['config']['oauth2']['server']['authorize_uri'] + '?' + urlencode({
             'client_id': current_app.config['config']['oauth2']['server']['client_id'],
             'response_type': 'code',
-            'scope': current_app.config['config']['oauth2']['server']['scope'],
+            'scope': 'profile email',
             'redirect_uri': url_for('oauth.check', _external=True),
             'state': dumps(state)
         }),
