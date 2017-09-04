@@ -28,3 +28,25 @@ class InvalidRequest(OAuth2Error):
 
 class UnsupportedGrantType(OAuth2Error):
     error = 'unsupported_grant_type'
+
+
+class ClientError(OAuth2Error):
+    uri = None
+    status_code = 302
+
+    def __init__(self, client, description=None):
+        self.uri = client['redirect_uri']
+
+        super(ClientError, self).__init__(description)
+
+
+class ClientInvalidRequest(ClientError):
+    error = 'invalid_request'
+
+
+class ClientUnsupportedResourceType(ClientError):
+    error = 'unsupported_response_type'
+
+
+class ClientInvalidScope(ClientError):
+    error = 'invalid_scope'

@@ -2,7 +2,8 @@ from json import JSONDecodeError, dumps
 from urllib.parse import urlencode
 import requests
 from flask import Blueprint, current_app, redirect, request, jsonify, url_for, json
-from profiles.api.errors import InvalidClient, InvalidRequest, UnsupportedGrantType, InvalidGrant
+from profiles.api.errors import InvalidClient, InvalidRequest, UnsupportedGrantType, InvalidGrant, \
+    ClientInvalidRequest, ClientUnsupportedResourceType, ClientInvalidScope
 from profiles.utilities import remove_none_values
 from werkzeug.exceptions import BadRequest, Unauthorized
 
@@ -35,6 +36,14 @@ def authorize():
     if request.args.get('redirect_uri', client['redirect_uri']) != client['redirect_uri']:
         raise BadRequest('Invalid redirect_uri')
 
+    if not request.args.get('response_type'):
+        raise ClientInvalidRequest(client, 'Missing response_type')
+    elif request.args.get('response_type') != 'code':
+        raise ClientUnsupportedResourceType(client)
+
+    if request.args.get('scope'):
+        raise ClientInvalidScope(client)
+
     state = remove_none_values({
         'redirect_uri': client['redirect_uri'],
         'client_id': client['id'],
@@ -44,7 +53,7 @@ def authorize():
     return redirect(
         current_app.config['config']['oauth2']['server']['authorize_uri'] + '?' + urlencode({
             'client_id': current_app.config['config']['oauth2']['server']['client_id'],
-            'response_type': 'code',
+            'response_type': request.args.get('response_type'),
             'scope': 'profile email',
             'redirect_uri': url_for('oauth.check', _external=True),
             'state': dumps(state)

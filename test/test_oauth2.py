@@ -27,8 +27,36 @@ def test_authorizing_requires_a_valid_redirect_uri(test_client):
     assert 'Invalid redirect_uri' in response.data.decode('UTF-8')
 
 
-def test_it_redirects_when_authorizing(test_client):
+def test_authorizing_requires_a_response_type(test_client):
     response = test_client.get('/oauth2/authorize', query_string={'client_id': 'client_id'})
+
+    assert response.status_code == 302
+    assert response.headers['Location'] == 'http://www.example.com/client/redirect?' + urlencode(
+        {'error': 'invalid_request', 'error_description': 'Missing response_type'})
+
+
+def test_authorizing_requires_a_valid_response_type(test_client):
+    response = test_client.get('/oauth2/authorize',
+                               query_string={'client_id': 'client_id', 'response_type': 'foo'})
+
+    assert response.status_code == 302
+    assert response.headers['Location'] == 'http://www.example.com/client/redirect?' + urlencode(
+        {'error': 'unsupported_response_type'})
+
+
+def test_it_rejects_scope_when_authorizing(test_client):
+    response = test_client.get('/oauth2/authorize',
+                               query_string={'client_id': 'client_id', 'response_type': 'code',
+                                             'scope': 'foo'})
+
+    assert response.status_code == 302
+    assert response.headers['Location'] == 'http://www.example.com/client/redirect?' + urlencode(
+        {'error': 'invalid_scope'})
+
+
+def test_it_redirects_when_authorizing(test_client):
+    response = test_client.get('/oauth2/authorize',
+                               query_string={'client_id': 'client_id', 'response_type': 'code'})
 
     assert response.status_code == 302
     assert response.headers['Location'] == 'http://www.example.com/server/authorize?' + urlencode(
@@ -40,7 +68,8 @@ def test_it_redirects_when_authorizing(test_client):
 
 def test_it_redirects_with_the_original_state_when_authorizing(test_client):
     response = test_client.get('/oauth2/authorize',
-                               query_string={'client_id': 'client_id', 'state': 'foo'})
+                               query_string={'client_id': 'client_id', 'response_type': 'code',
+                                             'state': 'foo'})
 
     assert response.status_code == 302
     assert response.headers['Location'] == 'http://www.example.com/server/authorize?' + urlencode(
