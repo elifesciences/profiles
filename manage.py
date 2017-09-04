@@ -1,9 +1,9 @@
-import yaml
+from configobj import ConfigObj
 from flask_script import Manager, Server, Shell
 
 from profiles.factory import create_app
 
-config = yaml.load(open('config.yml'))
+config = ConfigObj('app.cfg')
 
 app = create_app(config)
 manager = Manager(app)
