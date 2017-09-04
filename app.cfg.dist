@@ -1,6 +1,6 @@
 [oauth2]
     [[clients]]
-        [[client-name]]
+        [[[client-name]]]
         id = client_id
         secret = client_secret
         redirect_uri = http://www.example.com/check
