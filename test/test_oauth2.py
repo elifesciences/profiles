@@ -60,7 +60,7 @@ def test_it_redirects_when_authorizing(test_client):
 
     assert response.status_code == 302
     assert response.headers['Location'] == 'http://www.example.com/server/authorize?' + urlencode(
-        {'client_id': 'server_client_id', 'response_type': 'code', 'scope': 'profile email',
+        {'client_id': 'server_client_id', 'response_type': 'code', 'scope': '/authenticate',
          'redirect_uri': 'http://localhost/oauth2/check',
          'state': dumps({'redirect_uri': 'http://www.example.com/client/redirect',
                          'client_id': 'client_id'})})
@@ -73,7 +73,7 @@ def test_it_redirects_with_the_original_state_when_authorizing(test_client):
 
     assert response.status_code == 302
     assert response.headers['Location'] == 'http://www.example.com/server/authorize?' + urlencode(
-        {'client_id': 'server_client_id', 'response_type': 'code', 'scope': 'profile email',
+        {'client_id': 'server_client_id', 'response_type': 'code', 'scope': '/authenticate',
          'redirect_uri': 'http://localhost/oauth2/check',
          'state': dumps({'redirect_uri': 'http://www.example.com/client/redirect',
                          'client_id': 'client_id', 'original': 'foo'})})
@@ -201,7 +201,8 @@ def test_it_requires_code_when_exchanging(test_client):
 def test_it_exchanges(test_client):
     responses.add(responses.POST, 'http://www.example.com/server/token', status=200,
                   json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
-                        'foo': 'bar', 'token_type': 'Bearer'})
+                        'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
+                        'name': 'Josiah Carberry'})
 
     response = test_client.post('/oauth2/token',
                                 data={'client_id': 'client_id', 'client_secret': 'client_secret',
@@ -211,7 +212,9 @@ def test_it_exchanges(test_client):
     assert response.status_code == 200
     assert response.headers.get('Content-Type') == 'application/json'
     assert loads(response.data.decode('UTF-8')) == {'access_token': '1/fFAGRNJru1FTz70BzhT3Zg',
-                                                    'expires_in': 3920, 'token_type': 'Bearer'}
+                                                    'expires_in': 3920, 'token_type': 'Bearer',
+                                                    'orcid': '0000-0002-1825-0097',
+                                                    'name': 'Josiah Carberry'}
 
 
 @responses.activate
@@ -255,24 +258,3 @@ def test_it_requires_a_bearer_token_type_when_exchanging(test_client):
 
     assert response.status_code == 500
     assert response.headers.get('Content-Type') == 'application/problem+json'
-
-
-@responses.activate
-def test_it_requires_authorization_when_fetching_user_details(test_client):
-    response = test_client.get('/oauth2/user')
-
-    assert response.status_code == 401
-    assert response.headers.get('Content-Type') == 'application/problem+json'
-    assert loads(response.data.decode('UTF-8')) == {'title': 'Requires authorization'}
-
-
-@responses.activate
-def test_it_fetches_user_details(test_client):
-    responses.add(responses.GET, 'http://www.example.com/server/user', status=200,
-                  headers={'Authorization': 'Bearer bazqux'}, json={'name': 'Foo Bar'})
-
-    response = test_client.get('/oauth2/user', headers={'Authorization': 'Bearer bazqux'})
-
-    assert response.status_code == 200
-    assert response.headers.get('Content-Type') == 'application/json'
-    assert loads(response.data.decode('UTF-8')) == {'name': 'Foo Bar'}

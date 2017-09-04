@@ -54,7 +54,7 @@ def authorize():
         current_app.config['config']['oauth2']['server']['authorize_uri'] + '?' + urlencode({
             'client_id': current_app.config['config']['oauth2']['server']['client_id'],
             'response_type': request.args.get('response_type'),
-            'scope': 'profile email',
+            'scope': '/authenticate',
             'redirect_uri': url_for('oauth.check', _external=True),
             'state': dumps(state)
         }),
@@ -133,17 +133,6 @@ def token():
                          ', expected Bearer')
 
     filtered_json_data = {your_key: json_data[your_key] for your_key in
-                          ['access_token', 'expires_in', 'token_type']}
+                          ['access_token', 'expires_in', 'name', 'orcid', 'token_type']}
 
     return jsonify(filtered_json_data), response.status_code
-
-
-@OAUTH2_BP.route('/user')
-def user():
-    if 'Authorization' not in request.headers:
-        raise Unauthorized('Requires authorization')
-
-    response = requests.get(url=current_app.config['config']['oauth2']['server']['user_uri'],
-                            headers={'Authorization': request.headers['Authorization']})
-
-    return response.text, response.status_code, {'Content-Type': response.headers['Content-Type']}
