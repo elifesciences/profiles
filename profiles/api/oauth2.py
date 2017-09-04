@@ -8,12 +8,16 @@ OAUTH2_BP = Blueprint('oauth', __name__)
 
 
 def find_client_by_id(client_id):
-    for name, details in current_app.config['config']['oauth2']['clients'].items():
-        if details['id'] == client_id:
-            details['name'] = name
-            return details
+    clients = current_app.config['config']['oauth2']['clients']
 
-    raise KeyError
+    try:
+        (name, details) = next((k, v) for k, v in clients.items() if v['id'] == client_id)
+    except StopIteration:
+        raise KeyError('No client with the client_id')
+
+    details['name'] = name
+
+    return details
 
 
 @OAUTH2_BP.route('/authorize')
