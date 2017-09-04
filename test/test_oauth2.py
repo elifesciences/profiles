@@ -46,7 +46,23 @@ def test_it_redirects_when_authorizing(test_client):
         {'client_id': 'server_client_id', 'response_type': 'code', 'scope': 'scope',
          'redirect_uri': 'http://localhost/oauth2/check',
          'state': dumps({'redirect_uri': 'http://www.example.com/client/redirect',
-                         'client_id': 'client_id', 'original': ''})})
+                         'client_id': 'client_id'})})
+
+
+def test_it_redirects_with_the_original_state_when_authorizing(test_client):
+    response = test_client.get('/oauth2/authorize',
+                               query_string={
+                                   'client_id': 'client_id',
+                                   'redirect_uri': 'http://www.example.com/client/redirect',
+                                   'state': 'foo',
+                               })
+
+    assert response.status_code == 302
+    assert response.headers['Location'] == 'http://www.example.com/server/authorize?' + urlencode(
+        {'client_id': 'server_client_id', 'response_type': 'code', 'scope': 'scope',
+         'redirect_uri': 'http://localhost/oauth2/check',
+         'state': dumps({'redirect_uri': 'http://www.example.com/client/redirect',
+                         'client_id': 'client_id', 'original': 'foo'})})
 
 
 def test_it_requires_a_code_when_checking(test_client):
@@ -72,8 +88,7 @@ def test_it_requires_a_json_state_when_checking(test_client):
 
 def test_it_requires_client_id_in_state_when_checking(test_client):
     response = test_client.get('/oauth2/check', query_string={'code': 1234, 'state': dumps(
-        {'redirect_uri': 'http://www.example.com/client/redirect', 'client_id': 'foo',
-         'original': ''})})
+        {'redirect_uri': 'http://www.example.com/client/redirect', 'client_id': 'foo'})})
 
     assert response.status_code == 400
     assert 'Invalid state (client_id)' in response.data.decode('UTF-8')
@@ -81,28 +96,29 @@ def test_it_requires_client_id_in_state_when_checking(test_client):
 
 def test_it_requires_redirect_uri_in_state_when_checking(test_client):
     response = test_client.get('/oauth2/check', query_string={'code': 1234, 'state': dumps(
-        {'redirect_uri': 'http://www.evil.com', 'client_id': 'client_id', 'original': ''})})
+        {'redirect_uri': 'http://www.evil.com', 'client_id': 'client_id'})})
 
     assert response.status_code == 400
     assert 'Invalid state (redirect_uri)' in response.data.decode('UTF-8')
 
 
-def test_it_requires_original_in_state_when_checking(test_client):
+def test_it_redirects_when_checking(test_client):
     response = test_client.get('/oauth2/check', query_string={'code': 1234, 'state': dumps(
         {'redirect_uri': 'http://www.example.com/client/redirect', 'client_id': 'client_id'})})
 
-    assert response.status_code == 400
-    assert 'Invalid state (original)' in response.data.decode('UTF-8')
+    assert response.status_code == 302
+    assert response.headers['Location'] == 'http://www.example.com/client/redirect?' + urlencode(
+        {'code': 1234})
 
 
-def test_it_redirects_when_checking(test_client):
+def test_it_redirects_with_the_original_state_when_checking(test_client):
     response = test_client.get('/oauth2/check', query_string={'code': 1234, 'state': dumps(
         {'redirect_uri': 'http://www.example.com/client/redirect', 'client_id': 'client_id',
-         'original': ''})})
+         'original': 'foo'})})
 
     assert response.status_code == 302
     assert response.headers['Location'] == 'http://www.example.com/client/redirect?' + urlencode(
-        {'code': 1234, 'state': ''})
+        {'code': 1234, 'state': 'foo'})
 
 
 def test_it_redirects_when_checking_but_has_an_error(test_client):
@@ -112,13 +128,12 @@ def test_it_redirects_when_checking_but_has_an_error(test_client):
                                    'state': dumps({
                                        'redirect_uri': 'http://www.example.com/client/redirect',
                                        'client_id': 'client_id',
-                                       'original': ''
                                    })
                                })
 
     assert response.status_code == 302
     assert response.headers['Location'] == 'http://www.example.com/client/redirect?' + urlencode(
-        {'error': 'access_denied', 'state': ''})
+        {'error': 'access_denied'})
 
 
 def test_it_requires_client_id_when_exchanging(test_client):

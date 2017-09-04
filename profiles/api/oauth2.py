@@ -20,6 +20,10 @@ def find_client_by_id(client_id):
     return details
 
 
+def remove_none_values(items):
+    return dict(filter(lambda item: item[1] is not None, items.items()))
+
+
 @OAUTH2_BP.route('/authorize')
 def authorize():
     if 'client_id' not in request.args:
@@ -33,11 +37,11 @@ def authorize():
     if request.args.get('redirect_uri') != client['redirect_uri']:
         raise BadRequest('Invalid redirect_uri')
 
-    state = {
+    state = remove_none_values({
         'redirect_uri': client['redirect_uri'],
         'client_id': client['id'],
-        'original': request.args.get('state', '')
-    }
+        'original': request.args.get('state')
+    })
 
     return redirect(
         current_app.config['config']['oauth2']['server']['authorize_uri'] + '?' + urlencode({
@@ -67,16 +71,13 @@ def check():
 
     if state['redirect_uri'] != client['redirect_uri']:
         raise BadRequest('Invalid state (redirect_uri)')
-    elif 'original' not in state:
-        raise BadRequest('Invalid state (original)')
 
-    query = {
+    query = remove_none_values({
         'code': request.args.get('code'),
         'error': request.args.get('error'),
         'error_description': request.args.get('error_description'),
-        'state': state['original']
-    }
-    query = dict(filter(lambda item: item[1] is not None, query.items()))
+        'state': state.get('original')
+    })
 
     return redirect(
         client['redirect_uri'] + '?' + urlencode(query),
