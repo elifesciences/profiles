@@ -11,7 +11,7 @@ def create_app():
 
     def http_error_handler(exception):
         if not isinstance(exception, HTTPException):
-            exception = InternalServerError(getattr(exception, 'message', None))
+            exception = InternalServerError(str(exception))
 
         body = {
             'title': getattr(exception, 'description', exception.name),
