@@ -1,5 +1,8 @@
 [MESSAGE CONTROL]
-disable=invalid-name,missing-docstring,redefined-outer-name
+disable=missing-docstring,redefined-outer-name
 
 [TYPECHECK]
 ignored-classes=responses
+
+function-rgx=[a-z_][a-z0-9_]{2,60}$
+method-rgx=[a-z_][a-z0-9_]{2,60}$
