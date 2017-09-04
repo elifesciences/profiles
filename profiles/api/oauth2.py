@@ -52,7 +52,7 @@ def authorize():
 
 @OAUTH2_BP.route('/check')
 def check():
-    if 'code' not in request.args:
+    if not any(parameter in request.args for parameter in ['code', 'error']):
         raise BadRequest('Invalid code')
 
     try:
@@ -70,11 +70,16 @@ def check():
     elif 'original' not in state:
         raise BadRequest('Invalid state (original)')
 
+    query = {
+        'code': request.args.get('code'),
+        'error': request.args.get('error'),
+        'error_description': request.args.get('error_description'),
+        'state': state['original']
+    }
+    query = dict(filter(lambda item: item[1] is not None, query.items()))
+
     return redirect(
-        client['redirect_uri'] + '?' + urlencode({
-            'code': request.args.get('code'),
-            'state': state['original']
-        }),
+        client['redirect_uri'] + '?' + urlencode(query),
         code=302)
 
 

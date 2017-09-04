@@ -105,6 +105,22 @@ def test_it_redirects_when_checking(test_client):
         {'code': 1234, 'state': ''})
 
 
+def test_it_redirects_when_checking_but_has_an_error(test_client):
+    response = test_client.get('/oauth2/check',
+                               query_string={
+                                   'error': 'access_denied',
+                                   'state': dumps({
+                                       'redirect_uri': 'http://www.example.com/client/redirect',
+                                       'client_id': 'client_id',
+                                       'original': ''
+                                   })
+                               })
+
+    assert response.status_code == 302
+    assert response.headers['Location'] == 'http://www.example.com/client/redirect?' + urlencode(
+        {'error': 'access_denied', 'state': ''})
+
+
 def test_it_requires_client_id_when_exchanging(test_client):
     response = test_client.post('/oauth2/token')
 
