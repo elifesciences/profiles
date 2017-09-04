@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, make_response, request
+from profiles.api.errors import OAuth2Error
 from profiles.api.oauth2 import OAUTH2_BP
 from profiles.api.ping import PING_BP
+from profiles.utilities import remove_none_values
 from werkzeug.exceptions import HTTPException, InternalServerError
 
 
@@ -15,6 +17,13 @@ def create_app(config):
     app.register_blueprint(PING_BP)
 
     def http_error_handler(exception):
+        if isinstance(exception, OAuth2Error):
+            body = remove_none_values({
+                'error': exception.error,
+                'error_description': exception.description,
+            })
+            return make_response(jsonify(body), exception.status_code)
+
         if not isinstance(exception, HTTPException):
             exception = InternalServerError(getattr(exception, 'message', None))
 

@@ -139,17 +139,17 @@ def test_it_redirects_when_checking_but_has_an_error(test_client):
 def test_it_requires_client_id_when_exchanging(test_client):
     response = test_client.post('/oauth2/token')
 
-    assert response.status_code == 400
-    assert response.headers.get('Content-Type') == 'application/problem+json'
-    assert loads(response.data.decode('UTF-8')) == {'title': 'Invalid client_id'}
+    assert response.status_code == 401
+    assert response.headers.get('Content-Type') == 'application/json'
+    assert loads(response.data.decode('UTF-8')) == {'error': 'invalid_client'}
 
 
 def test_it_requires_client_secret_when_exchanging(test_client):
     response = test_client.post('/oauth2/token', data={'client_id': 'client_id'})
 
-    assert response.status_code == 400
-    assert response.headers.get('Content-Type') == 'application/problem+json'
-    assert loads(response.data.decode('UTF-8')) == {'title': 'Invalid client_secret'}
+    assert response.status_code == 401
+    assert response.headers.get('Content-Type') == 'application/json'
+    assert loads(response.data.decode('UTF-8')) == {'error': 'invalid_client'}
 
 
 def test_it_requires_redirect_uri_when_exchanging(test_client):
@@ -157,8 +157,9 @@ def test_it_requires_redirect_uri_when_exchanging(test_client):
                                 data={'client_id': 'client_id', 'client_secret': 'client_secret'})
 
     assert response.status_code == 400
-    assert response.headers.get('Content-Type') == 'application/problem+json'
-    assert loads(response.data.decode('UTF-8')) == {'title': 'Invalid redirect_uri'}
+    assert response.headers.get('Content-Type') == 'application/json'
+    assert loads(response.data.decode('UTF-8')) == {'error': 'invalid_request',
+                                                    'error_description': 'Invalid redirect_uri'}
 
 
 def test_it_requires_grant_type_when_exchanging(test_client):
@@ -167,8 +168,8 @@ def test_it_requires_grant_type_when_exchanging(test_client):
                                       'redirect_uri': 'http://www.example.com/client/redirect'})
 
     assert response.status_code == 400
-    assert response.headers.get('Content-Type') == 'application/problem+json'
-    assert loads(response.data.decode('UTF-8')) == {'title': 'Invalid grant_type'}
+    assert response.headers.get('Content-Type') == 'application/json'
+    assert loads(response.data.decode('UTF-8')) == {'error': 'unsupported_grant_type'}
 
 
 def test_it_requires_code_when_exchanging(test_client):
@@ -178,8 +179,8 @@ def test_it_requires_code_when_exchanging(test_client):
                                       'grant_type': 'authorization_code'})
 
     assert response.status_code == 400
-    assert response.headers.get('Content-Type') == 'application/problem+json'
-    assert loads(response.data.decode('UTF-8')) == {'title': 'Invalid code'}
+    assert response.headers.get('Content-Type') == 'application/json'
+    assert loads(response.data.decode('UTF-8')) == {'error': 'invalid_grant'}
 
 
 @responses.activate

@@ -2,6 +2,8 @@ from json import JSONDecodeError, dumps
 from urllib.parse import urlencode
 import requests
 from flask import Blueprint, current_app, redirect, request, jsonify, url_for, json
+from profiles.api.errors import InvalidClient, InvalidRequest, UnsupportedGrantType, InvalidGrant
+from profiles.utilities import remove_none_values
 from werkzeug.exceptions import BadRequest, Unauthorized
 
 OAUTH2_BP = Blueprint('oauth', __name__)
@@ -18,10 +20,6 @@ def find_client_by_id(client_id):
     details['name'] = name
 
     return details
-
-
-def remove_none_values(items):
-    return dict(filter(lambda item: item[1] is not None, items.items()))
 
 
 @OAUTH2_BP.route('/authorize')
@@ -87,21 +85,21 @@ def check():
 @OAUTH2_BP.route('/token', methods=['POST'])
 def token():
     if 'client_id' not in request.form:
-        raise BadRequest('Invalid client_id')
+        raise InvalidClient
 
     try:
         client = find_client_by_id(request.form.get('client_id'))
     except KeyError:
-        raise BadRequest('Invalid client_id')
+        raise InvalidClient
 
     if request.form.get('client_secret') != client['secret']:
-        raise BadRequest('Invalid client_secret')
+        raise InvalidClient
     elif request.form.get('redirect_uri') != client['redirect_uri']:
-        raise BadRequest('Invalid redirect_uri')
+        raise InvalidRequest('Invalid redirect_uri')
     elif request.form.get('grant_type') != 'authorization_code':
-        raise BadRequest('Invalid grant_type')
+        raise UnsupportedGrantType
     elif 'code' not in request.form:
-        raise BadRequest('Invalid code')
+        raise InvalidGrant
 
     data = {
         'client_id': current_app.config['config']['oauth2']['server']['client_id'],
