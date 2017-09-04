@@ -128,7 +128,7 @@ def token():
         raise ValueError('No access_token')
     elif 'expires_in' not in json_data:
         raise ValueError('No expires_in')
-    elif json_data.get('token_type') != 'Bearer':
+    elif json_data.get('token_type').lower() != 'bearer':
         raise ValueError('Got token_type ' + json_data.get('token_type') +
                          ', expected Bearer')
 
