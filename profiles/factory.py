@@ -4,7 +4,7 @@ from werkzeug.exceptions import HTTPException, InternalServerError
 from werkzeug.wrappers import Response
 
 
-def create_app():
+def create_app() -> Flask:
     app = Flask(__name__)
     app.TRAP_HTTP_EXCEPTIONS = True
 
