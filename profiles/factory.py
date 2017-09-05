@@ -8,7 +8,7 @@ from profiles.utilities import remove_none_values
 from werkzeug.exceptions import HTTPException, InternalServerError
 
 
-def create_app(config):
+def create_app(config: dict):
     app = Flask(__name__)
     app.TRAP_HTTP_EXCEPTIONS = True
     app.config.update(dict(

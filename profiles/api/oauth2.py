@@ -1,16 +1,17 @@
 from json import JSONDecodeError, dumps
 from urllib.parse import urlencode
 import requests
-from flask import Blueprint, current_app, redirect, request, jsonify, url_for, json
+from flask import Blueprint, current_app, make_response, redirect, request, jsonify, url_for, json
 from profiles.api.errors import InvalidClient, InvalidRequest, UnsupportedGrantType, InvalidGrant, \
     ClientInvalidRequest, ClientUnsupportedResourceType, ClientInvalidScope
 from profiles.utilities import remove_none_values
-from werkzeug.exceptions import BadRequest, Unauthorized
+from werkzeug.exceptions import BadRequest
+from werkzeug.wrappers import Response
 
 OAUTH2_BP = Blueprint('oauth', __name__)
 
 
-def find_client_by_id(client_id):
+def find_client_by_id(client_id: str) -> dict:
     clients = current_app.config['config']['oauth2']['clients']
 
     try:
@@ -24,7 +25,7 @@ def find_client_by_id(client_id):
 
 
 @OAUTH2_BP.route('/authorize')
-def authorize():
+def authorize() -> Response:
     if 'client_id' not in request.args:
         raise BadRequest('Invalid client_id')
 
@@ -62,7 +63,7 @@ def authorize():
 
 
 @OAUTH2_BP.route('/check')
-def check():
+def check() -> Response:
     if not any(parameter in request.args for parameter in ['code', 'error']):
         raise BadRequest('Invalid code')
 
@@ -92,7 +93,7 @@ def check():
 
 
 @OAUTH2_BP.route('/token', methods=['POST'])
-def token():
+def token() -> Response:
     if 'client_id' not in request.form:
         raise InvalidClient
 
@@ -135,4 +136,4 @@ def token():
     filtered_json_data = {your_key: json_data[your_key] for your_key in
                           ['access_token', 'expires_in', 'name', 'orcid', 'token_type']}
 
-    return jsonify(filtered_json_data), response.status_code
+    return make_response(jsonify(filtered_json_data), response.status_code)
