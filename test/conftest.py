@@ -1,9 +1,11 @@
+from flask import Flask
+from flask.testing import FlaskClient
 from profiles.factory import create_app
 from pytest import fixture
 
 
 @fixture
-def app():
+def app() -> Flask:
     return create_app({
         'oauth2': {
             'clients': {
@@ -24,5 +26,5 @@ def app():
 
 
 @fixture
-def test_client(app):
+def test_client(app: Flask) -> FlaskClient:
     return app.test_client()

@@ -1,7 +1,8 @@
 import json
+from flask.testing import FlaskClient
 
 
-def test_it_handles_404s(test_client):
+def test_it_handles_404s(test_client: FlaskClient):
     response = test_client.get('/')
 
     assert response.status_code == 404

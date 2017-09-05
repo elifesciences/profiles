@@ -9,7 +9,7 @@ app = create_app(config)
 manager = Manager(app)
 
 
-def make_shell_context():
+def make_shell_context() -> dict:
     return dict(app=app)
 
 
