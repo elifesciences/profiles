@@ -18,7 +18,7 @@ pylint==1.7.2
 pytest==3.2.1
 PyYAML==3.12
 requests==2.18.4
-git+https://github.com/thewilkybarkid/responses.git@getfullargspec
+git+https://github.com/getsentry/responses.git@af27053b1a0f47b63cdf59ac9873f6f44d6f6ec2
 six==1.10.0
 urllib3==1.22
 uWSGI==2.0.15
