@@ -114,7 +114,7 @@ def token() -> Response:
     data = {
         'client_id': current_app.config['config']['oauth2']['server']['client_id'],
         'client_secret': current_app.config['config']['oauth2']['server']['client_secret'],
-        'redirect_uri': url_for('oauth.check', _external=True),
+        'redirect_uri': url_for('oauth.check', _external=True, _scheme='https'),
         'grant_type': 'authorization_code',
         'code': request.form['code'],
     }
