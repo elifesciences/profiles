@@ -21,7 +21,10 @@ def app() -> Flask:
                 'client_id': 'server_client_id',
                 'client_secret': 'server_client_secret',
             }
-        }
+        },
+        'service': {
+            'default_host': 'localhost',
+        },
     })
 
 
