@@ -13,6 +13,7 @@ def create_app(config: dict) -> Flask:
     app = Flask(__name__)
     app.TRAP_HTTP_EXCEPTIONS = True
     app.config.update({'config': config})
+    app.config.update(SERVER_NAME=config['service']['default_host'])
 
     app.register_blueprint(OAUTH2_BP, url_prefix='/oauth2')
     app.register_blueprint(PING_BP)

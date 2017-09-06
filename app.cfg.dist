@@ -10,3 +10,5 @@
     token_uri = http://www.example.com/token
     client_id = client_id
     client_secret = client_secret
+[service]
+default_host = localhost
