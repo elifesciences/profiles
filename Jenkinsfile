@@ -19,6 +19,16 @@ elifePipeline {
                 builderSmokeTests 'profiles--end2end', '/srv/profiles'
             }
         }
+        stage 'End2end tests', {
+            elifeSpectrum(
+                deploy: [
+                    stackname: 'profiles--end2end',
+                    revision: commit,
+                    folder: '/srv/profiles'
+                ],
+                marker: 'profiles'
+            )
+        }
 
         stage 'Deploy to continuumtest', {
             lock('profiles--continuumtest') {
