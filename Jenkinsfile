@@ -13,12 +13,6 @@ elifePipeline {
     }
 
     elifeMainlineOnly {
-        stage 'Deploy to end2end', {
-            lock('profiles--end2end') {
-                builderDeployRevision 'profiles--end2end', commit
-                builderSmokeTests 'profiles--end2end', '/srv/profiles'
-            }
-        }
         stage 'End2end tests', {
             elifeSpectrum(
                 deploy: [
