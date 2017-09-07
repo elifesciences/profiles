@@ -11,8 +11,8 @@ def upgrade():
     op.create_table(
         'profile',
         sa.Column('id', sa.String(length=8), nullable=False),
+        sa.Column('name', sa.String(length=128), nullable=False),
         sa.Column('orcid', sa.String(length=19), nullable=True),
-        sa.Column('name', sa.String(length=128), nullable=True),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('orcid')
     )

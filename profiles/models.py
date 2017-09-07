@@ -7,8 +7,8 @@ db = SQLAlchemy()
 
 class Profile(db.Model):
     id = db.Column(db.String(8), primary_key=True)
-    name = db.Column(db.String(128))
-    orcid = db.Column(db.String(19), unique=True, nullable=True)
+    name = db.Column(db.String(128), nullable=False)
+    orcid = db.Column(db.String(19), unique=True)
 
     def __init__(self, name, orcid=None):
         self.id = generate_id()
