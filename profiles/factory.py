@@ -1,9 +1,11 @@
 from urllib.parse import urlencode
 
 from flask import Flask, jsonify, make_response, redirect, request
+from flask_migrate import Migrate
 from profiles.api.errors import OAuth2Error, ClientError
 from profiles.api.oauth2 import OAUTH2_BP
 from profiles.api.ping import PING_BP
+from profiles.models import db
 from profiles.utilities import remove_none_values
 from werkzeug.exceptions import HTTPException, InternalServerError
 from werkzeug.wrappers import Response
@@ -12,7 +14,14 @@ from werkzeug.wrappers import Response
 def create_app(config: dict) -> Flask:
     app = Flask(__name__)
     app.TRAP_HTTP_EXCEPTIONS = True
+    app.config['SQLALCHEMY_DATABASE_URI'] = config['db']['uri']
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config.update({'config': config})
+
+    db.app = app
+    db.init_app(app)
+
+    Migrate(app, db)
 
     app.register_blueprint(OAUTH2_BP, url_prefix='/oauth2')
     app.register_blueprint(PING_BP)

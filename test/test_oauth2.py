@@ -4,6 +4,8 @@ from urllib.parse import urlencode
 import responses
 from flask.testing import FlaskClient
 
+from profiles.models import db, Profile
+
 
 def test_authorizing_requires_a_client_id(test_client: FlaskClient):
     response = test_client.get('/oauth2/authorize')
@@ -216,6 +218,47 @@ def test_it_exchanges(test_client: FlaskClient):
                                                     'expires_in': 3920, 'token_type': 'Bearer',
                                                     'orcid': '0000-0002-1825-0097',
                                                     'name': 'Josiah Carberry'}
+
+
+@responses.activate
+def test_it_creates_a_profile_when_exchanging(test_client: FlaskClient):
+    responses.add(responses.POST, 'http://www.example.com/server/token', status=200,
+                  json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
+                        'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
+                        'name': 'Josiah Carberry'})
+
+    test_client.post('/oauth2/token',
+                     data={'client_id': 'client_id', 'client_secret': 'client_secret',
+                           'redirect_uri': 'http://www.example.com/client/redirect',
+                           'grant_type': 'authorization_code', 'code': '1234'})
+
+    assert Profile.query.count() == 1
+
+    profile = Profile.query.filter_by(orcid='0000-0002-1825-0097').one()
+
+    assert profile.orcid == '0000-0002-1825-0097'
+    assert profile.name == 'Josiah Carberry'
+
+
+@responses.activate
+def test_it_updates_a_profile_when_exchanging(test_client: FlaskClient):
+    responses.add(responses.POST, 'http://www.example.com/server/token', status=200,
+                  json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
+                        'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
+                        'name': 'Josiah Carberry'})
+
+    original_profile = Profile('Foo Bar', '0000-0002-1825-0097')
+
+    db.session.add(original_profile)
+    db.session.commit()
+
+    test_client.post('/oauth2/token',
+                     data={'client_id': 'client_id', 'client_secret': 'client_secret',
+                           'redirect_uri': 'http://www.example.com/client/redirect',
+                           'grant_type': 'authorization_code', 'code': '1234'})
+
+    assert Profile.query.count() == 1
+    assert original_profile.name == 'Josiah Carberry'
 
 
 @responses.activate

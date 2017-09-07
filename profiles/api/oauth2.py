@@ -4,7 +4,9 @@ import requests
 from flask import Blueprint, current_app, make_response, redirect, request, jsonify, url_for, json
 from profiles.api.errors import InvalidClient, InvalidRequest, UnsupportedGrantType, InvalidGrant, \
     ClientInvalidRequest, ClientUnsupportedResourceType, ClientInvalidScope
+from profiles.models import Profile, db
 from profiles.utilities import remove_none_values
+from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.exceptions import BadRequest
 from werkzeug.wrappers import Response
 
@@ -135,5 +137,15 @@ def token() -> Response:
 
     filtered_json_data = {your_key: json_data[your_key] for your_key in
                           ['access_token', 'expires_in', 'name', 'orcid', 'token_type']}
+
+    try:
+        profile = Profile.query.filter_by(orcid=filtered_json_data['orcid']).one()
+        profile.name = filtered_json_data['name']
+    except NoResultFound:
+        profile = Profile(filtered_json_data['name'], filtered_json_data['orcid'])
+
+        db.session.add(profile)
+
+    db.session.commit()
 
     return make_response(jsonify(filtered_json_data), response.status_code)

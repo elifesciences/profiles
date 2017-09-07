@@ -1,4 +1,5 @@
 from configobj import ConfigObj
+from flask_migrate import MigrateCommand
 from flask_script import Manager, Server, Shell
 
 from profiles.factory import create_app
@@ -13,6 +14,7 @@ def make_shell_context() -> dict:
     return dict(app=app)
 
 
+manager.add_command('db', MigrateCommand)
 manager.add_command('shell', Shell(make_context=make_shell_context))
 manager.add_command('runserver', Server())
 

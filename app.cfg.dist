@@ -1,3 +1,6 @@
+[db]
+uri = mysql+pymysql://username:password@hostname/profiles
+
 [oauth2]
     [[clients]]
         [[[client-name]]]
