@@ -7,7 +7,7 @@ from werkzeug.wrappers import Response
 from profiles.api.errors import ClientError, OAuth2Error
 from profiles.api.oauth2 import OAUTH2_BP
 from profiles.api.ping import PING_BP
-from profiles.utilities import remove_none_values
+from profiles.utilities import chain_exception, remove_none_values
 
 
 def create_app(config: dict) -> Flask:
@@ -18,7 +18,7 @@ def create_app(config: dict) -> Flask:
     app.register_blueprint(OAUTH2_BP, url_prefix='/oauth2')
     app.register_blueprint(PING_BP)
 
-    def http_error_handler(exception: Exception) -> Response:
+    def error_handler(exception: Exception) -> Response:
         if isinstance(exception, ClientError):
             return redirect(exception.uri + '?' + urlencode(remove_none_values({
                 'error': exception.error,
@@ -33,7 +33,7 @@ def create_app(config: dict) -> Flask:
             return make_response(jsonify(body), exception.status_code)
 
         if not isinstance(exception, HTTPException):
-            exception = InternalServerError(str(exception))
+            exception = chain_exception(InternalServerError, exception)
 
         if request.path.startswith('/oauth2/authorize') or request.path.startswith('/oauth2/check'):
             return make_response(exception, exception.code)
@@ -48,6 +48,8 @@ def create_app(config: dict) -> Flask:
 
     from werkzeug.exceptions import default_exceptions
     for code in default_exceptions:
-        app.errorhandler(code)(http_error_handler)
+        app.errorhandler(code)(error_handler)
+
+    app.register_error_handler(Exception, error_handler)
 
     return app
