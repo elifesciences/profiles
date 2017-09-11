@@ -2,8 +2,8 @@ from json import JSONDecodeError, dumps
 from urllib.parse import urlencode
 import requests
 from flask import Blueprint, current_app, make_response, redirect, request, jsonify, url_for, json
-from profiles.api.errors import InvalidClient, InvalidRequest, UnsupportedGrantType, InvalidGrant, \
-    ClientInvalidRequest, ClientUnsupportedResourceType, ClientInvalidScope
+from profiles.exceptions import ClientInvalidRequest, ClientUnsupportedResourceType, \
+    ClientInvalidScope, InvalidClient, InvalidRequest, UnsupportedGrantType, InvalidGrant
 from profiles.utilities import remove_none_values
 from werkzeug.exceptions import BadRequest
 from werkzeug.wrappers import Response
@@ -87,9 +87,7 @@ def check() -> Response:
         'state': state.get('original')
     })
 
-    return redirect(
-        client['redirect_uri'] + '?' + urlencode(query),
-        code=302)
+    return redirect('{}?{}'.format(client['redirect_uri'], urlencode(query)), code=302)
 
 
 @OAUTH2_BP.route('/token', methods=['POST'])
@@ -130,8 +128,7 @@ def token() -> Response:
     elif 'expires_in' not in json_data:
         raise ValueError('No expires_in')
     elif json_data.get('token_type').lower() != 'bearer':
-        raise ValueError('Got token_type ' + json_data.get('token_type') +
-                         ', expected Bearer')
+        raise ValueError('Got token_type {}, expected Bearer'.format(json_data.get('token_type')))
 
     filtered_json_data = {your_key: json_data[your_key] for your_key in
                           ['access_token', 'expires_in', 'name', 'orcid', 'token_type']}

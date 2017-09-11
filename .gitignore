@@ -1,7 +1,5 @@
-/.cache/
 /app.cfg
 /build/*
 /uwsgi.ini
 /venv/
 __pycache__/
-

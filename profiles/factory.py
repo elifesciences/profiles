@@ -1,12 +1,8 @@
-from urllib.parse import urlencode
-
-from flask import Flask, jsonify, make_response, redirect, request
-from profiles.api.errors import OAuth2Error, ClientError
+from flask import Flask
+from profiles.api import errors
 from profiles.api.oauth2 import OAUTH2_BP
 from profiles.api.ping import PING_BP
-from profiles.utilities import chain_exception, remove_none_values
-from werkzeug.exceptions import HTTPException, InternalServerError
-from werkzeug.wrappers import Response
+from profiles.exceptions import ClientError, OAuth2Error
 
 
 def create_app(config: dict) -> Flask:
@@ -17,38 +13,12 @@ def create_app(config: dict) -> Flask:
     app.register_blueprint(OAUTH2_BP, url_prefix='/oauth2')
     app.register_blueprint(PING_BP)
 
-    def error_handler(exception: Exception) -> Response:
-        if isinstance(exception, ClientError):
-            return redirect(exception.uri + '?' + urlencode(remove_none_values({
-                'error': exception.error,
-                'error_description': exception.description,
-            })), exception.status_code)
-
-        if isinstance(exception, OAuth2Error):
-            body = remove_none_values({
-                'error': exception.error,
-                'error_description': exception.description,
-            })
-            return make_response(jsonify(body), exception.status_code)
-
-        if not isinstance(exception, HTTPException):
-            exception = chain_exception(InternalServerError, exception)
-
-        if request.path.startswith('/oauth2/authorize') or request.path.startswith('/oauth2/check'):
-            return make_response(exception, exception.code)
-
-        body = {
-            'title': getattr(exception, 'description', exception.name),
-        }
-        response = make_response(jsonify(body), exception.code)
-        response.headers['Content-Type'] = 'application/problem+json'
-
-        return response
-
     from werkzeug.exceptions import default_exceptions
     for code in default_exceptions:
-        app.errorhandler(code)(error_handler)
+        app.errorhandler(code)(errors.http_error_handler)
 
-    app.register_error_handler(Exception, error_handler)
+    app.register_error_handler(Exception, errors.error_handler)
+    app.register_error_handler(ClientError, errors.client_error_handler)
+    app.register_error_handler(OAuth2Error, errors.oauth2_error_handler)
 
     return app
