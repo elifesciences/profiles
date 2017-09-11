@@ -18,8 +18,8 @@ def find_client_by_id(client_id: str) -> dict:
 
     try:
         (name, details) = next((k, v) for k, v in clients.items() if v['id'] == client_id)
-    except StopIteration:
-        raise KeyError('No client with the client_id')
+    except StopIteration as exception:
+        raise KeyError('No client with the client_id') from exception
 
     details['name'] = name
 
@@ -33,8 +33,8 @@ def authorize() -> Response:
 
     try:
         client = find_client_by_id(request.args.get('client_id'))
-    except KeyError:
-        raise BadRequest('Invalid client_id')
+    except KeyError as exception:
+        raise BadRequest('Invalid client_id') from exception
 
     if request.args.get('redirect_uri', client['redirect_uri']) != client['redirect_uri']:
         raise BadRequest('Invalid redirect_uri')
@@ -71,13 +71,13 @@ def check() -> Response:
 
     try:
         state = json.loads(request.args.get('state'))
-    except (JSONDecodeError, TypeError):
-        raise BadRequest('Invalid state')
+    except (JSONDecodeError, TypeError) as exception:
+        raise BadRequest('Invalid state') from exception
 
     try:
         client = find_client_by_id(state['client_id'])
-    except KeyError:
-        raise BadRequest('Invalid state (client_id)')
+    except KeyError as exception:
+        raise BadRequest('Invalid state (client_id)') from exception
 
     if state['redirect_uri'] != client['redirect_uri']:
         raise BadRequest('Invalid state (redirect_uri)')
@@ -101,8 +101,8 @@ def token() -> Response:
 
     try:
         client = find_client_by_id(request.form.get('client_id'))
-    except KeyError:
-        raise InvalidClient
+    except KeyError as exception:
+        raise InvalidClient from exception
 
     if request.form.get('client_secret') != client['secret']:
         raise InvalidClient

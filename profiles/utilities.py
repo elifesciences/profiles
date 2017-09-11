@@ -1,5 +1,12 @@
 import random
 import string
+from typing import Type
+
+
+def chain_exception(exception: Type[Exception], previous: Exception, message: str = None):
+    exception = exception(message or str(previous))
+    exception.__cause__ = previous
+    return exception
 
 
 def generate_id() -> str:
