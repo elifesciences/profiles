@@ -1,4 +1,5 @@
 from flask import Flask
+
 from profiles.api import errors
 from profiles.api.oauth2 import OAUTH2_BP
 from profiles.api.ping import PING_BP
