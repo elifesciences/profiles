@@ -1,12 +1,13 @@
 from urllib.parse import urlencode
 
 from flask import Flask, jsonify, make_response, redirect, request
-from profiles.api.errors import OAuth2Error, ClientError
+from werkzeug.exceptions import HTTPException, InternalServerError
+from werkzeug.wrappers import Response
+
+from profiles.api.errors import ClientError, OAuth2Error
 from profiles.api.oauth2 import OAUTH2_BP
 from profiles.api.ping import PING_BP
 from profiles.utilities import chain_exception, remove_none_values
-from werkzeug.exceptions import HTTPException, InternalServerError
-from werkzeug.wrappers import Response
 
 
 def create_app(config: dict) -> Flask:

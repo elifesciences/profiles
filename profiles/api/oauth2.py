@@ -1,12 +1,14 @@
 from json import JSONDecodeError, dumps
 from urllib.parse import urlencode
+
+from flask import Blueprint, current_app, json, jsonify, make_response, redirect, request, url_for
 import requests
-from flask import Blueprint, current_app, make_response, redirect, request, jsonify, url_for, json
-from profiles.api.errors import InvalidClient, InvalidRequest, UnsupportedGrantType, InvalidGrant, \
-    ClientInvalidRequest, ClientUnsupportedResourceType, ClientInvalidScope
-from profiles.utilities import remove_none_values
 from werkzeug.exceptions import BadRequest
 from werkzeug.wrappers import Response
+
+from profiles.api.errors import ClientInvalidRequest, ClientInvalidScope, \
+    ClientUnsupportedResourceType, InvalidClient, InvalidGrant, InvalidRequest, UnsupportedGrantType
+from profiles.utilities import remove_none_values
 
 OAUTH2_BP = Blueprint('oauth', __name__)
 

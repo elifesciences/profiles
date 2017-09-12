@@ -1,8 +1,8 @@
 from json import dumps, loads
 from urllib.parse import urlencode
 
-import responses
 from flask.testing import FlaskClient
+import responses
 
 
 def test_authorizing_requires_a_client_id(test_client: FlaskClient):
