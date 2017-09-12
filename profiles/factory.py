@@ -6,7 +6,7 @@ from profiles.exceptions import ClientError, OAuth2Error
 from profiles.models import Clients
 
 
-def create_app(config: Config, clients: Clients = Clients([])) -> Flask:
+def create_app(config: Config, clients: Clients) -> Flask:
     app = Flask(__name__)
     app.TRAP_HTTP_EXCEPTIONS = True
     app.config.from_object(config)
