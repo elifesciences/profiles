@@ -10,7 +10,7 @@ class Profile(db.Model):
     name = db.Column(db.String(128), nullable=False)
     orcid = db.Column(db.String(19), unique=True)
 
-    def __init__(self, name, orcid=None):
+    def __init__(self, name: str, orcid: str = None):
         self.id = generate_id()
         self.name = name
         self.orcid = orcid
