@@ -19,7 +19,8 @@ def app() -> Flask:
             },
         ),
         clients=Clients([
-            Client('client', 'client_id', 'client_secret', 'http://www.example.com/client/redirect'),
+            Client(name='client', client_id='client_id', client_secret='client_secret',
+                   redirect_uri='http://www.example.com/client/redirect'),
         ]),
     )
 
