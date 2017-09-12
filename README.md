@@ -6,7 +6,8 @@ eLife Profiles
 Dependencies
 ------------
 
-* [Python](https://www.python.org/)
+* [Python 3.5](https://www.python.org/)
+* [virtualenv](https://virtualenv.pypa.io/)
 
 Installation
 ------------
