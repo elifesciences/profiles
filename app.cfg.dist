@@ -1,5 +1,5 @@
 [db]
-uri = mysql+pymysql://username:password@hostname/profiles
+uri = postgresql://username:password@hostname/profiles
 
 [oauth2]
     [[clients]]
