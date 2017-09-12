@@ -1,18 +1,18 @@
 from flask import Flask
 
-from profiles.api import errors
-from profiles.api.oauth2 import OAUTH2_BP
-from profiles.api.ping import PING_BP
+from profiles.api import errors, oauth2, ping
+from profiles.config import Config
 from profiles.exceptions import ClientError, OAuth2Error
+from profiles.models import Clients
 
 
-def create_app(config: dict) -> Flask:
+def create_app(config: Config, clients: Clients = Clients([])) -> Flask:
     app = Flask(__name__)
     app.TRAP_HTTP_EXCEPTIONS = True
-    app.config.update({'config': config})
+    app.config.from_object(config)
 
-    app.register_blueprint(OAUTH2_BP, url_prefix='/oauth2')
-    app.register_blueprint(PING_BP)
+    app.register_blueprint(oauth2.create_blueprint(config.orcid, clients), url_prefix='/oauth2')
+    app.register_blueprint(ping.create_blueprint())
 
     from werkzeug.exceptions import default_exceptions
     for code in default_exceptions:

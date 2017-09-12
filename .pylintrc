@@ -1,5 +1,5 @@
 [MESSAGE CONTROL]
-disable = missing-docstring,redefined-outer-name
+disable = missing-docstring,redefined-outer-name,too-few-public-methods
 
 [TYPECHECK]
 ignored-classes = responses

@@ -1,5 +1,6 @@
 /app.cfg
 /build/*
+/clients.json
 /uwsgi.ini
 /venv/
 __pycache__/
