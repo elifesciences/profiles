@@ -13,7 +13,8 @@ Installation
 ------------
 
 1. Create `app.cfg` from `app.cfg.dist`
-2. `./install.sh`
+2. Create `clients.json` from `clients.json.dist`
+3. `./install.sh`
 
 Running the tests
 -----------------
