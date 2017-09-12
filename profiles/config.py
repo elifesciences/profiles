@@ -24,10 +24,7 @@ class End2EndConfig(ProdConfig):
 
 
 def create_config(config: RawConfigParser) -> Config:
-    if config.has_option('profiles', 'environment'):
-        environment = config['profiles']['environment']
-    else:
-        environment = 'dev'
+    environment = config.get('profiles', 'environment', fallback='dev')
 
     if environment == 'dev':
         return DevConfig(config['orcid'])
