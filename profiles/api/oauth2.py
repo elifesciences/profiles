@@ -1,4 +1,5 @@
 from json import JSONDecodeError, dumps
+from typing import Dict
 from urllib.parse import urlencode
 
 from flask import Blueprint, json, jsonify, make_response, redirect, request, url_for
@@ -12,7 +13,7 @@ from profiles.models import Clients
 from profiles.utilities import remove_none_values
 
 
-def create_blueprint(orcid: dict, clients: Clients) -> Blueprint:
+def create_blueprint(orcid: Dict[str, str], clients: Clients) -> Blueprint:
     blueprint = Blueprint('oauth', __name__)
 
     @blueprint.route('/authorize')

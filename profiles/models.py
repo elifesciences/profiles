@@ -1,9 +1,9 @@
 import collections
-from typing import Iterable
+from typing import Any, Iterable
 
 
 class Client(object):
-    def __init__(self, name: str, client_id: str, client_secret: str, redirect_uri: str):
+    def __init__(self, name: str, client_id: str, client_secret: str, redirect_uri: str) -> None:
         self.name = name
         self.client_id = client_id
         self.client_secret = client_secret
@@ -16,7 +16,7 @@ class Client(object):
 class Clients(collections.Set):
     elements = []
 
-    def __init__(self, iterable: Iterable[Client]):
+    def __init__(self, iterable: Iterable[Client]) -> None:
         for value in iterable:
             if value not in self.elements:
                 self.elements.append(value)
@@ -30,7 +30,7 @@ class Clients(collections.Set):
     def __iter__(self) -> Iterable:
         return iter(self.elements)
 
-    def __contains__(self, value) -> bool:
+    def __contains__(self, value: Any) -> bool:
         return value in self.elements
 
     def __len__(self) -> int:

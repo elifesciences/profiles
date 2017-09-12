@@ -6,7 +6,7 @@ class OAuth2Error(Exception):
     description = None
     status_code = 400
 
-    def __init__(self, description: str = None):
+    def __init__(self, description: str = None) -> None:
         message = '(' + self.error + ')'
 
         if description:
@@ -37,7 +37,7 @@ class ClientError(OAuth2Error):
     uri = None
     status_code = 302
 
-    def __init__(self, client: Client, description: str = None):
+    def __init__(self, client: Client, description: str = None) -> None:
         self.uri = client.redirect_uri
 
         super(ClientError, self).__init__(description)
