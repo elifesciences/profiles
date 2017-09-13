@@ -23,7 +23,7 @@ class End2EndConfig(ProdConfig):
     pass
 
 
-def create_config(config: RawConfigParser) -> Config:
+def create_app_config(config: RawConfigParser) -> Config:
     environment = config.get('profiles', 'environment', fallback='dev')
 
     if environment == 'dev':
