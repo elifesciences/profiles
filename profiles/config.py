@@ -41,4 +41,4 @@ def create_app_config(config: RawConfigParser) -> Config:
     arguments = {section: dict(config.items(section)) for section in config.sections()}
     arguments.pop('profiles', None)
 
-    return ENVIRONMENTS[environment](arguments)
+    return ENVIRONMENTS[environment](**arguments)
