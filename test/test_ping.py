@@ -1,7 +1,7 @@
 from flask.testing import FlaskClient
 
 
-def test_it_pongs(test_client: FlaskClient):
+def test_it_pongs(test_client: FlaskClient) -> None:
     response = test_client.get('/ping')
 
     assert response.status_code == 200

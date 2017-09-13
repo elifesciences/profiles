@@ -1,0 +1,6 @@
+client-name:
+  client_id: client_id
+  client_secret: client_secret
+  redirect_uri: http://www.example.com/check
+
+# ...
