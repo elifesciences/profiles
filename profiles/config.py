@@ -23,6 +23,10 @@ class ProdConfig(Config):
     pass
 
 
+class ContinuumTestConfig(ProdConfig):
+    pass
+
+
 class End2EndConfig(ProdConfig):
     pass
 
@@ -31,6 +35,7 @@ ENVIRONMENTS = {
     'dev': DevConfig,
     'ci': CiConfig,
     'prod': ProdConfig,
+    'continuumtest': ContinuumTestConfig,
     'end2end': End2EndConfig,
 }
 
