@@ -10,7 +10,7 @@ from profiles.models import Client, Clients
 config_file = configparser.ConfigParser()
 config_file.read('app.cfg')
 
-clients_data = yaml.load(open('clients.yaml'))
+clients_data = yaml.load(open('clients.yaml')) or {}
 clients = Clients([Client(name, **clients_data[name]) for name in clients_data])
 
 app = create_app(create_app_config(config_file), clients)
