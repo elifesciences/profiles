@@ -1,52 +1,46 @@
-class OAuth2Error(Exception):
-    error = None
-    description = None
-    status_code = 400
+from urllib.parse import urlencode
 
-    def __init__(self, description=None):
-        message = '(' + self.error + ')'
+from flask import jsonify, make_response, redirect, request
+from werkzeug.exceptions import HTTPException, InternalServerError
+from werkzeug.wrappers import Response
 
-        if description:
-            self.description = description
-            message += ' ' + description
-
-        super(OAuth2Error, self).__init__(message)
+from profiles.exceptions import ClientError, OAuth2Error
+from profiles.utilities import remove_none_values
 
 
-class InvalidClient(OAuth2Error):
-    error = 'invalid_client'
-    status_code = 401
+def error_handler(exception: Exception) -> Response:
+    http_exception = InternalServerError(str(exception))
+    http_exception.__cause__ = exception
+
+    return http_error_handler(http_exception)
 
 
-class InvalidGrant(OAuth2Error):
-    error = 'invalid_grant'
+def client_error_handler(exception: ClientError) -> Response:
+    query = remove_none_values({
+        'error': exception.error,
+        'error_description': exception.description,
+    })
+
+    return redirect('{}?{}'.format(exception.uri, urlencode(query)), exception.status_code)
 
 
-class InvalidRequest(OAuth2Error):
-    error = 'invalid_request'
+def http_error_handler(exception: HTTPException) -> Response:
+    if request.path.startswith('/oauth2/authorize') or request.path.startswith('/oauth2/check'):
+        return make_response(exception, exception.code)
+
+    body = {
+        'title': getattr(exception, 'description', exception.name),
+    }
+    response = make_response(jsonify(body), exception.code)
+    response.headers['Content-Type'] = 'application/problem+json'
+
+    return response
 
 
-class UnsupportedGrantType(OAuth2Error):
-    error = 'unsupported_grant_type'
+def oauth2_error_handler(exception: OAuth2Error) -> Response:
+    body = remove_none_values({
+        'error': exception.error,
+        'error_description': exception.description,
+    })
 
-
-class ClientError(OAuth2Error):
-    uri = None
-    status_code = 302
-
-    def __init__(self, client, description=None):
-        self.uri = client['redirect_uri']
-
-        super(ClientError, self).__init__(description)
-
-
-class ClientInvalidRequest(ClientError):
-    error = 'invalid_request'
-
-
-class ClientUnsupportedResourceType(ClientError):
-    error = 'unsupported_response_type'
-
-
-class ClientInvalidScope(ClientError):
-    error = 'invalid_scope'
+    return make_response(jsonify(body), exception.status_code)

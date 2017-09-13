@@ -4,10 +4,12 @@ from _pytest.fixtures import FixtureRequest
 from flask import Flask
 from flask.testing import FlaskClient
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import scoped_session
-from profiles.factory import create_app
-from profiles.models import db
 from pytest import fixture
+from sqlalchemy.orm import scoped_session
+
+from profiles.config import CiConfig
+from profiles.factory import create_app
+from profiles.models import Client, Clients, db
 
 TEST_DATABASE_NAME = 'test.db'
 TEST_DATABASE_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../build/' + TEST_DATABASE_NAME
@@ -16,26 +18,23 @@ TEST_DATABASE_URI = 'sqlite:///' + TEST_DATABASE_PATH
 
 @fixture(scope='session')
 def app(request: FixtureRequest) -> Flask:
-    app = create_app({
-        'db': {
-            'uri': TEST_DATABASE_URI,
-        },
-        'oauth2': {
-            'clients': {
-                'client': {
-                    'id': 'client_id',
-                    'secret': 'client_secret',
-                    'redirect_uri': 'http://www.example.com/client/redirect'
-                }
-            },
-            'server': {
+    app = create_app(
+        CiConfig(
+            orcid={
                 'authorize_uri': 'http://www.example.com/server/authorize',
                 'token_uri': 'http://www.example.com/server/token',
                 'client_id': 'server_client_id',
                 'client_secret': 'server_client_secret',
+            },
+            db={
+                'uri': TEST_DATABASE_URI,
             }
-        },
-    })
+        ),
+        clients=Clients([
+            Client(name='client', client_id='client_id', client_secret='client_secret',
+                   redirect_uri='http://www.example.com/client/redirect'),
+        ]),
+    )
 
     ctx = app.app_context()
     ctx.push()

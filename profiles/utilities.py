@@ -1,12 +1,5 @@
 import random
 import string
-from typing import Type
-
-
-def chain_exception(exception: Type[Exception], previous: Exception, message: str = None):
-    exception = exception(message or str(previous))
-    exception.__cause__ = previous
-    return exception
 
 
 def generate_id() -> str:
@@ -14,7 +7,7 @@ def generate_id() -> str:
 
 
 def generate_random_string(size: int, chars: str) -> str:
-    return ''.join(random.choices(chars, k=size))
+    return ''.join(random.SystemRandom().choice(chars) for _ in range(size))
 
 
 def remove_none_values(items: dict) -> dict:

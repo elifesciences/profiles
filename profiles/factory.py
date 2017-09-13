@@ -1,63 +1,31 @@
-from urllib.parse import urlencode
-
-from flask import Flask, jsonify, make_response, redirect, request
+from flask import Flask
 from flask_migrate import Migrate
-from profiles.api.errors import OAuth2Error, ClientError
-from profiles.api.oauth2 import OAUTH2_BP
-from profiles.api.ping import PING_BP
-from profiles.models import db
-from profiles.utilities import chain_exception, remove_none_values
-from werkzeug.exceptions import HTTPException, InternalServerError
-from werkzeug.wrappers import Response
+
+from profiles.api import errors, oauth2, ping
+from profiles.config import Config
+from profiles.exceptions import ClientError, OAuth2Error
+from profiles.models import Clients, db
 
 
-def create_app(config: dict) -> Flask:
+def create_app(config: Config, clients: Clients) -> Flask:
     app = Flask(__name__)
     app.TRAP_HTTP_EXCEPTIONS = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = config['db']['uri']
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config.update({'config': config})
+    app.config.from_object(config)
 
     db.app = app
     db.init_app(app)
 
     Migrate(app, db)
 
-    app.register_blueprint(OAUTH2_BP, url_prefix='/oauth2')
-    app.register_blueprint(PING_BP)
-
-    def error_handler(exception: Exception) -> Response:
-        if isinstance(exception, ClientError):
-            return redirect(exception.uri + '?' + urlencode(remove_none_values({
-                'error': exception.error,
-                'error_description': exception.description,
-            })), exception.status_code)
-
-        if isinstance(exception, OAuth2Error):
-            body = remove_none_values({
-                'error': exception.error,
-                'error_description': exception.description,
-            })
-            return make_response(jsonify(body), exception.status_code)
-
-        if not isinstance(exception, HTTPException):
-            exception = chain_exception(InternalServerError, exception)
-
-        if request.path.startswith('/oauth2/authorize') or request.path.startswith('/oauth2/check'):
-            return make_response(exception, exception.code)
-
-        body = {
-            'title': getattr(exception, 'description', exception.name),
-        }
-        response = make_response(jsonify(body), exception.code)
-        response.headers['Content-Type'] = 'application/problem+json'
-
-        return response
+    app.register_blueprint(oauth2.create_blueprint(config.orcid, clients), url_prefix='/oauth2')
+    app.register_blueprint(ping.create_blueprint())
 
     from werkzeug.exceptions import default_exceptions
     for code in default_exceptions:
-        app.errorhandler(code)(error_handler)
+        app.errorhandler(code)(errors.http_error_handler)
 
-    app.register_error_handler(Exception, error_handler)
+    app.register_error_handler(Exception, errors.error_handler)
+    app.register_error_handler(ClientError, errors.client_error_handler)
+    app.register_error_handler(OAuth2Error, errors.oauth2_error_handler)
 
     return app

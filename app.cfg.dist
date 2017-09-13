@@ -1,15 +1,11 @@
+[profiles]
+environment = dev
+
 [db]
 uri = postgresql://username:password@hostname/profiles
 
-[oauth2]
-    [[clients]]
-        [[[client-name]]]
-        id = client_id
-        secret = client_secret
-        redirect_uri = http://www.example.com/check
-
-    [[server]]
-    authorize_uri = http://www.example.com/auth
-    token_uri = http://www.example.com/token
-    client_id = client_id
-    client_secret = client_secret
+[orcid]
+authorize_uri = https://sandbox.orcid.org/oauth/authorize
+token_uri = https://sandbox.orcid.org/oauth/token
+client_id = client_id
+client_secret = client_secret
