@@ -25,6 +25,10 @@ class ProdConfig(Config):
     pass
 
 
+class ContinuumTestConfig(ProdConfig):
+    pass
+
+
 class End2EndConfig(ProdConfig):
     pass
 
@@ -33,6 +37,7 @@ ENVIRONMENTS = {
     'dev': DevConfig,
     'ci': CiConfig,
     'prod': ProdConfig,
+    'continuumtest': ContinuumTestConfig,
     'end2end': End2EndConfig,
 }
 
@@ -40,7 +45,7 @@ ENVIRONMENTS = {
 def create_app_config(config: RawConfigParser) -> Config:
     environment = config.get('profiles', 'environment', fallback='dev')
 
-    arguments = {section: dict(config.items(section)) for section in config.sections()}
-    arguments.pop('profiles', None)
+    kwargs = {section: dict(config.items(section)) for section in config.sections()}
+    kwargs.pop('profiles', None)
 
-    return ENVIRONMENTS[environment](arguments)
+    return ENVIRONMENTS[environment](**kwargs)
