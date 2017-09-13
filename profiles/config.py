@@ -23,16 +23,18 @@ class End2EndConfig(ProdConfig):
     pass
 
 
+ENVIRONMENTS = {
+    'dev': DevConfig,
+    'ci': CiConfig,
+    'prod': ProdConfig,
+    'end2end': End2EndConfig,
+}
+
+
 def create_app_config(config: RawConfigParser) -> Config:
     environment = config.get('profiles', 'environment', fallback='dev')
 
-    if environment == 'dev':
-        return DevConfig(config['orcid'])
-    elif environment == 'ci':
-        return CiConfig(config['orcid'])
-    if environment == 'prod':
-        return ProdConfig(config['orcid'])
-    if environment == 'end2end':
-        return End2EndConfig(config['orcid'])
+    arguments = {section: dict(config.items(section)) for section in config.sections()}
+    arguments.pop('profiles', None)
 
-    raise KeyError('Unknown environment {}'.format(environment))
+    return ENVIRONMENTS[environment](arguments)
