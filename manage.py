@@ -1,7 +1,7 @@
 import configparser
-import json
 
 from flask_script import Manager, Server, Shell
+import yaml
 
 from profiles.config import create_config
 from profiles.factory import create_app
@@ -10,8 +10,8 @@ from profiles.models import Client, Clients
 config = configparser.ConfigParser()
 config.read('app.cfg')
 
-clients_json = json.load(open('clients.json'))
-clients = Clients([Client(name, **clients_json[name]) for name in clients_json])
+clients_data = yaml.load(open('clients.yaml'))
+clients = Clients([Client(name, **clients_data[name]) for name in clients_data])
 
 app = create_app(create_config(config), clients)
 manager = Manager(app)
