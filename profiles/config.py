@@ -1,8 +1,9 @@
+from abc import ABC
 from configparser import RawConfigParser
 from typing import Dict
 
 
-class Config(object):
+class Config(ABC):
     def __init__(self, orcid: Dict[str, str]) -> None:
         self.orcid = orcid
 
