@@ -4,6 +4,9 @@ from typing import Dict
 
 
 class Config(ABC):
+    DEBUG = False
+    TESTING = False
+
     def __init__(self, orcid: Dict[str, str]) -> None:
         self.orcid = orcid
 
