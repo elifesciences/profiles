@@ -38,7 +38,7 @@ ENVIRONMENTS = {
 def create_app_config(config: RawConfigParser) -> Config:
     environment = config.get('profiles', 'environment', fallback='dev')
 
-    arguments = {section: dict(config.items(section)) for section in config.sections()}
-    arguments.pop('profiles', None)
+    kwargs = {section: dict(config.items(section)) for section in config.sections()}
+    kwargs.pop('profiles', None)
 
-    return ENVIRONMENTS[environment](**arguments)
+    return ENVIRONMENTS[environment](**kwargs)
