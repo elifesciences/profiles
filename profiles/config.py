@@ -5,6 +5,7 @@ from typing import Dict
 
 class Config(ABC):
     DEBUG = False
+    SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     TESTING = False
 

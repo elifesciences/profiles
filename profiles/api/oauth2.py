@@ -5,17 +5,17 @@ from urllib.parse import urlencode
 
 from flask import Blueprint, json, jsonify, make_response, redirect, request, url_for
 import requests
-from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.exceptions import BadRequest
 from werkzeug.wrappers import Response
 
 from profiles.exceptions import ClientInvalidRequest, ClientInvalidScope, \
-    ClientUnsupportedResourceType, InvalidClient, InvalidGrant, InvalidRequest, UnsupportedGrantType
-from profiles.models import Clients, Profile, db
+    ClientUnsupportedResourceType, InvalidClient, InvalidGrant, InvalidRequest, ProfileNotFound, \
+    UnsupportedGrantType
+from profiles.models import Clients, Profile, Profiles
 from profiles.utilities import remove_none_values
 
 
-def create_blueprint(orcid: Dict[str, str], clients: Clients) -> Blueprint:
+def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles) -> Blueprint:
     blueprint = Blueprint('oauth', __name__)
 
     @blueprint.route('/authorize')
@@ -32,12 +32,12 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients) -> Blueprint:
             raise BadRequest('Invalid redirect_uri')
 
         if not request.args.get('response_type'):
-            raise ClientInvalidRequest(client, 'Missing response_type')
+            raise ClientInvalidRequest(client.redirect_uri, 'Missing response_type')
         elif request.args.get('response_type') != 'code':
-            raise ClientUnsupportedResourceType(client)
+            raise ClientUnsupportedResourceType(client.redirect_uri)
 
         if request.args.get('scope'):
-            raise ClientInvalidScope(client)
+            raise ClientInvalidScope(client.redirect_uri)
 
         state = remove_none_values({
             'redirect_uri': client.redirect_uri,
@@ -127,14 +127,11 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients) -> Blueprint:
                               ['access_token', 'expires_in', 'name', 'orcid', 'token_type']}
 
         try:
-            profile = Profile.query.filter_by(orcid=filtered_json_data['orcid']).one()
+            profile = profiles.get_by_orcid(filtered_json_data['orcid'])
             profile.name = filtered_json_data['name']
-        except NoResultFound:
+        except ProfileNotFound:
             profile = Profile(filtered_json_data['name'], filtered_json_data['orcid'])
-
-            db.session.add(profile)
-
-        db.session.commit()
+            profiles.add(profile)
 
         return make_response(jsonify(filtered_json_data), response.status_code)
 

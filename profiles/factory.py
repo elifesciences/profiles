@@ -4,7 +4,7 @@ from flask_migrate import Migrate
 from profiles.api import errors, oauth2, ping
 from profiles.config import Config
 from profiles.exceptions import ClientError, OAuth2Error
-from profiles.models import Clients, db
+from profiles.models import Clients, SQLAlchemyProfiles, db
 
 
 def create_app(config: Config, clients: Clients) -> Flask:
@@ -17,7 +17,10 @@ def create_app(config: Config, clients: Clients) -> Flask:
 
     Migrate(app, db)
 
-    app.register_blueprint(oauth2.create_blueprint(config.orcid, clients), url_prefix='/oauth2')
+    profiles = SQLAlchemyProfiles(db)
+
+    app.register_blueprint(oauth2.create_blueprint(config.orcid, clients, profiles),
+                           url_prefix='/oauth2')
     app.register_blueprint(ping.create_blueprint())
 
     from werkzeug.exceptions import default_exceptions

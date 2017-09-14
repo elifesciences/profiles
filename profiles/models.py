@@ -1,8 +1,11 @@
 import collections
+from abc import ABC, abstractmethod
 from typing import Any, Iterable
 
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm.exc import NoResultFound
 
+from profiles.exceptions import ProfileNotFound
 from profiles.utilities import generate_id
 
 db = SQLAlchemy()
@@ -13,13 +16,52 @@ class Profile(db.Model):
     name = db.Column(db.String(128), nullable=False)
     orcid = db.Column(db.String(19), unique=True)
 
-    def __init__(self, name: str, orcid: str = None):
+    def __init__(self, name: str, orcid: str = None) -> None:
         self.id = generate_id()
         self.name = name
         self.orcid = orcid
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '<Profile %r>' % self.id
+
+
+class Profiles(ABC, collections.Sized):
+    @abstractmethod
+    def add(self, profile: Profile) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get(self, profile_id: str) -> Profile:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_by_orcid(self, orcid: str) -> Profile:
+        raise NotImplementedError
+
+
+class SQLAlchemyProfiles(Profiles):
+    def __init__(self, db: SQLAlchemy) -> None:
+        self.db = db
+
+    def add(self, profile: Profile) -> None:
+        self.db.session.add(profile)
+
+    def get(self, profile_id: str) -> Profile:
+        try:
+            return self.db.session.query(Profile).filter_by(id=profile_id).one()
+        except NoResultFound as exception:
+            raise ProfileNotFound('Profile with the ID {} not found'.format(profile_id)) \
+                from exception
+
+    def get_by_orcid(self, orcid: str) -> Profile:
+        try:
+            return self.db.session.query(Profile).filter_by(orcid=orcid).one()
+        except NoResultFound as exception:
+            raise ProfileNotFound('Profile with the ORCID {} not found'.format(orcid)) \
+                from exception
+
+    def __len__(self) -> int:
+        return self.db.session.query(Profile).count()
 
 
 class Client(object):
