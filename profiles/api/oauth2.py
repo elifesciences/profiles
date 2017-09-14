@@ -126,7 +126,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
                 json_data.get('token_type')))
 
         json_data = {key: json_data[key] for key in
-                 ['access_token', 'expires_in', 'name', 'orcid', 'token_type']}
+                     ['access_token', 'expires_in', 'name', 'orcid', 'token_type']}
 
         try:
             profile = profiles.get_by_orcid(json_data['orcid'])
