@@ -35,7 +35,7 @@ def test_authorizing_requires_a_response_type(test_client: FlaskClient) -> None:
 
     assert response.status_code == 302
     assert response.headers['Location'] == 'http://www.example.com/client/redirect?' + urlencode(
-        {'error': 'invalid_request', 'error_description': 'Missing response_type'})
+        {'error': 'invalid_request', 'error_description': 'Missing response_type'}, True)
 
 
 def test_authorizing_requires_a_valid_response_type(test_client: FlaskClient) -> None:
@@ -44,7 +44,7 @@ def test_authorizing_requires_a_valid_response_type(test_client: FlaskClient) ->
 
     assert response.status_code == 302
     assert response.headers['Location'] == 'http://www.example.com/client/redirect?' + urlencode(
-        {'error': 'unsupported_response_type'})
+        {'error': 'unsupported_response_type'}, True)
 
 
 def test_it_rejects_scope_when_authorizing(test_client: FlaskClient) -> None:
@@ -54,7 +54,7 @@ def test_it_rejects_scope_when_authorizing(test_client: FlaskClient) -> None:
 
     assert response.status_code == 302
     assert response.headers['Location'] == 'http://www.example.com/client/redirect?' + urlencode(
-        {'error': 'invalid_scope'})
+        {'error': 'invalid_scope'}, True)
 
 
 def test_it_redirects_when_authorizing(test_client: FlaskClient) -> None:
@@ -66,7 +66,7 @@ def test_it_redirects_when_authorizing(test_client: FlaskClient) -> None:
         {'client_id': 'server_client_id', 'response_type': 'code', 'scope': '/authenticate',
          'redirect_uri': 'https://localhost/oauth2/check',
          'state': dumps({'redirect_uri': 'http://www.example.com/client/redirect',
-                         'client_id': 'client_id'})})
+                         'client_id': 'client_id'}, sort_keys=True)}, True)
 
 
 def test_it_redirects_with_the_original_state_when_authorizing(test_client: FlaskClient) -> None:
@@ -79,7 +79,7 @@ def test_it_redirects_with_the_original_state_when_authorizing(test_client: Flas
         {'client_id': 'server_client_id', 'response_type': 'code', 'scope': '/authenticate',
          'redirect_uri': 'https://localhost/oauth2/check',
          'state': dumps({'redirect_uri': 'http://www.example.com/client/redirect',
-                         'client_id': 'client_id', 'original': 'foo'})})
+                         'client_id': 'client_id', 'original': 'foo'}, sort_keys=True)}, True)
 
 
 def test_it_requires_a_code_when_checking(test_client: FlaskClient) -> None:
@@ -105,7 +105,8 @@ def test_it_requires_a_json_state_when_checking(test_client: FlaskClient) -> Non
 
 def test_it_requires_client_id_in_state_when_checking(test_client: FlaskClient) -> None:
     response = test_client.get('/oauth2/check', query_string={'code': 1234, 'state': dumps(
-        {'redirect_uri': 'http://www.example.com/client/redirect', 'client_id': 'foo'})})
+        {'redirect_uri': 'http://www.example.com/client/redirect', 'client_id': 'foo'},
+        sort_keys=True)})
 
     assert response.status_code == 400
     assert 'Invalid state (client_id)' in response.data.decode('UTF-8')
@@ -113,7 +114,7 @@ def test_it_requires_client_id_in_state_when_checking(test_client: FlaskClient) 
 
 def test_it_requires_redirect_uri_in_state_when_checking(test_client: FlaskClient) -> None:
     response = test_client.get('/oauth2/check', query_string={'code': 1234, 'state': dumps(
-        {'redirect_uri': 'http://www.evil.com', 'client_id': 'client_id'})})
+        {'redirect_uri': 'http://www.evil.com', 'client_id': 'client_id'}, sort_keys=True)})
 
     assert response.status_code == 400
     assert 'Invalid state (redirect_uri)' in response.data.decode('UTF-8')
@@ -121,11 +122,12 @@ def test_it_requires_redirect_uri_in_state_when_checking(test_client: FlaskClien
 
 def test_it_redirects_when_checking(test_client: FlaskClient) -> None:
     response = test_client.get('/oauth2/check', query_string={'code': 1234, 'state': dumps(
-        {'redirect_uri': 'http://www.example.com/client/redirect', 'client_id': 'client_id'})})
+        {'redirect_uri': 'http://www.example.com/client/redirect', 'client_id': 'client_id'},
+        sort_keys=True)})
 
     assert response.status_code == 302
     assert response.headers['Location'] == 'http://www.example.com/client/redirect?' + urlencode(
-        {'code': 1234})
+        {'code': 1234}, True)
 
 
 def test_it_redirects_with_the_original_state_when_checking(test_client: FlaskClient) -> None:
@@ -135,7 +137,7 @@ def test_it_redirects_with_the_original_state_when_checking(test_client: FlaskCl
 
     assert response.status_code == 302
     assert response.headers['Location'] == 'http://www.example.com/client/redirect?' + urlencode(
-        {'code': 1234, 'state': 'foo'})
+        {'code': 1234, 'state': 'foo'}, True)
 
 
 def test_it_redirects_when_checking_but_has_an_error(test_client: FlaskClient) -> None:
@@ -145,12 +147,12 @@ def test_it_redirects_when_checking_but_has_an_error(test_client: FlaskClient) -
                                    'state': dumps({
                                        'redirect_uri': 'http://www.example.com/client/redirect',
                                        'client_id': 'client_id',
-                                   })
+                                   }, sort_keys=True)
                                })
 
     assert response.status_code == 302
     assert response.headers['Location'] == 'http://www.example.com/client/redirect?' + urlencode(
-        {'error': 'access_denied'})
+        {'error': 'access_denied'}, True)
 
 
 def test_it_requires_client_id_when_exchanging(test_client: FlaskClient) -> None:

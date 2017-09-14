@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from json import JSONDecodeError, dumps
 from typing import Dict
 from urllib.parse import urlencode
@@ -50,8 +51,8 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients) -> Blueprint:
                 'response_type': request.args.get('response_type'),
                 'scope': '/authenticate',
                 'redirect_uri': url_for('oauth._check', _external=True, _scheme='https'),
-                'state': dumps(state)
-            }),
+                'state': dumps(state, sort_keys=True)
+            }, True),
             code=302)
 
     @blueprint.route('/check')
@@ -72,14 +73,14 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients) -> Blueprint:
         if state['redirect_uri'] != client.redirect_uri:
             raise BadRequest('Invalid state (redirect_uri)')
 
-        query = remove_none_values({
-            'code': request.args.get('code'),
-            'error': request.args.get('error'),
-            'error_description': request.args.get('error_description'),
-            'state': state.get('original')
-        })
+        query = remove_none_values(OrderedDict([
+            ('code', request.args.get('code')),
+            ('error', request.args.get('error')),
+            ('error_description', request.args.get('error_description')),
+            ('state', state.get('original')),
+        ]))
 
-        return redirect('{}?{}'.format(client.redirect_uri, urlencode(query)), code=302)
+        return redirect('{}?{}'.format(client.redirect_uri, urlencode(query, True)), code=302)
 
     @blueprint.route('/token', methods=['POST'])
     def _token() -> Response:
