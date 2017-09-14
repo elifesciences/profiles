@@ -1,11 +1,13 @@
 import collections
+import string
 from abc import ABC, abstractmethod
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm.exc import NoResultFound
 
 from profiles.exceptions import ProfileNotFound
-from profiles.models import Profile
+from profiles.models import ID_LENGTH, Profile
+from profiles.utilities import generate_random_string
 
 
 class Profiles(ABC, collections.Sized):
@@ -19,6 +21,10 @@ class Profiles(ABC, collections.Sized):
 
     @abstractmethod
     def get_by_orcid(self, orcid: str) -> Profile:
+        raise NotImplementedError
+
+    @abstractmethod
+    def next_id(self) -> str:
         raise NotImplementedError
 
 
@@ -42,6 +48,14 @@ class SQLAlchemyProfiles(Profiles):
         except NoResultFound as exception:
             raise ProfileNotFound('Profile with the ORCID {} not found'.format(orcid)) \
                 from exception
+
+    def next_id(self) -> str:
+        while True:
+            profile_id = generate_random_string(ID_LENGTH, string.ascii_lowercase + string.digits)
+            try:
+                self.get(profile_id)
+            except ProfileNotFound:
+                return profile_id
 
     def __len__(self) -> int:
         return self.db.session.query(Profile).count()

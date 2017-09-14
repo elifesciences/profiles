@@ -1,17 +1,17 @@
 from flask_sqlalchemy import SQLAlchemy
 
-from profiles.utilities import generate_id
-
 db = SQLAlchemy()
+
+ID_LENGTH = 8
 
 
 class Profile(db.Model):
-    id = db.Column(db.String(8), primary_key=True)
+    id = db.Column(db.String(ID_LENGTH), primary_key=True)
     name = db.Column(db.String(128), nullable=False)
     orcid = db.Column(db.String(19), unique=True)
 
-    def __init__(self, name: str, orcid: str = None) -> None:
-        self.id = generate_id()
+    def __init__(self, profile_id: str, name: str, orcid: str = None) -> None:
+        self.id = profile_id
         self.name = name
         self.orcid = orcid
 

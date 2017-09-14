@@ -249,7 +249,7 @@ def test_it_updates_a_profile_when_exchanging(test_client: FlaskClient) -> None:
                         'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
                         'name': 'Josiah Carberry'})
 
-    original_profile = Profile('Foo Bar', '0000-0002-1825-0097')
+    original_profile = Profile('a1b2c3d4', 'Foo Bar', '0000-0002-1825-0097')
 
     db.session.add(original_profile)
     db.session.commit()

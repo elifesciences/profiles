@@ -125,16 +125,16 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
             raise ValueError('Got token_type {}, expected Bearer'.format(
                 json_data.get('token_type')))
 
-        filtered_json_data = {your_key: json_data[your_key] for your_key in
-                              ['access_token', 'expires_in', 'name', 'orcid', 'token_type']}
+        json_data = {key: json_data[key] for key in
+                 ['access_token', 'expires_in', 'name', 'orcid', 'token_type']}
 
         try:
-            profile = profiles.get_by_orcid(filtered_json_data['orcid'])
-            profile.name = filtered_json_data['name']
+            profile = profiles.get_by_orcid(json_data['orcid'])
+            profile.name = json_data['name']
         except ProfileNotFound:
-            profile = Profile(filtered_json_data['name'], filtered_json_data['orcid'])
+            profile = Profile(profiles.next_id(), json_data['name'], json_data['orcid'])
             profiles.add(profile)
 
-        return make_response(jsonify(filtered_json_data), response.status_code)
+        return make_response(jsonify(json_data), response.status_code)
 
     return blueprint

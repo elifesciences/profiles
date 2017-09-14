@@ -1,9 +1,4 @@
 import random
-import string
-
-
-def generate_id() -> str:
-    return generate_random_string(8, string.ascii_lowercase + string.digits)
 
 
 def generate_random_string(size: int, chars: str) -> str:
