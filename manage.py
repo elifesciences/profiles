@@ -4,9 +4,9 @@ from flask_migrate import MigrateCommand
 from flask_script import Manager, Server, Shell
 import yaml
 
+from profiles.clients import Client, Clients
 from profiles.config import create_app_config
 from profiles.factory import create_app
-from profiles.models import Client, Clients
 
 config_file = configparser.ConfigParser()
 config_file.read('app.cfg')

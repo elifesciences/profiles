@@ -1,3 +1,6 @@
+from profiles.clients import Client
+
+
 class OAuth2Error(Exception):
     error = None
     description = None
@@ -34,8 +37,8 @@ class ClientError(OAuth2Error):
     uri = None
     status_code = 302
 
-    def __init__(self, uri: str, description: str = None) -> None:
-        self.uri = uri
+    def __init__(self, client: Client, description: str = None) -> None:
+        self.uri = client.redirect_uri
 
         super(ClientError, self).__init__(description)
 

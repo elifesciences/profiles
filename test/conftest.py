@@ -7,9 +7,10 @@ from flask_sqlalchemy import SQLAlchemy
 from pytest import fixture
 from sqlalchemy.orm import scoped_session
 
+from profiles.clients import Client, Clients
 from profiles.config import CiConfig
 from profiles.factory import create_app
-from profiles.models import Client, Clients, db
+from profiles.models import db
 
 TEST_DATABASE_NAME = 'test.db'
 TEST_DATABASE_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../build/' + TEST_DATABASE_NAME

@@ -8,10 +8,12 @@ import requests
 from werkzeug.exceptions import BadRequest
 from werkzeug.wrappers import Response
 
+from profiles.clients import Clients
 from profiles.exceptions import ClientInvalidRequest, ClientInvalidScope, \
     ClientUnsupportedResourceType, InvalidClient, InvalidGrant, InvalidRequest, ProfileNotFound, \
     UnsupportedGrantType
-from profiles.models import Clients, Profile, Profiles
+from profiles.models import Profile
+from profiles.repositories import Profiles
 from profiles.utilities import remove_none_values
 
 
@@ -32,12 +34,12 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
             raise BadRequest('Invalid redirect_uri')
 
         if not request.args.get('response_type'):
-            raise ClientInvalidRequest(client.redirect_uri, 'Missing response_type')
+            raise ClientInvalidRequest(client, 'Missing response_type')
         elif request.args.get('response_type') != 'code':
-            raise ClientUnsupportedResourceType(client.redirect_uri)
+            raise ClientUnsupportedResourceType(client)
 
         if request.args.get('scope'):
-            raise ClientInvalidScope(client.redirect_uri)
+            raise ClientInvalidScope(client)
 
         state = remove_none_values({
             'redirect_uri': client.redirect_uri,
