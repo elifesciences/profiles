@@ -52,9 +52,7 @@ class SQLAlchemyProfiles(Profiles):
     def next_id(self) -> str:
         while True:
             profile_id = generate_random_string(ID_LENGTH, string.ascii_lowercase + string.digits)
-            try:
-                self.get(profile_id)
-            except ProfileNotFound:
+            if self.db.session.query(Profile).filter_by(id=profile_id).one_or_none() is None:
                 return profile_id
 
     def __len__(self) -> int:
