@@ -8,9 +8,9 @@ class Config(ABC):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     TESTING = False
 
-    def __init__(self, orcid: Dict[str, str], db: Dict[str, str]) -> None:
+    def __init__(self, orcid: Dict[str, str], db: str) -> None:
         self.orcid = orcid
-        self.SQLALCHEMY_DATABASE_URI = db['uri']
+        self.SQLALCHEMY_DATABASE_URI = db
 
 
 class DevConfig(Config):
@@ -43,9 +43,8 @@ ENVIRONMENTS = {
 
 
 def create_app_config(config: RawConfigParser) -> Config:
-    environment = config.get('profiles', 'environment', fallback='dev')
-
     kwargs = {section: dict(config.items(section)) for section in config.sections()}
-    kwargs.pop('profiles', None)
+    kwargs = {**kwargs.pop('profiles', {}), **kwargs}
+    environment = kwargs.pop('environment', 'dev')
 
     return ENVIRONMENTS[environment](**kwargs)
