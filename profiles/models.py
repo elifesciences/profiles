@@ -7,7 +7,7 @@ ID_LENGTH = 8
 
 class Profile(db.Model):
     id = db.Column(db.String(ID_LENGTH), primary_key=True)
-    name = db.Column(db.String(128), nullable=False)
+    name = db.Column(db.Text(), nullable=False)
     orcid = db.Column(db.String(19), unique=True)
 
     def __init__(self, profile_id: str, name: str, orcid: str = None) -> None:
