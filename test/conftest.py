@@ -39,7 +39,7 @@ def app(request: FixtureRequest) -> Flask:
     ctx = app.app_context()
     ctx.push()
 
-    def teardown():
+    def teardown() -> None:
         ctx.pop()
 
     request.addfinalizer(teardown)
@@ -54,7 +54,7 @@ def database(app: Flask, request: FixtureRequest) -> SQLAlchemy:
     db.app = app
     db.create_all()
 
-    def teardown():
+    def teardown() -> None:
         db.drop_all()
         os.unlink(TEST_DATABASE_PATH)
 
@@ -72,7 +72,7 @@ def session(database: SQLAlchemy, request: FixtureRequest) -> scoped_session:
 
     database.session = session
 
-    def teardown():
+    def teardown() -> None:
         transaction.rollback()
         connection.close()
         session.remove()
