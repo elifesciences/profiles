@@ -11,7 +11,7 @@ class Config(ABC):
 
     def __init__(self, orcid: Dict[str, str], db: str) -> None:
         self.orcid = orcid
-        self.SQLALCHEMY_DATABASE_URI = db
+        self.SQLALCHEMY_DATABASE_URI = db  # pylint: disable=invalid-name
 
 
 class DevConfig(Config):
