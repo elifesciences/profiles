@@ -21,7 +21,7 @@ def client_error_handler(exception: ClientError) -> Response:
         'error_description': exception.description,
     })
 
-    return redirect('{}?{}'.format(exception.uri, urlencode(query)), exception.status_code)
+    return redirect('{}?{}'.format(exception.uri, urlencode(query, True)), exception.status_code)
 
 
 def http_error_handler(exception: HTTPException) -> Response:
