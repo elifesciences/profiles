@@ -1,4 +1,4 @@
-from profiles.models import Client
+from profiles.clients import Client
 
 
 class OAuth2Error(Exception):

@@ -8,9 +8,9 @@ import requests
 from werkzeug.exceptions import BadRequest
 from werkzeug.wrappers import Response
 
+from profiles.clients import Clients
 from profiles.exceptions import ClientInvalidRequest, ClientInvalidScope, \
     ClientUnsupportedResourceType, InvalidClient, InvalidGrant, InvalidRequest, UnsupportedGrantType
-from profiles.models import Clients
 from profiles.utilities import remove_none_values
 
 
@@ -122,9 +122,9 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients) -> Blueprint:
             raise ValueError('Got token_type {}, expected Bearer'.format(
                 json_data.get('token_type')))
 
-        filtered_json_data = {your_key: json_data[your_key] for your_key in
-                              ['access_token', 'expires_in', 'name', 'orcid', 'token_type']}
+        json_data = {key: json_data[key] for key in
+                     ['access_token', 'expires_in', 'name', 'orcid', 'token_type']}
 
-        return make_response(jsonify(filtered_json_data), response.status_code)
+        return make_response(jsonify(json_data), response.status_code)
 
     return blueprint

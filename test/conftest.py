@@ -2,9 +2,9 @@ from flask import Flask
 from flask.testing import FlaskClient
 from pytest import fixture
 
+from profiles.clients import Client, Clients
 from profiles.config import CiConfig
 from profiles.factory import create_app
-from profiles.models import Client, Clients
 
 
 @fixture
