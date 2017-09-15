@@ -3,6 +3,7 @@ import string
 from abc import ABC, abstractmethod
 
 from flask_sqlalchemy import SQLAlchemy
+from retrying import retry
 from sqlalchemy.orm.exc import NoResultFound
 
 from profiles.exceptions import ProfileNotFound
@@ -49,11 +50,14 @@ class SQLAlchemyProfiles(Profiles):
             raise ProfileNotFound('Profile with the ORCID {} not found'.format(orcid)) \
                 from exception
 
+    @retry(stop_max_attempt_number=10)
     def next_id(self) -> str:
-        while True:
-            profile_id = generate_random_string(ID_LENGTH, string.ascii_lowercase + string.digits)
-            if self.db.session.query(Profile).filter_by(id=profile_id).one_or_none() is None:
-                return profile_id
+        profile_id = generate_random_string(ID_LENGTH, string.ascii_lowercase + string.digits)
+
+        if self.db.session.query(Profile.id).filter_by(id=profile_id).scalar() is not None:
+            raise RuntimeError('Generated ID already in use')
+
+        return profile_id
 
     def __len__(self) -> int:
         return self.db.session.query(Profile).count()
