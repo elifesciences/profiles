@@ -1,6 +1,7 @@
 /app.cfg
 /build/*
 /clients.yaml
+/newrelic.ini
 /uwsgi.ini
 /venv/
 __pycache__/
