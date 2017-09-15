@@ -8,9 +8,9 @@ import requests
 from werkzeug.exceptions import BadRequest
 from werkzeug.wrappers import Response
 
+from profiles.clients import Clients
 from profiles.exceptions import ClientInvalidRequest, ClientInvalidScope, \
     ClientUnsupportedResourceType, InvalidClient, InvalidGrant, InvalidRequest, UnsupportedGrantType
-from profiles.models import Clients
 from profiles.utilities import remove_none_values
 
 

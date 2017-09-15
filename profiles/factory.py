@@ -1,9 +1,9 @@
 from flask import Flask
 
 from profiles.api import errors, oauth2, ping
+from profiles.clients import Clients
 from profiles.config import Config
 from profiles.exceptions import ClientError, OAuth2Error
-from profiles.models import Clients
 
 
 def create_app(config: Config, clients: Clients) -> Flask:
