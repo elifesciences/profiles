@@ -55,5 +55,9 @@ class ClientInvalidScope(ClientError):
     error = 'invalid_scope'
 
 
+class OrcidTokenNotFound(Exception):
+    pass
+
+
 class ProfileNotFound(Exception):
     pass
