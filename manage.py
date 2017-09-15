@@ -1,5 +1,6 @@
 import configparser
 
+from flask_migrate import MigrateCommand
 from flask_script import Manager, Server, Shell
 import yaml
 
@@ -21,6 +22,7 @@ def make_shell_context() -> dict:
     return {'app': app}
 
 
+manager.add_command('db', MigrateCommand)
 manager.add_command('runserver', Server())
 manager.add_command('shell', Shell(make_context=make_shell_context))
 

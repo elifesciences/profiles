@@ -1,9 +1,12 @@
 from flask import Flask
+from flask_migrate import Migrate
 
 from profiles.api import errors, oauth2, ping
 from profiles.clients import Clients
 from profiles.config import Config
 from profiles.exceptions import ClientError, OAuth2Error
+from profiles.models import db
+from profiles.repositories import SQLAlchemyProfiles
 
 
 def create_app(config: Config, clients: Clients) -> Flask:
@@ -11,7 +14,15 @@ def create_app(config: Config, clients: Clients) -> Flask:
     app.TRAP_HTTP_EXCEPTIONS = True
     app.config.from_object(config)
 
-    app.register_blueprint(oauth2.create_blueprint(config.orcid, clients), url_prefix='/oauth2')
+    db.app = app
+    db.init_app(app)
+
+    Migrate(app, db)
+
+    profiles = SQLAlchemyProfiles(db)
+
+    app.register_blueprint(oauth2.create_blueprint(config.orcid, clients, profiles),
+                           url_prefix='/oauth2')
     app.register_blueprint(ping.create_blueprint())
 
     from werkzeug.exceptions import default_exceptions

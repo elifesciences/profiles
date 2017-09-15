@@ -53,3 +53,7 @@ class ClientUnsupportedResourceType(ClientError):
 
 class ClientInvalidScope(ClientError):
     error = 'invalid_scope'
+
+
+class ProfileNotFound(Exception):
+    pass

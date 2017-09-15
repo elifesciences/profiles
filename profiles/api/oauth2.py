@@ -10,11 +10,14 @@ from werkzeug.wrappers import Response
 
 from profiles.clients import Clients
 from profiles.exceptions import ClientInvalidRequest, ClientInvalidScope, \
-    ClientUnsupportedResourceType, InvalidClient, InvalidGrant, InvalidRequest, UnsupportedGrantType
+    ClientUnsupportedResourceType, InvalidClient, InvalidGrant, InvalidRequest, ProfileNotFound, \
+    UnsupportedGrantType
+from profiles.models import Profile
+from profiles.repositories import Profiles
 from profiles.utilities import remove_none_values
 
 
-def create_blueprint(orcid: Dict[str, str], clients: Clients) -> Blueprint:
+def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles) -> Blueprint:
     blueprint = Blueprint('oauth', __name__)
 
     @blueprint.route('/authorize')
@@ -124,6 +127,13 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients) -> Blueprint:
 
         json_data = {key: json_data[key] for key in
                      ['access_token', 'expires_in', 'name', 'orcid', 'token_type']}
+
+        try:
+            profile = profiles.get_by_orcid(json_data['orcid'])
+            profile.name = json_data['name']
+        except ProfileNotFound:
+            profile = Profile(profiles.next_id(), json_data['name'], json_data['orcid'])
+            profiles.add(profile)
 
         return make_response(jsonify(json_data), response.status_code)
 

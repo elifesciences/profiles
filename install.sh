@@ -12,5 +12,6 @@ fi
 source venv/bin/activate
 
 pip install --requirement requirements.txt
+python manage.py db upgrade
 
 echo "[✓] install.sh"

@@ -5,10 +5,13 @@ from typing import Dict
 
 class Config(ABC):
     DEBUG = False
+    SQLALCHEMY_COMMIT_ON_TEARDOWN = True
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
     TESTING = False
 
-    def __init__(self, orcid: Dict[str, str]) -> None:
+    def __init__(self, orcid: Dict[str, str], db: str) -> None:
         self.orcid = orcid
+        self.SQLALCHEMY_DATABASE_URI = db  # pylint: disable=invalid-name
 
 
 class DevConfig(Config):
