@@ -9,7 +9,7 @@ ID_LENGTH = 8
 
 class OrcidToken(db.Model):
     orcid = db.Column(db.String(19), primary_key=True)
-    access_token = db.Column(db.String(255), unique=True)
+    access_token = db.Column(db.String(255), unique=True, nullable=False)
     expires_at = db.Column(db.DateTime(), nullable=False)
 
     def __init__(self, orcid: str, access_token: str, expires_at: datetime) -> None:

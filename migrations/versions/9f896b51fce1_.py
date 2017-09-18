@@ -11,7 +11,7 @@ def upgrade():
     op.create_table(
         'orcid_token',
         sa.Column('orcid', sa.String(length=19), nullable=False),
-        sa.Column('access_token', sa.String(length=255), nullable=True),
+        sa.Column('access_token', sa.String(length=255), nullable=False),
         sa.Column('expires_at', sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint('orcid'),
         sa.UniqueConstraint('access_token')
