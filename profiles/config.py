@@ -9,29 +9,32 @@ class Config(ABC):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     TESTING = False
 
-    def __init__(self, orcid: Dict[str, str], db: str) -> None:
+    def __init__(self, orcid: Dict[str, str], db: str, logging: Dict[str, str]) -> None:
         self.orcid = orcid
         self.SQLALCHEMY_DATABASE_URI = db  # pylint: disable=invalid-name
+        self.logging = logging
 
 
 class DevConfig(Config):
     DEBUG = True
+    name = 'dev'
 
 
 class CiConfig(DevConfig):
     TESTING = True
+    name = 'ci'
 
 
 class ProdConfig(Config):
-    pass
+    name = 'prod'
 
 
 class ContinuumTestConfig(ProdConfig):
-    pass
+    name = 'continuumtest'
 
 
 class End2EndConfig(ProdConfig):
-    pass
+    name = 'end2end'
 
 
 ENVIRONMENTS = {
