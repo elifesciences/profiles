@@ -1,4 +1,5 @@
 import configparser
+import logging
 
 from flask_migrate import MigrateCommand
 from flask_script import Manager, Server, Shell
@@ -7,6 +8,7 @@ import yaml
 from profiles.clients import Client, Clients
 from profiles.config import create_app_config
 from profiles.factory import create_app
+from profiles.logging import configure_logging
 
 config_file = configparser.ConfigParser()
 config_file.read('app.cfg')
@@ -14,7 +16,9 @@ config_file.read('app.cfg')
 clients_data = yaml.load(open('clients.yaml')) or {}
 clients = Clients([Client(name, **clients_data[name]) for name in clients_data])
 
-app = create_app(create_app_config(config_file), clients)
+config = create_app_config(config_file)
+configure_logging(config.name, getattr(logging, config.logging['level']))
+app = create_app(config, clients)
 manager = Manager(app)
 
 
