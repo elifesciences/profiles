@@ -3,6 +3,6 @@
 /clients.yaml
 /newrelic.ini
 /uwsgi.ini
-/var/
+/var/*
 /venv/
 __pycache__/
