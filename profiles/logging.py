@@ -1,6 +1,5 @@
 import logging
 import os
-import sys
 from typing import List
 
 from pythonjsonlogger import jsonlogger
@@ -8,7 +7,7 @@ from pythonjsonlogger import jsonlogger
 
 class CustomJsonFormatter(jsonlogger.JsonFormatter):
     def formatException(self, ei: List) -> dict:
-        info_type, info_value, info_traceback = sys.exc_info()
+        info_type, info_value, info_traceback = ei
         return {
             'message': info_value,
             'class': info_type.__name__,
