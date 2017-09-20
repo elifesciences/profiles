@@ -136,6 +136,8 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
             profile = Profile(profiles.next_id(), json_data['name'], json_data['orcid'])
             profiles.add(profile)
 
+        json_data['id'] = profile.id
+
         try:
             orcid_token = orcid_tokens.get(json_data['orcid'])
             orcid_token.access_token = json_data['access_token']
