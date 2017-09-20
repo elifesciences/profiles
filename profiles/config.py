@@ -1,3 +1,6 @@
+import re
+import sys
+
 from abc import ABC
 from configparser import RawConfigParser
 from typing import Dict
@@ -37,13 +40,12 @@ class End2EndConfig(ProdConfig):
     name = 'end2end'
 
 
-ENVIRONMENTS = {
-    'dev': DevConfig,
-    'ci': CiConfig,
-    'prod': ProdConfig,
-    'continuumtest': ContinuumTestConfig,
-    'end2end': End2EndConfig,
-}
+def all_config_classes_by_name():
+    current_module = sys.modules[__name__]
+    config_classes = [getattr(current_module, entity) for entity in current_module.__dict__ if re.match('^.+Config$', entity)]
+    return {class_.__dict__['name']:class_ for class_ in config_classes}
+
+ENVIRONMENTS = all_config_classes_by_name()
 
 
 def create_app_config(config: RawConfigParser) -> Config:
