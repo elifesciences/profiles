@@ -27,6 +27,7 @@ def configure_logging(env='dev', level=logging.INFO, path=None) -> None:
             path,
             '%s.log' % env
         ))
+        os.makedirs(path, exist_ok=True)
 
         file_handler = logging.FileHandler(filename=log_filename)
         file_handler.setLevel(level)
