@@ -16,7 +16,7 @@ def error_handler(exception: Exception) -> Response:
     http_exception = InternalServerError(str(exception))
     http_exception.__cause__ = exception
 
-    return _handle_error(http_exception)
+    return _handle_http_error(http_exception)
 
 
 def client_error_handler(exception: ClientError) -> Response:
@@ -33,7 +33,7 @@ def client_error_handler(exception: ClientError) -> Response:
 def http_error_handler(exception: HTTPException) -> Response:
     LOGGER.exception(exception)
 
-    return _handle_error(exception)
+    return _handle_http_error(exception)
 
 
 def oauth2_error_handler(exception: OAuth2Error) -> Response:
@@ -47,7 +47,7 @@ def oauth2_error_handler(exception: OAuth2Error) -> Response:
     return make_response(jsonify(body), exception.status_code)
 
 
-def _handle_error(exception: HTTPException) -> Response:
+def _handle_http_error(exception: HTTPException) -> Response:
     if request.path.startswith('/oauth2/authorize') or request.path.startswith('/oauth2/check'):
         return make_response(exception, exception.code)
 
