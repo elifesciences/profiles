@@ -6,9 +6,19 @@ from flask_sqlalchemy import SQLAlchemy
 from retrying import retry
 from sqlalchemy.orm.exc import NoResultFound
 
-from profiles.exceptions import ProfileNotFound
-from profiles.models import ID_LENGTH, Profile
+from profiles.exceptions import OrcidTokenNotFound, ProfileNotFound
+from profiles.models import ID_LENGTH, OrcidToken, Profile
 from profiles.utilities import generate_random_string
+
+
+class OrcidTokens(ABC):
+    @abstractmethod
+    def add(self, orcid_token: OrcidToken) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get(self, orcid: str) -> OrcidToken:
+        raise NotImplementedError
 
 
 class Profiles(ABC, collections.Sized):
@@ -27,6 +37,21 @@ class Profiles(ABC, collections.Sized):
     @abstractmethod
     def next_id(self) -> str:
         raise NotImplementedError
+
+
+class SQLAlchemyOrcidTokens(OrcidTokens):
+    def __init__(self, db: SQLAlchemy) -> None:
+        self.db = db
+
+    def add(self, orcid_token: OrcidToken) -> None:
+        self.db.session.add(orcid_token)
+
+    def get(self, orcid: str) -> OrcidToken:
+        try:
+            return self.db.session.query(OrcidToken).filter_by(orcid=orcid).one()
+        except NoResultFound as exception:
+            raise OrcidTokenNotFound('ORCID token for the ORCID {} not found'.format(orcid)) \
+                from exception
 
 
 class SQLAlchemyProfiles(Profiles):

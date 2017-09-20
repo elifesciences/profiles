@@ -1,5 +1,10 @@
 import random
 import string
+from datetime import datetime, timedelta
+
+
+def expires_at(expires_in: int) -> datetime:
+    return datetime.utcnow() + timedelta(seconds=expires_in)
 
 
 def generate_random_string(length: int, chars: str = string.ascii_letters + string.digits) -> str:

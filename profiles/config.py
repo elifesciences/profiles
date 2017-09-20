@@ -12,7 +12,7 @@ class Config(ABC):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     TESTING = False
 
-    def __init__(self, orcid: Dict[str, str], db: str, logging: Dict[str, str]) -> None:
+    def __init__(self, orcid: Dict[str, str], db: str, logging: Dict[str, str], **_kwargs) -> None:
         self.orcid = orcid
         self.SQLALCHEMY_DATABASE_URI = db  # pylint: disable=invalid-name
         self.logging = logging

@@ -10,14 +10,15 @@ from werkzeug.wrappers import Response
 
 from profiles.clients import Clients
 from profiles.exceptions import ClientInvalidRequest, ClientInvalidScope, \
-    ClientUnsupportedResourceType, InvalidClient, InvalidGrant, InvalidRequest, ProfileNotFound, \
-    UnsupportedGrantType
-from profiles.models import Profile
-from profiles.repositories import Profiles
-from profiles.utilities import remove_none_values
+    ClientUnsupportedResourceType, InvalidClient, InvalidGrant, InvalidRequest, \
+    OrcidTokenNotFound, ProfileNotFound, UnsupportedGrantType
+from profiles.models import OrcidToken, Profile
+from profiles.repositories import OrcidTokens, Profiles
+from profiles.utilities import expires_at, remove_none_values
 
 
-def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles) -> Blueprint:
+def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles,
+                     orcid_tokens: OrcidTokens) -> Blueprint:
     blueprint = Blueprint('oauth', __name__)
 
     @blueprint.route('/authorize')
@@ -52,7 +53,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
                 'client_id': orcid['client_id'],
                 'response_type': request.args.get('response_type'),
                 'scope': '/authenticate',
-                'redirect_uri': url_for('oauth._check', _external=True, _scheme='https'),
+                'redirect_uri': url_for('oauth._check', _external=True),
                 'state': dumps(state, sort_keys=True)
             }, True),
             code=302)
@@ -106,7 +107,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
         data = {
             'client_id': orcid['client_id'],
             'client_secret': orcid['client_secret'],
-            'redirect_uri': url_for('oauth._check', _external=True, _scheme='https'),
+            'redirect_uri': url_for('oauth._check', _external=True),
             'grant_type': 'authorization_code',
             'code': request.form['code'],
         }
@@ -134,6 +135,17 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
         except ProfileNotFound:
             profile = Profile(profiles.next_id(), json_data['name'], json_data['orcid'])
             profiles.add(profile)
+
+        json_data['id'] = profile.id
+
+        try:
+            orcid_token = orcid_tokens.get(json_data['orcid'])
+            orcid_token.access_token = json_data['access_token']
+            orcid_token.expires_at = expires_at(json_data['expires_in'])
+        except OrcidTokenNotFound:
+            orcid_token = OrcidToken(json_data['orcid'], json_data['access_token'],
+                                     expires_at(json_data['expires_in']))
+            orcid_tokens.add(orcid_token)
 
         return make_response(jsonify(json_data), response.status_code)
 
