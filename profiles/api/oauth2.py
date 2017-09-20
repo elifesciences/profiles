@@ -53,7 +53,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
                 'client_id': orcid['client_id'],
                 'response_type': request.args.get('response_type'),
                 'scope': '/authenticate',
-                'redirect_uri': url_for('oauth._check', _external=True, _scheme='https'),
+                'redirect_uri': url_for('oauth._check', _external=True),
                 'state': dumps(state, sort_keys=True)
             }, True),
             code=302)
@@ -107,7 +107,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
         data = {
             'client_id': orcid['client_id'],
             'client_secret': orcid['client_secret'],
-            'redirect_uri': url_for('oauth._check', _external=True, _scheme='https'),
+            'redirect_uri': url_for('oauth._check', _external=True),
             'grant_type': 'authorization_code',
             'code': request.form['code'],
         }
