@@ -1,4 +1,5 @@
 from json import dumps, loads
+from unittest.mock import MagicMock, patch
 from urllib.parse import urlencode
 
 from flask.testing import FlaskClient
@@ -66,7 +67,7 @@ def test_it_redirects_when_authorizing(test_client: FlaskClient) -> None:
     assert response.status_code == 302
     assert response.headers['Location'] == 'http://www.example.com/server/authorize?' + urlencode(
         {'client_id': 'server_client_id', 'response_type': 'code', 'scope': '/authenticate',
-         'redirect_uri': 'https://localhost/oauth2/check',
+         'redirect_uri': 'http://localhost/oauth2/check',
          'state': dumps({'redirect_uri': 'http://www.example.com/client/redirect',
                          'client_id': 'client_id'}, sort_keys=True)}, True)
 
@@ -79,7 +80,7 @@ def test_it_redirects_with_the_original_state_when_authorizing(test_client: Flas
     assert response.status_code == 302
     assert response.headers['Location'] == 'http://www.example.com/server/authorize?' + urlencode(
         {'client_id': 'server_client_id', 'response_type': 'code', 'scope': '/authenticate',
-         'redirect_uri': 'https://localhost/oauth2/check',
+         'redirect_uri': 'http://localhost/oauth2/check',
          'state': dumps({'redirect_uri': 'http://www.example.com/client/redirect',
                          'client_id': 'client_id', 'original': 'foo'}, sort_keys=True)}, True)
 
@@ -204,8 +205,11 @@ def test_it_requires_code_when_exchanging(test_client: FlaskClient) -> None:
     assert loads(response.data.decode('UTF-8')) == {'error': 'invalid_grant'}
 
 
+@patch('profiles.repositories.generate_random_string')
 @responses.activate
-def test_it_exchanges(test_client: FlaskClient) -> None:
+def test_it_exchanges(generate_random_string: MagicMock, test_client: FlaskClient) -> None:
+    generate_random_string.return_value = '1a2b3c4e'
+
     responses.add(responses.POST, 'http://www.example.com/server/token', status=200,
                   json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
                         'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
@@ -221,7 +225,7 @@ def test_it_exchanges(test_client: FlaskClient) -> None:
     assert loads(response.data.decode('UTF-8')) == {'access_token': '1/fFAGRNJru1FTz70BzhT3Zg',
                                                     'expires_in': 3920, 'token_type': 'Bearer',
                                                     'orcid': '0000-0002-1825-0097',
-                                                    'name': 'Josiah Carberry'}
+                                                    'name': 'Josiah Carberry', 'id': '1a2b3c4e'}
 
 
 @responses.activate
@@ -279,7 +283,6 @@ def test_it_records_the_access_token_when_exchanging(test_client: FlaskClient) -
                                       'grant_type': 'authorization_code', 'code': '1234'})
 
     assert response.status_code == 200
-    print(response.data.decode('UTF-8'))
 
     assert OrcidToken.query.count() == 1
 
