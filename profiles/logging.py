@@ -1,5 +1,6 @@
 import logging
 import os
+import traceback
 from typing import List
 
 from pythonjsonlogger import jsonlogger
@@ -11,7 +12,7 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
         return {
             'message': info_value,
             'class': info_type.__name__,
-            'trace': info_traceback.format_tb(info_traceback),
+            'trace': traceback.format_tb(info_traceback),
         }
 
 
