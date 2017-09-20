@@ -13,4 +13,8 @@ def create_blueprint() -> Blueprint:
 
         return response
 
+    @blueprint.route('/error')
+    def _error() -> Response:
+        raise RuntimeError('Intentional error')
+
     return blueprint
