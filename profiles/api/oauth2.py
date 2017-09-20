@@ -10,14 +10,15 @@ from werkzeug.wrappers import Response
 
 from profiles.clients import Clients
 from profiles.exceptions import ClientInvalidRequest, ClientInvalidScope, \
-    ClientUnsupportedResourceType, InvalidClient, InvalidGrant, InvalidRequest, ProfileNotFound, \
-    UnsupportedGrantType
-from profiles.models import Profile
-from profiles.repositories import Profiles
-from profiles.utilities import remove_none_values
+    ClientUnsupportedResourceType, InvalidClient, InvalidGrant, InvalidRequest, \
+    OrcidTokenNotFound, ProfileNotFound, UnsupportedGrantType
+from profiles.models import OrcidToken, Profile
+from profiles.repositories import OrcidTokens, Profiles
+from profiles.utilities import expires_at, remove_none_values
 
 
-def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles) -> Blueprint:
+def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles,
+                     orcid_tokens: OrcidTokens) -> Blueprint:
     blueprint = Blueprint('oauth', __name__)
 
     @blueprint.route('/authorize')
@@ -134,6 +135,15 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
         except ProfileNotFound:
             profile = Profile(profiles.next_id(), json_data['name'], json_data['orcid'])
             profiles.add(profile)
+
+        try:
+            orcid_token = orcid_tokens.get(json_data['orcid'])
+            orcid_token.access_token = json_data['access_token']
+            orcid_token.expires_at = expires_at(json_data['expires_in'])
+        except OrcidTokenNotFound:
+            orcid_token = OrcidToken(json_data['orcid'], json_data['access_token'],
+                                     expires_at(json_data['expires_in']))
+            orcid_tokens.add(orcid_token)
 
         return make_response(jsonify(json_data), response.status_code)
 

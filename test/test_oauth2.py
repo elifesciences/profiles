@@ -2,9 +2,11 @@ from json import dumps, loads
 from urllib.parse import urlencode
 
 from flask.testing import FlaskClient
+from freezegun import freeze_time
 import responses
 
-from profiles.models import Profile, db
+from profiles.models import OrcidToken, Profile, db
+from profiles.utilities import expires_at
 
 
 def test_authorizing_requires_a_client_id(test_client: FlaskClient) -> None:
@@ -261,6 +263,53 @@ def test_it_updates_a_profile_when_exchanging(test_client: FlaskClient) -> None:
 
     assert Profile.query.count() == 1
     assert original_profile.name == 'Josiah Carberry'
+
+
+@freeze_time('2017-09-15 14:36:43')
+@responses.activate
+def test_it_records_the_access_token_when_exchanging(test_client: FlaskClient) -> None:
+    responses.add(responses.POST, 'http://www.example.com/server/token', status=200,
+                  json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
+                        'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
+                        'name': 'Josiah Carberry'})
+
+    response = test_client.post('/oauth2/token',
+                                data={'client_id': 'client_id', 'client_secret': 'client_secret',
+                                      'redirect_uri': 'http://www.example.com/client/redirect',
+                                      'grant_type': 'authorization_code', 'code': '1234'})
+
+    assert response.status_code == 200
+    print(response.data.decode('UTF-8'))
+
+    assert OrcidToken.query.count() == 1
+
+    orcid_token = OrcidToken.query.filter_by(orcid='0000-0002-1825-0097').one()
+
+    assert orcid_token.access_token == '1/fFAGRNJru1FTz70BzhT3Zg'
+    assert orcid_token.expires_at == expires_at(3920)
+
+
+@freeze_time('2017-09-15 14:36:43')
+@responses.activate
+def test_it_updates_the_access_token_when_exchanging(test_client: FlaskClient) -> None:
+    responses.add(responses.POST, 'http://www.example.com/server/token', status=200,
+                  json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
+                        'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
+                        'name': 'Josiah Carberry'})
+
+    original_orcid_token = OrcidToken('0000-0002-1825-0097', 'old-access-token', expires_at(1234))
+
+    db.session.add(original_orcid_token)
+    db.session.commit()
+
+    test_client.post('/oauth2/token',
+                     data={'client_id': 'client_id', 'client_secret': 'client_secret',
+                           'redirect_uri': 'http://www.example.com/client/redirect',
+                           'grant_type': 'authorization_code', 'code': '1234'})
+
+    assert OrcidToken.query.count() == 1
+    assert original_orcid_token.access_token == '1/fFAGRNJru1FTz70BzhT3Zg'
+    assert original_orcid_token.expires_at == expires_at(3920)
 
 
 @responses.activate
