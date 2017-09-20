@@ -32,6 +32,6 @@ def configure_logging(env: str = 'dev', level: int = logging.INFO, path: str = N
 
         file_handler = logging.FileHandler(filename=log_filename)
         file_handler.setLevel(level)
-        formatter = CustomJsonFormatter('(message) (asctime) (levelname)')
+        formatter = CustomJsonFormatter('(name) (message) (asctime) (levelname)')
         file_handler.setFormatter(formatter)
         logging.getLogger().addHandler(file_handler)
