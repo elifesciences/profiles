@@ -1,5 +1,6 @@
 import configparser
 import logging
+import os
 
 from flask_migrate import MigrateCommand
 from flask_script import Manager, Server, Shell
@@ -9,6 +10,8 @@ from profiles.clients import Client, Clients
 from profiles.config import create_app_config
 from profiles.factory import create_app
 from profiles.logging import configure_logging
+
+os.umask(int('002', 8))
 
 config_file = configparser.ConfigParser()
 config_file.read('app.cfg')
