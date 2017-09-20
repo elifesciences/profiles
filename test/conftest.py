@@ -28,6 +28,7 @@ def app(request: FixtureRequest) -> Flask:
                 'client_secret': 'server_client_secret',
             },
             db=TEST_DATABASE_URI,
+            logging={}
         ),
         clients=Clients([
             Client(name='client', client_id='client_id', client_secret='client_secret',

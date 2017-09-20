@@ -10,6 +10,7 @@ from profiles.utilities import remove_none_values
 
 LOGGER = logging.getLogger(__name__)
 
+
 def error_handler(exception: Exception) -> Response:
     LOGGER.exception(exception)
 

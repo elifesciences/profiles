@@ -17,6 +17,4 @@ def create_blueprint() -> Blueprint:
     def _error() -> Response:
         raise RuntimeError('Intentional error')
 
-        return response
-
     return blueprint

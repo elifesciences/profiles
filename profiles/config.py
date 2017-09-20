@@ -7,6 +7,7 @@ from typing import Dict
 
 
 class Config(ABC):
+    name = 'unknown'
     DEBUG = False
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -42,8 +43,10 @@ class End2EndConfig(ProdConfig):
 
 def all_config_classes_by_name():
     current_module = sys.modules[__name__]
-    config_classes = [getattr(current_module, entity) for entity in current_module.__dict__ if re.match('^.+Config$', entity)]
-    return {class_.__dict__['name']:class_ for class_ in config_classes}
+    config_classes = [getattr(current_module, entity) for entity in current_module.__dict__ if
+                      re.match('^.+Config$', entity)]
+    return {class_.__dict__['name']: class_ for class_ in config_classes}
+
 
 ENVIRONMENTS = all_config_classes_by_name()
 
