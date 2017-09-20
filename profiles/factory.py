@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_migrate import Migrate
+from werkzeug.contrib.fixers import ProxyFix
 
 from profiles.api import errors, oauth2, ping
 from profiles.clients import Clients
@@ -13,6 +14,8 @@ def create_app(config: Config, clients: Clients) -> Flask:
     app = Flask(__name__)
     app.TRAP_HTTP_EXCEPTIONS = True
     app.config.from_object(config)
+
+    app.wsgi_app = ProxyFix(app.wsgi_app)
 
     db.app = app
     db.init_app(app)
