@@ -1,4 +1,5 @@
 from json import dumps, loads
+from unittest.mock import MagicMock, patch
 from urllib.parse import urlencode
 
 from flask.testing import FlaskClient
@@ -204,8 +205,11 @@ def test_it_requires_code_when_exchanging(test_client: FlaskClient) -> None:
     assert loads(response.data.decode('UTF-8')) == {'error': 'invalid_grant'}
 
 
+@patch('profiles.repositories.generate_random_string')
 @responses.activate
-def test_it_exchanges(test_client: FlaskClient) -> None:
+def test_it_exchanges(generate_random_string: MagicMock, test_client: FlaskClient) -> None:
+    generate_random_string.return_value = '1a2b3c4e'
+
     responses.add(responses.POST, 'http://www.example.com/server/token', status=200,
                   json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
                         'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
@@ -221,7 +225,7 @@ def test_it_exchanges(test_client: FlaskClient) -> None:
     assert loads(response.data.decode('UTF-8')) == {'access_token': '1/fFAGRNJru1FTz70BzhT3Zg',
                                                     'expires_in': 3920, 'token_type': 'Bearer',
                                                     'orcid': '0000-0002-1825-0097',
-                                                    'name': 'Josiah Carberry'}
+                                                    'name': 'Josiah Carberry', 'id': '1a2b3c4e'}
 
 
 @responses.activate
