@@ -32,7 +32,7 @@ class Profile(db.Model):
         self.name = name
         self.orcid = orcid
 
-    def update_from_orcid_record(self, orcid_record: dict):
+    def update_from_orcid_record(self, orcid_record: dict) -> None:
         if 'name' in orcid_record['person']:
             self.name = '{} {}'.format(orcid_record['person']['name']['given-names']['value'],
                                        orcid_record['person']['name']['family-name']['value'])
@@ -70,7 +70,7 @@ class Profile(db.Model):
 
         self.email_addresses.reorder()
 
-    def remove_email_address(self, email: str):
+    def remove_email_address(self, email: str) -> None:
         for email_address in self.email_addresses:
             if email_address.email == email:
                 self.email_addresses.remove(email_address)
