@@ -34,8 +34,8 @@ class Profile(db.Model):
 
     def update_from_orcid_record(self, orcid_record: dict):
         if 'name' in orcid_record['person']:
-            self.name = '% %'.format(orcid_record['person']['name']['given-names']['value'],
-                                     orcid_record['person']['name']['family-name']['value'])
+            self.name = '{} {}'.format(orcid_record['person']['name']['given-names']['value'],
+                                       orcid_record['person']['name']['family-name']['value'])
 
         for email in self.email_addresses:
             found = False
