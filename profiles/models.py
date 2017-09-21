@@ -55,21 +55,26 @@ class Profile(db.Model):
                           restricted: bool = False) -> None:
         for email_address in self.email_addresses:
             if email_address.email == email:
-                if primary:
-                    email_address.position = 0
                 email_address.restricted = restricted
+                if primary:
+                    self.email_addresses.remove(email_address)
+                    self.email_addresses.insert(0, email_address)
+                    self.email_addresses.reorder()
                 return
 
-        email_address = EmailAddress(self, email, restricted)
-        self.email_addresses.append(email_address)
-
+        email_address = EmailAddress(email, restricted)
         if primary:
-            email_address.position = 0
+            self.email_addresses.insert(0, email_address)
+        else:
+            self.email_addresses.append(email_address)
+
+        self.email_addresses.reorder()
 
     def remove_email_address(self, email: str):
         for email_address in self.email_addresses:
             if email_address.email == email:
                 self.email_addresses.remove(email_address)
+                self.email_addresses.reorder()
                 return
 
     def __repr__(self) -> str:
@@ -83,11 +88,9 @@ class EmailAddress(db.Model):
     profile = db.relationship('Profile', back_populates='email_addresses')
     position = db.Column(db.Integer())
 
-    def __init__(self, profile: Profile, email: str, restricted: bool = False) -> None:
+    def __init__(self, email: str, restricted: bool = False) -> None:
         self.email = email
         self.restricted = restricted
-        self.profile_id = profile.id
-        self.profile = profile
 
     def __repr__(self) -> str:
         return '<EmailAddress %r>' % self.email
