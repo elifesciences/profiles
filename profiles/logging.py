@@ -27,7 +27,7 @@ def configure_logging(env: str = 'dev', level: int = logging.INFO, path: str = N
     if path:
         log_filename = os.path.abspath(os.path.join(
             path,
-            '%s.log' % env
+            '%s.json.log' % env
         ))
         os.makedirs(path, exist_ok=True)
 
