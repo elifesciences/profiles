@@ -1,4 +1,5 @@
 import logging
+from collections import OrderedDict
 from urllib.parse import urlencode
 
 from flask import jsonify, make_response, redirect, request
@@ -40,10 +41,10 @@ def http_error_handler(exception: HTTPException) -> Response:
 def oauth2_error_handler(exception: OAuth2Error) -> Response:
     LOGGER.exception(exception)
 
-    body = remove_none_values({
-        'error': exception.error,
-        'error_description': exception.description,
-    })
+    body = remove_none_values(OrderedDict([
+        ('error', exception.error),
+        ('error_description', exception.description),
+    ]))
 
     return make_response(jsonify(body), exception.status_code)
 
