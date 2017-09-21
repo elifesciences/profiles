@@ -234,6 +234,40 @@ def test_it_creates_a_profile_when_exchanging(test_client: FlaskClient) -> None:
                   json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
                         'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
                         'name': 'Josiah Carberry'})
+    responses.add(responses.GET, 'http://www.example.com/api/v2.0/0000-0002-1825-0097/record',
+                  status=200,
+                  json={
+                      'person': {
+                          'name': {
+                              'credit-name': None,
+                              'family-name': {'value': 'Carberry Jnr'},
+                              'given-names': {'value': 'Josiah'},
+                              'visibility': 'PUBLIC',
+                          },
+                          'emails': {
+                              'email': [
+                                  {
+                                      'email': 'josiah.carberry2@example.com',
+                                      'primary': False,
+                                      'verified': True,
+                                      'visibility': 'LIMIT',
+                                  },
+                                  {
+                                      'email': 'josiah.carberry3@example.com',
+                                      'primary': False,
+                                      'verified': False,
+                                      'visibility': 'PUBLIC',
+                                  },
+                                  {
+                                      'email': 'josiah.carberry@example.com',
+                                      'primary': True,
+                                      'verified': True,
+                                      'visibility': 'PUBLIC',
+                                  },
+                              ],
+                          },
+                      },
+                  })
 
     test_client.post('/oauth2/token',
                      data={'client_id': 'client_id', 'client_secret': 'client_secret',
@@ -245,7 +279,20 @@ def test_it_creates_a_profile_when_exchanging(test_client: FlaskClient) -> None:
     profile = Profile.query.filter_by(orcid='0000-0002-1825-0097').one()
 
     assert profile.orcid == '0000-0002-1825-0097'
-    assert profile.name == 'Josiah Carberry'
+    assert profile.name == 'Josiah Carberry Jnr'
+    assert len(profile.email_addresses) == 2
+
+    assert profile.email_addresses[0].email == 'josiah.carberry@example.com'
+    assert profile.email_addresses[0].restricted is False
+    assert profile.email_addresses[0].profile_id == profile.id
+    assert profile.email_addresses[0].profile == profile
+    assert profile.email_addresses[0].position == 0
+
+    assert profile.email_addresses[1].email == 'josiah.carberry2@example.com'
+    assert profile.email_addresses[1].restricted is True
+    assert profile.email_addresses[1].profile_id == profile.id
+    assert profile.email_addresses[1].profile == profile
+    assert profile.email_addresses[1].position == 1
 
 
 @responses.activate
@@ -254,8 +301,44 @@ def test_it_updates_a_profile_when_exchanging(test_client: FlaskClient) -> None:
                   json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
                         'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
                         'name': 'Josiah Carberry'})
+    responses.add(responses.GET, 'http://www.example.com/api/v2.0/0000-0002-1825-0097/record',
+                  status=200,
+                  json={
+                      'person': {
+                          'name': {
+                              'credit-name': None,
+                              'family-name': {'value': 'Carberry Jnr'},
+                              'given-names': {'value': 'Josiah'},
+                              'visibility': 'PUBLIC',
+                          },
+                          'emails': {
+                              'email': [
+                                  {
+                                      'email': 'josiah.carberry2@example.com',
+                                      'primary': False,
+                                      'verified': True,
+                                      'visibility': 'LIMIT',
+                                  },
+                                  {
+                                      'email': 'josiah.carberry3@example.com',
+                                      'primary': False,
+                                      'verified': False,
+                                      'visibility': 'PUBLIC',
+                                  },
+                                  {
+                                      'email': 'josiah.carberry@example.com',
+                                      'primary': True,
+                                      'verified': True,
+                                      'visibility': 'PUBLIC',
+                                  },
+                              ],
+                          },
+                      },
+                  })
 
     original_profile = Profile('a1b2c3d4', 'Foo Bar', '0000-0002-1825-0097')
+    original_profile.add_email_address('jcarberry1', True, False)
+    original_profile.add_email_address('josiah.carberry@example.com', False, True)
 
     db.session.add(original_profile)
     db.session.commit()
@@ -266,7 +349,20 @@ def test_it_updates_a_profile_when_exchanging(test_client: FlaskClient) -> None:
                            'grant_type': 'authorization_code', 'code': '1234'})
 
     assert Profile.query.count() == 1
-    assert original_profile.name == 'Josiah Carberry'
+    assert original_profile.name == 'Josiah Carberry Jnr'
+    assert len(original_profile.email_addresses) == 2
+
+    assert original_profile.email_addresses[0].email == 'josiah.carberry@example.com'
+    assert original_profile.email_addresses[0].restricted is False
+    assert original_profile.email_addresses[0].profile_id == original_profile.id
+    assert original_profile.email_addresses[0].profile == original_profile
+    assert original_profile.email_addresses[0].position == 0
+
+    assert original_profile.email_addresses[1].email == 'josiah.carberry2@example.com'
+    assert original_profile.email_addresses[1].restricted is True
+    assert original_profile.email_addresses[1].profile_id == original_profile.id
+    assert original_profile.email_addresses[1].profile == original_profile
+    assert original_profile.email_addresses[1].position == 1
 
 
 @freeze_time('2017-09-15 14:36:43')
