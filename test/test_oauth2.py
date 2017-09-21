@@ -235,7 +235,6 @@ def test_it_creates_a_profile_when_exchanging(test_client: FlaskClient) -> None:
                         'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
                         'name': 'Josiah Carberry'})
 
-
     test_client.post('/oauth2/token',
                      data={'client_id': 'client_id', 'client_secret': 'client_secret',
                            'redirect_uri': 'http://www.example.com/client/redirect',
