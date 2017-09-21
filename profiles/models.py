@@ -47,8 +47,9 @@ class Profile(db.Model):
                 self.remove_email_address(email.email)
 
         for orcid_email in orcid_record['person']['emails']['email'] or {}:
-            self.add_email_address(orcid_email['email'], orcid_email['primary'],
-                                   orcid_email['visibility'] != 'PUBLIC')
+            if orcid_email['verified']:
+                self.add_email_address(orcid_email['email'], orcid_email['primary'],
+                                       orcid_email['visibility'] != 'PUBLIC')
 
     def add_email_address(self, email: str, primary: bool = False,
                           restricted: bool = False) -> None:
