@@ -1,6 +1,6 @@
 import pytest
-import responses
 from requests import HTTPError
+import responses
 
 from profiles.orcid import OrcidClient
 
