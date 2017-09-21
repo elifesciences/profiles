@@ -1,5 +1,6 @@
 import logging
 import os
+import traceback
 from typing import List
 
 from pythonjsonlogger import jsonlogger
@@ -11,7 +12,7 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
         return {
             'message': info_value,
             'class': info_type.__name__,
-            'trace': info_traceback.format_tb(info_traceback),
+            'trace': traceback.format_tb(info_traceback),
         }
 
 
@@ -26,12 +27,12 @@ def configure_logging(env: str = 'dev', level: int = logging.INFO, path: str = N
     if path:
         log_filename = os.path.abspath(os.path.join(
             path,
-            '%s.log' % env
+            '%s.json.log' % env
         ))
         os.makedirs(path, exist_ok=True)
 
         file_handler = logging.FileHandler(filename=log_filename)
         file_handler.setLevel(level)
-        formatter = CustomJsonFormatter('(message) (asctime) (levelname)')
+        formatter = CustomJsonFormatter('(name) (message) (asctime) (levelname)')
         file_handler.setFormatter(formatter)
         logging.getLogger().addHandler(file_handler)
