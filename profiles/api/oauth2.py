@@ -1,6 +1,6 @@
+import logging
 from collections import OrderedDict
 from json import JSONDecodeError, dumps
-import logging
 from typing import Dict
 from urllib.parse import urlencode
 
