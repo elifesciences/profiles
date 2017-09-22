@@ -2,9 +2,9 @@ import configparser
 import logging
 import os
 
-import yaml
 from flask_migrate import MigrateCommand
 from flask_script import Manager, Server, Shell
+import yaml
 
 from profiles.clients import Client, Clients
 from profiles.config import create_app_config
