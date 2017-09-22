@@ -16,7 +16,7 @@ class OrcidToken(db.Model):
         self.expires_at = expires_at
 
     def __repr__(self) -> str:
-        return '<OrcidToken %r>' % self.orcid
+        return '<OrcidToken for %r>' % self.orcid
 
 
 class Profile(db.Model):
