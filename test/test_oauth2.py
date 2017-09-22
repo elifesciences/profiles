@@ -4,7 +4,8 @@ from urllib.parse import urlencode
 
 from flask.testing import FlaskClient
 from freezegun import freeze_time
-import responses
+from requests import Request
+import requests_mock
 
 from profiles.models import OrcidToken, Profile, db
 from profiles.utilities import expires_at
@@ -206,19 +207,29 @@ def test_it_requires_code_when_exchanging(test_client: FlaskClient) -> None:
 
 
 @patch('profiles.repositories.generate_random_string')
-@responses.activate
 def test_it_exchanges(generate_random_string: MagicMock, test_client: FlaskClient) -> None:
     generate_random_string.return_value = '1a2b3c4e'
 
-    responses.add(responses.POST, 'http://www.example.com/server/token', status=200,
-                  json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
-                        'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
-                        'name': 'Josiah Carberry'})
+    with requests_mock.Mocker() as mocker:
+        def token_text(request: Request):
+            return urlencode({
+                'client_id': 'server_client_id',
+                'client_secret': 'server_client_secret',
+                'redirect_uri': 'http://localhost/oauth2/check',
+                'grant_type': 'authorization_code',
+                'code': '1234',
+            }) == request.text
 
-    response = test_client.post('/oauth2/token',
-                                data={'client_id': 'client_id', 'client_secret': 'client_secret',
-                                      'redirect_uri': 'http://www.example.com/client/redirect',
-                                      'grant_type': 'authorization_code', 'code': '1234'})
+        mocker.post('http://www.example.com/server/token', additional_matcher=token_text,
+                    json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
+                          'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
+                          'name': 'Josiah Carberry'})
+
+        response = test_client.post('/oauth2/token',
+                                    data={'client_id': 'client_id',
+                                          'client_secret': 'client_secret',
+                                          'redirect_uri': 'http://www.example.com/client/redirect',
+                                          'grant_type': 'authorization_code', 'code': '1234'})
 
     assert response.status_code == 200
     assert response.headers.get('Content-Type') == 'application/json'
@@ -228,17 +239,17 @@ def test_it_exchanges(generate_random_string: MagicMock, test_client: FlaskClien
                                                     'name': 'Josiah Carberry', 'id': '1a2b3c4e'}
 
 
-@responses.activate
 def test_it_creates_a_profile_when_exchanging(test_client: FlaskClient) -> None:
-    responses.add(responses.POST, 'http://www.example.com/server/token', status=200,
-                  json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
-                        'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
-                        'name': 'Josiah Carberry'})
+    with requests_mock.Mocker() as mocker:
+        mocker.post('http://www.example.com/server/token',
+                    json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
+                          'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
+                          'name': 'Josiah Carberry'})
 
-    test_client.post('/oauth2/token',
-                     data={'client_id': 'client_id', 'client_secret': 'client_secret',
-                           'redirect_uri': 'http://www.example.com/client/redirect',
-                           'grant_type': 'authorization_code', 'code': '1234'})
+        test_client.post('/oauth2/token',
+                         data={'client_id': 'client_id', 'client_secret': 'client_secret',
+                               'redirect_uri': 'http://www.example.com/client/redirect',
+                               'grant_type': 'authorization_code', 'code': '1234'})
 
     assert Profile.query.count() == 1
 
@@ -248,39 +259,40 @@ def test_it_creates_a_profile_when_exchanging(test_client: FlaskClient) -> None:
     assert profile.name == 'Josiah Carberry'
 
 
-@responses.activate
 def test_it_updates_a_profile_when_exchanging(test_client: FlaskClient) -> None:
-    responses.add(responses.POST, 'http://www.example.com/server/token', status=200,
-                  json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
-                        'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
-                        'name': 'Josiah Carberry'})
-
     original_profile = Profile('a1b2c3d4', 'Foo Bar', '0000-0002-1825-0097')
 
     db.session.add(original_profile)
     db.session.commit()
 
-    test_client.post('/oauth2/token',
-                     data={'client_id': 'client_id', 'client_secret': 'client_secret',
-                           'redirect_uri': 'http://www.example.com/client/redirect',
-                           'grant_type': 'authorization_code', 'code': '1234'})
+    with requests_mock.Mocker() as mocker:
+        mocker.post('http://www.example.com/server/token',
+                    json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
+                          'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
+                          'name': 'Josiah Carberry'})
+
+        test_client.post('/oauth2/token',
+                         data={'client_id': 'client_id', 'client_secret': 'client_secret',
+                               'redirect_uri': 'http://www.example.com/client/redirect',
+                               'grant_type': 'authorization_code', 'code': '1234'})
 
     assert Profile.query.count() == 1
     assert original_profile.name == 'Josiah Carberry'
 
 
 @freeze_time('2017-09-15 14:36:43')
-@responses.activate
 def test_it_records_the_access_token_when_exchanging(test_client: FlaskClient) -> None:
-    responses.add(responses.POST, 'http://www.example.com/server/token', status=200,
-                  json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
-                        'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
-                        'name': 'Josiah Carberry'})
+    with requests_mock.Mocker() as mocker:
+        mocker.post('http://www.example.com/server/token',
+                    json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
+                          'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
+                          'name': 'Josiah Carberry'})
 
-    response = test_client.post('/oauth2/token',
-                                data={'client_id': 'client_id', 'client_secret': 'client_secret',
-                                      'redirect_uri': 'http://www.example.com/client/redirect',
-                                      'grant_type': 'authorization_code', 'code': '1234'})
+        response = test_client.post('/oauth2/token',
+                                    data={'client_id': 'client_id',
+                                          'client_secret': 'client_secret',
+                                          'redirect_uri': 'http://www.example.com/client/redirect',
+                                          'grant_type': 'authorization_code', 'code': '1234'})
 
     assert response.status_code == 200
 
@@ -293,66 +305,69 @@ def test_it_records_the_access_token_when_exchanging(test_client: FlaskClient) -
 
 
 @freeze_time('2017-09-15 14:36:43')
-@responses.activate
 def test_it_updates_the_access_token_when_exchanging(test_client: FlaskClient) -> None:
-    responses.add(responses.POST, 'http://www.example.com/server/token', status=200,
-                  json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
-                        'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
-                        'name': 'Josiah Carberry'})
-
     original_orcid_token = OrcidToken('0000-0002-1825-0097', 'old-access-token', expires_at(1234))
 
     db.session.add(original_orcid_token)
     db.session.commit()
 
-    test_client.post('/oauth2/token',
-                     data={'client_id': 'client_id', 'client_secret': 'client_secret',
-                           'redirect_uri': 'http://www.example.com/client/redirect',
-                           'grant_type': 'authorization_code', 'code': '1234'})
+    with requests_mock.Mocker() as mocker:
+        mocker.post('http://www.example.com/server/token',
+                    json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
+                          'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
+                          'name': 'Josiah Carberry'})
+
+        test_client.post('/oauth2/token',
+                         data={'client_id': 'client_id', 'client_secret': 'client_secret',
+                               'redirect_uri': 'http://www.example.com/client/redirect',
+                               'grant_type': 'authorization_code', 'code': '1234'})
 
     assert OrcidToken.query.count() == 1
     assert original_orcid_token.access_token == '1/fFAGRNJru1FTz70BzhT3Zg'
     assert original_orcid_token.expires_at == expires_at(3920)
 
 
-@responses.activate
 def test_it_requires_access_token_when_exchanging(test_client: FlaskClient) -> None:
-    responses.add(responses.POST, 'http://www.example.com/server/token', status=200,
-                  json={'expires_in': 3920, 'token_type': 'Bearer'})
+    with requests_mock.Mocker() as mocker:
+        mocker.post('http://www.example.com/server/token',
+                    json={'expires_in': 3920, 'token_type': 'Bearer'})
 
-    response = test_client.post('/oauth2/token',
-                                data={'client_id': 'client_id', 'client_secret': 'client_secret',
-                                      'redirect_uri': 'http://www.example.com/client/redirect',
-                                      'grant_type': 'authorization_code', 'code': '1234'})
+        response = test_client.post('/oauth2/token',
+                                    data={'client_id': 'client_id',
+                                          'client_secret': 'client_secret',
+                                          'redirect_uri': 'http://www.example.com/client/redirect',
+                                          'grant_type': 'authorization_code', 'code': '1234'})
 
     assert response.status_code == 500
     assert response.headers.get('Content-Type') == 'application/problem+json'
 
 
-@responses.activate
 def test_it_requires_expires_in_when_exchanging(test_client: FlaskClient) -> None:
-    responses.add(responses.POST, 'http://www.example.com/server/token', status=200,
-                  json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'token_type': 'Bearer'})
+    with requests_mock.Mocker() as mocker:
+        mocker.post('http://www.example.com/server/token',
+                    json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'token_type': 'Bearer'})
 
-    response = test_client.post('/oauth2/token',
-                                data={'client_id': 'client_id', 'client_secret': 'client_secret',
-                                      'redirect_uri': 'http://www.example.com/client/redirect',
-                                      'grant_type': 'authorization_code', 'code': '1234'})
+        response = test_client.post('/oauth2/token',
+                                    data={'client_id': 'client_id',
+                                          'client_secret': 'client_secret',
+                                          'redirect_uri': 'http://www.example.com/client/redirect',
+                                          'grant_type': 'authorization_code', 'code': '1234'})
 
     assert response.status_code == 500
     assert response.headers.get('Content-Type') == 'application/problem+json'
 
 
-@responses.activate
 def test_it_requires_a_bearer_token_type_when_exchanging(test_client: FlaskClient) -> None:
-    responses.add(responses.POST, 'http://www.example.com/server/token', status=200,
-                  json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
-                        'token_type': 'foo'})
+    with requests_mock.Mocker() as mocker:
+        mocker.post('http://www.example.com/server/token',
+                    json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
+                          'token_type': 'foo'})
 
-    response = test_client.post('/oauth2/token',
-                                data={'client_id': 'client_id', 'client_secret': 'client_secret',
-                                      'redirect_uri': 'http://www.example.com/client/redirect',
-                                      'grant_type': 'authorization_code', 'code': '1234'})
+        response = test_client.post('/oauth2/token',
+                                    data={'client_id': 'client_id',
+                                          'client_secret': 'client_secret',
+                                          'redirect_uri': 'http://www.example.com/client/redirect',
+                                          'grant_type': 'authorization_code', 'code': '1234'})
 
     assert response.status_code == 500
     assert response.headers.get('Content-Type') == 'application/problem+json'
