@@ -301,7 +301,7 @@ def test_it_records_the_access_token_when_exchanging(test_client: FlaskClient) -
     orcid_token = OrcidToken.query.filter_by(orcid='0000-0002-1825-0097').one()
 
     assert orcid_token.access_token == '1/fFAGRNJru1FTz70BzhT3Zg'
-    assert orcid_token.expires_at == expires_at(3920)
+    assert orcid_token.expires_at.isoformat() == expires_at(3920).isoformat()
 
 
 @freeze_time('2017-09-15 14:36:43')

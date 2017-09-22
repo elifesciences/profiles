@@ -1,3 +1,4 @@
+import logging
 import os
 
 from _pytest.fixtures import FixtureRequest
@@ -16,6 +17,8 @@ TEST_DATABASE_NAME = 'test.db'
 TEST_DATABASE_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../build/' + TEST_DATABASE_NAME
 TEST_DATABASE_URI = 'sqlite:///' + TEST_DATABASE_PATH
 
+logging.disable(logging.CRITICAL)
+
 
 @fixture(scope='session')
 def app(request: FixtureRequest) -> Flask:
@@ -30,10 +33,10 @@ def app(request: FixtureRequest) -> Flask:
             db=TEST_DATABASE_URI,
             logging={}
         ),
-        clients=Clients([
+        clients=Clients(
             Client(name='client', client_id='client_id', client_secret='client_secret',
                    redirect_uri='http://www.example.com/client/redirect'),
-        ]),
+        ),
     )
 
     ctx = app.app_context()

@@ -17,7 +17,7 @@ config_file = configparser.ConfigParser()
 config_file.read('app.cfg')
 
 clients_data = yaml.load(open('clients.yaml')) or {}
-clients = Clients([Client(name, **clients_data[name]) for name in clients_data])
+clients = Clients(*[Client(name, **clients_data[name]) for name in clients_data])
 
 config = create_app_config(config_file)
 configure_logging(config.name, getattr(logging, config.logging['level']), config.logging['path'])
