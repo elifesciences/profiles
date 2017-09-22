@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from profiles.database import db, UTCDateTime
+from profiles.database import UTCDateTime, db
 
 ID_LENGTH = 8
 

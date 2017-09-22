@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Type, Optional
+from typing import Optional, Type
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import types
