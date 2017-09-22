@@ -1,6 +1,7 @@
 import collections
 import string
 from abc import ABC, abstractmethod
+from typing import Callable
 
 from flask_sqlalchemy import SQLAlchemy
 from retrying import retry
@@ -55,8 +56,15 @@ class SQLAlchemyOrcidTokens(OrcidTokens):
 
 
 class SQLAlchemyProfiles(Profiles):
-    def __init__(self, db: SQLAlchemy) -> None:
+    def __init__(self, db: SQLAlchemy, next_id_generator: Callable[[], str] = None) -> None:
+        if next_id_generator is None:
+            def generate_id():
+                return generate_random_string(ID_LENGTH, string.ascii_lowercase + string.digits)
+
+            next_id_generator = generate_id
+
         self.db = db
+        self._next_id_generator = next_id_generator
 
     def add(self, profile: Profile) -> None:
         self.db.session.add(profile)
@@ -77,7 +85,7 @@ class SQLAlchemyProfiles(Profiles):
 
     @retry(stop_max_attempt_number=10)
     def next_id(self) -> str:
-        profile_id = generate_random_string(ID_LENGTH, string.ascii_lowercase + string.digits)
+        profile_id = self._next_id_generator()
 
         if self.db.session.query(Profile.id).filter_by(id=profile_id).scalar() is not None:
             raise RuntimeError('Generated ID already in use')

@@ -1,9 +1,9 @@
 from datetime import datetime
 
-from flask_sqlalchemy import SQLAlchemy
+import pendulum
 from sqlalchemy.ext.orderinglist import ordering_list
 
-db = SQLAlchemy()
+from profiles.database import UTCDateTime, db
 
 ID_LENGTH = 8
 
@@ -11,12 +11,15 @@ ID_LENGTH = 8
 class OrcidToken(db.Model):
     orcid = db.Column(db.String(19), primary_key=True)
     access_token = db.Column(db.String(255), unique=True, nullable=False)
-    expires_at = db.Column(db.DateTime(), nullable=False)
+    expires_at = db.Column(UTCDateTime, nullable=False)
 
     def __init__(self, orcid: str, access_token: str, expires_at: datetime) -> None:
         self.orcid = orcid
         self.access_token = access_token
-        self.expires_at = expires_at
+        self.expires_at = pendulum.timezone('utc').convert(expires_at)
+
+    def __repr__(self) -> str:
+        return '<OrcidToken for %r>' % self.orcid
 
 
 class Profile(db.Model):
