@@ -14,9 +14,8 @@ class Client(object):
 
 
 class Clients(collections.Set):
-    elements = []
-
     def __init__(self, *args: Client) -> None:
+        self.elements = []
         for value in args:
             if value not in self.elements:
                 self.elements.append(value)
