@@ -1,5 +1,7 @@
 from datetime import datetime
 
+import pendulum
+
 from profiles.database import UTCDateTime, db
 
 ID_LENGTH = 8
@@ -13,7 +15,7 @@ class OrcidToken(db.Model):
     def __init__(self, orcid: str, access_token: str, expires_at: datetime) -> None:
         self.orcid = orcid
         self.access_token = access_token
-        self.expires_at = expires_at
+        self.expires_at = pendulum.timezone('utc').convert(expires_at)
 
     def __repr__(self) -> str:
         return '<OrcidToken for %r>' % self.orcid
