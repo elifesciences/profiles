@@ -32,25 +32,6 @@ class Profile(db.Model):
         self.name = name
         self.orcid = orcid
 
-    def update_from_orcid_record(self, orcid_record: dict) -> None:
-        if 'name' in orcid_record['person']:
-            self.name = '{} {}'.format(orcid_record['person']['name']['given-names']['value'],
-                                       orcid_record['person']['name']['family-name']['value'])
-
-        for email in self.email_addresses:
-            found = False
-            for orcid_email in orcid_record['person']['emails']['email'] or {}:
-                if orcid_email['email'] == email.email:
-                    found = True
-                    break
-            if not found:
-                self.remove_email_address(email.email)
-
-        for orcid_email in orcid_record['person']['emails']['email'] or {}:
-            if orcid_email['verified']:
-                self.add_email_address(orcid_email['email'], orcid_email['primary'],
-                                       orcid_email['visibility'] != 'PUBLIC')
-
     def add_email_address(self, email: str, primary: bool = False,
                           restricted: bool = False) -> None:
         for email_address in self.email_addresses:

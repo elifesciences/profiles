@@ -1,6 +1,6 @@
-import logging
 from collections import OrderedDict
 from json import JSONDecodeError, dumps
+import logging
 from typing import Dict
 from urllib.parse import urlencode
 
@@ -17,7 +17,7 @@ from profiles.exceptions import ClientInvalidRequest, ClientInvalidScope, \
 from profiles.models import OrcidToken, Profile
 from profiles.orcid import OrcidClient
 from profiles.repositories import OrcidTokens, Profiles
-from profiles.utilities import expires_at, remove_none_values
+from profiles.utilities import expires_at, remove_none_values, update_profile_from_orcid_record
 
 LOGGER = logging.getLogger(__name__)
 
@@ -154,7 +154,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
 
         try:
             orcid_record = orcid_client.get_record(profile.orcid, orcid_token.access_token)
-            profile.update_from_orcid_record(orcid_record)
+            update_profile_from_orcid_record(profile, orcid_record)
         except RequestException as exception:
             LOGGER.exception(exception)
 
