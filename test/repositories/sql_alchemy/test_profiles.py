@@ -1,5 +1,3 @@
-from unittest.mock import MagicMock, patch
-
 import pytest
 
 from profiles.database import db
@@ -39,33 +37,37 @@ def test_it_gets_profiles_by_their_orcid():
         profiles.get_by_orcid('0000-0002-1825-0098')
 
 
-@patch('profiles.repositories.generate_random_string')
-def test_it_generates_the_next_profile_id(generate_random_string: MagicMock):
-    profiles = SQLAlchemyProfiles(db)
+def test_it_generates_the_next_profile_id():
+    def id_generator():
+        return '11111111'
 
-    generate_random_string.return_value = '11111111'
+    profiles = SQLAlchemyProfiles(db, id_generator)
 
     assert profiles.next_id() == '11111111'
 
 
-@patch('profiles.repositories.generate_random_string')
-def test_it_retries_generating_the_next_profile_id(generate_random_string: MagicMock):
-    profiles = SQLAlchemyProfiles(db)
+def test_it_retries_generating_the_next_profile_id():
+    counter = 0
+
+    def id_generator():
+        nonlocal counter
+        counter = counter + 1
+        return str(11111110 + counter)
+
+    profiles = SQLAlchemyProfiles(db, id_generator)
 
     profiles.add(Profile('11111111', 'name'))
-
-    generate_random_string.side_effect = ['11111111', '11111112']
 
     assert profiles.next_id() == '11111112'
 
 
-@patch('profiles.repositories.generate_random_string')
-def test_it_limits_retrying_when_generating_the_next_profile_id(generate_random_string: MagicMock):
-    profiles = SQLAlchemyProfiles(db)
+def test_it_limits_retrying_when_generating_the_next_profile_id():
+    def id_generator():
+        return '11111111'
+
+    profiles = SQLAlchemyProfiles(db, id_generator)
 
     profiles.add(Profile('11111111', 'name'))
-
-    generate_random_string.side_effect = ['11111111'] * 10
 
     with pytest.raises(RuntimeError):
         assert profiles.next_id()
