@@ -33,10 +33,10 @@ def app(request: FixtureRequest) -> Flask:
             db=TEST_DATABASE_URI,
             logging={}
         ),
-        clients=Clients([
+        clients=Clients(
             Client(name='client', client_id='client_id', client_secret='client_secret',
                    redirect_uri='http://www.example.com/client/redirect'),
-        ]),
+        ),
     )
 
     ctx = app.app_context()
