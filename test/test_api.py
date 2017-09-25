@@ -5,7 +5,7 @@ from flask.testing import FlaskClient
 from profiles.models import Profile, db
 
 
-def test_empty_list_of_profile(test_client: FlaskClient) -> None:
+def test_empty_list_of_profiles(test_client: FlaskClient) -> None:
     response = test_client.get('/profiles')
 
     assert response.status_code == 200
