@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_migrate import Migrate
 
-from profiles.api import errors, oauth2, ping
+from profiles.api import api, errors, oauth2, ping
 from profiles.clients import Clients
 from profiles.config import Config
 from profiles.exceptions import ClientError, OAuth2Error
@@ -22,6 +22,7 @@ def create_app(config: Config, clients: Clients) -> Flask:
     orcid_tokens = SQLAlchemyOrcidTokens(db)
     profiles = SQLAlchemyProfiles(db)
 
+    app.register_blueprint(api.create_blueprint(profiles))
     app.register_blueprint(oauth2.create_blueprint(config.orcid, clients, profiles, orcid_tokens),
                            url_prefix='/oauth2')
     app.register_blueprint(ping.create_blueprint())

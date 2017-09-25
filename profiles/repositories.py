@@ -1,7 +1,7 @@
 import collections
 import string
 from abc import ABC, abstractmethod
-from typing import Callable
+from typing import Callable, List
 
 from flask_sqlalchemy import SQLAlchemy
 from retrying import retry
@@ -37,6 +37,10 @@ class Profiles(ABC, collections.Sized):
 
     @abstractmethod
     def next_id(self) -> str:
+        raise NotImplementedError
+
+    @abstractmethod
+    def list(self, limit: int = None, offset: int = 0) -> List[Profile]:
         raise NotImplementedError
 
 
@@ -91,6 +95,9 @@ class SQLAlchemyProfiles(Profiles):
             raise RuntimeError('Generated ID already in use')
 
         return profile_id
+
+    def list(self, limit: int = None, offset: int = 0) -> List[Profile]:
+        return self.db.session.query(Profile).limit(limit).offset(offset).all()
 
     def __len__(self) -> int:
         return self.db.session.query(Profile).count()
