@@ -38,6 +38,26 @@ def test_list_of_profiles(test_client: FlaskClient) -> None:
         assert data['items'][number - 1]['id'] == str(number).zfill(2)
 
 
+def test_list_of_profiles_in_ascending_order(test_client: FlaskClient) -> None:
+    for number in range(1, 31):
+        number = str(number).zfill(2)
+        db.session.add(Profile(str(number), Name('Profile %s' % number)))
+    db.session.commit()
+
+    response = test_client.get('/profiles?order=asc')
+
+    assert response.status_code == 200
+    assert response.headers.get(
+        'Content-Type') == 'application/vnd.elife.profile-list+json;version=1'
+
+    data = json.loads(response.data.decode('UTF-8'))
+
+    assert data['total'] == 30
+    assert len(data['items']) == 20
+    for number in range(1, 21):
+        assert data['items'][number - 1]['id'] == str(number).zfill(2)
+
+
 def test_list_of_profiles_in_pages(test_client: FlaskClient) -> None:
     for number in range(1, 11):
         number = str(number).zfill(2)
@@ -108,6 +128,13 @@ def test_400s_on_per_page_less_than_1(test_client: FlaskClient) -> None:
 
 def test_400s_on_per_page_greater_than_100(test_client: FlaskClient) -> None:
     response = test_client.get('/profiles?per-page=101')
+
+    assert response.status_code == 400
+    assert response.headers.get('Content-Type') == 'application/problem+json'
+
+
+def test_400s_on_unknown_order(test_client: FlaskClient) -> None:
+    response = test_client.get('/profiles?order=foo')
 
     assert response.status_code == 400
     assert response.headers.get('Content-Type') == 'application/problem+json'

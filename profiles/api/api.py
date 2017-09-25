@@ -8,6 +8,7 @@ from profiles.exceptions import ProfileNotFound
 from profiles.repositories import Profiles
 from profiles.serializer.normalizer import normalize
 
+DEFAULT_ORDER = 'desc'
 DEFAULT_PAGE = 1
 DEFAULT_PER_PAGE = 20
 
@@ -19,6 +20,7 @@ def create_blueprint(profiles: Profiles) -> Blueprint:
     def _list() -> Response:
         page = request.args.get('page', DEFAULT_PAGE, type=int)
         per_page = request.args.get('per-page', DEFAULT_PER_PAGE, type=int)
+        order = request.args.get('order', DEFAULT_ORDER)
 
         if page < 1:
             raise BadRequest('Page less than 1')
@@ -30,8 +32,11 @@ def create_blueprint(profiles: Profiles) -> Blueprint:
         elif str(per_page) != str(request.args.get('per-page', DEFAULT_PER_PAGE)):
             raise BadRequest('Invalid per page')
 
+        if order not in ['asc', 'desc']:
+            raise BadRequest('Invalid order')
+
         total = len(profiles)
-        profile_list = profiles.list(per_page, (page * per_page) - per_page)
+        profile_list = profiles.list(per_page, (page * per_page) - per_page, order == 'desc')
 
         if page > 1 and not profile_list:
             raise NotFound('No page %s' % page)
