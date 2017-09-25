@@ -5,6 +5,7 @@ import pendulum
 from sqlalchemy.orm import composite
 
 from profiles.database import UTCDateTime, db
+from profiles.utilities import guess_index_name
 
 ID_LENGTH = 8
 
@@ -24,26 +25,26 @@ class OrcidToken(db.Model):
 
 
 class Name(object):
-    def __init__(self, given_names: str, family_name: str = None) -> None:
-        self.given_names = given_names
-        self.family_name = family_name
+    def __init__(self, preferred: str, index: str = None) -> None:
+        if index is None:
+            index = guess_index_name(preferred)
+
+        self.preferred = preferred
+        self.index = index
 
     def __composite_values__(self) -> Iterable[str]:
-        return self.given_names, self.family_name
+        return self.preferred, self.index
 
     def __str__(self) -> str:
-        if self.family_name is None:
-            return self.given_names
-
-        return '%s %s' % (self.given_names, self.family_name)
+        return self.preferred
 
     def __repr__(self) -> str:
-        return '<Name %r %r>' % (self.given_names, self.family_name)
+        return '<Name %r>' % self.preferred
 
     def __eq__(self, other: Any) -> bool:
         return isinstance(other, Name) and \
-               other.given_names == self.given_names and \
-               other.family_name == self.family_name
+               other.preferred == self.preferred and \
+               other.index == self.index
 
     def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
@@ -51,9 +52,9 @@ class Name(object):
 
 class Profile(db.Model):
     id = db.Column(db.String(ID_LENGTH), primary_key=True)
-    name = composite(Name, '_given_names', '_family_name')
-    _given_names = db.Column(db.Text(), name='given_names', nullable=False)
-    _family_name = db.Column(db.Text(), name='family_name')
+    name = composite(Name, '_preferred_name', '_index_name')
+    _preferred_name = db.Column(db.Text(), name='preferred_name', nullable=False)
+    _index_name = db.Column(db.Text(), name='index_name', nullable=False)
     orcid = db.Column(db.String(19), unique=True)
 
     def __init__(self, profile_id: str, name: Name, orcid: str = None) -> None:

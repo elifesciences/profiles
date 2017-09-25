@@ -2,43 +2,41 @@ from profiles.models import Name
 
 
 def test_it_can_be_printed():
-    name1 = Name('given names', 'family name')
-    name2 = Name('given names')
+    name = Name('Foo Bar')
 
-    assert repr(name1) == "<Name 'given names' 'family name'>"
-    assert repr(name2) == "<Name 'given names'>"
+    assert repr(name) == "<Name 'Foo Bar'>"
 
 
 def test_it_casts_to_a_string():
-    name1 = Name('given names', 'family name')
-    name2 = Name('given names')
+    name = Name('Foo Bar')
 
-    assert str(name1) == 'given names family name'
-    assert str(name2) == 'given names'
+    assert str(name) == 'Foo Bar'
 
 
-def test_it_has_given_names():
-    name = Name('given names', 'family name')
+def test_it_has_a_preferred_name():
+    name = Name('Foo Bar')
 
-    assert name.given_names == 'given names'
+    assert name.preferred == 'Foo Bar'
 
 
-def test_it_may_have_a_family_name():
-    has = Name('given names', 'family name')
-    has_not = Name('given names')
+def test_it_has_an_index_name():
+    name = Name('Foo Bar', 'Bar, Foo')
 
-    assert has.family_name == 'family name'
-    assert has_not.family_name is None
+    assert name.index == 'Bar, Foo'
+
+
+def test_it_guesses_the_index_name():
+    name = Name('Foo Bar')
+
+    assert name.index == 'Bar, Foo'
 
 
 def test_it_can_be_compared():
-    name = Name('given names', 'family name')
-    name1 = Name('given names', 'family name')
-    name2 = Name('someone', 'else')
-    name3 = Name('someone')
-    name4 = Name('someone')
+    name = Name('Foo Bar')
+    name1 = Name('Foo Bar', 'Bar, Foo')
+    name2 = Name('Foo Bar', 'Bar, Foo')
+    name3 = Name('Bar Foo')
 
     assert name == name1
-    assert name != name2
+    assert name == name2
     assert name != name3
-    assert name3 == name4
