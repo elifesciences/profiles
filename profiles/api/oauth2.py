@@ -14,7 +14,7 @@ from profiles.exceptions import ClientInvalidRequest, ClientInvalidScope, \
     OrcidTokenNotFound, ProfileNotFound, UnsupportedGrantType
 from profiles.models import OrcidToken, Profile
 from profiles.repositories import OrcidTokens, Profiles
-from profiles.utilities import expires_at, remove_none_values
+from profiles.utilities import expires_at, remove_none_values, string_to_name
 
 
 def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles,
@@ -131,9 +131,10 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
 
         try:
             profile = profiles.get_by_orcid(json_data['orcid'])
-            profile.name = json_data['name']
+            profile.name = string_to_name(json_data['name'])
         except ProfileNotFound:
-            profile = Profile(profiles.next_id(), json_data['name'], json_data['orcid'])
+            profile = Profile(profiles.next_id(), string_to_name(json_data['name']),
+                              json_data['orcid'])
             profiles.add(profile)
 
         json_data['id'] = profile.id
