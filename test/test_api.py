@@ -2,7 +2,7 @@ import json
 
 from flask.testing import FlaskClient
 
-from profiles.models import Profile, db
+from profiles.models import Name, Profile, db
 
 
 def test_empty_list_of_profiles(test_client: FlaskClient) -> None:
@@ -20,7 +20,8 @@ def test_empty_list_of_profiles(test_client: FlaskClient) -> None:
 
 def test_list_of_profiles(test_client: FlaskClient) -> None:
     for number in range(1, 31):
-        db.session.add(Profile(str(number), 'Profile %s' % number))
+        number = str(number).zfill(2)
+        db.session.add(Profile(str(number), Name('Profile %s' % number)))
     db.session.commit()
 
     response = test_client.get('/profiles')
@@ -33,13 +34,14 @@ def test_list_of_profiles(test_client: FlaskClient) -> None:
 
     assert data['total'] == 30
     assert len(data['items']) == 20
-    for number in range(1, 21):
-        assert data['items'][number - 1]['id'] == str(number)
+    for number in range(20, 0):
+        assert data['items'][number - 1]['id'] == str(number).zfill(2)
 
 
 def test_list_of_profiles_in_pages(test_client: FlaskClient) -> None:
     for number in range(1, 11):
-        db.session.add(Profile(str(number), 'Profile %s' % number))
+        number = str(number).zfill(2)
+        db.session.add(Profile(str(number), Name('Profile %s' % number)))
     db.session.commit()
 
     response = test_client.get('/profiles?page=1&per-page=5')
@@ -52,8 +54,8 @@ def test_list_of_profiles_in_pages(test_client: FlaskClient) -> None:
 
     assert data['total'] == 10
     assert len(data['items']) == 5
-    for number in range(1, 6):
-        assert data['items'][number - 1]['id'] == str(number)
+    for number in range(5, 0):
+        assert data['items'][number - 1]['id'] == str(number).zfill(2)
 
     response = test_client.get('/profiles?page=2&per-page=5')
 
@@ -65,8 +67,8 @@ def test_list_of_profiles_in_pages(test_client: FlaskClient) -> None:
 
     assert data['total'] == 10
     assert len(data['items']) == 5
-    for number in range(1, 6):
-        assert data['items'][number - 1]['id'] == str(number + 5)
+    for number in range(5, 0):
+        assert data['items'][number - 1]['id'] == str(number + 5).zfill(2)
 
 
 def test_404s_on_non_existent_page(test_client: FlaskClient) -> None:
@@ -112,7 +114,7 @@ def test_400s_on_per_page_greater_than_100(test_client: FlaskClient) -> None:
 
 
 def test_get_profile(test_client: FlaskClient) -> None:
-    profile = Profile('a1b2c3d4', 'Foo Bar', '0000-0002-1825-0097')
+    profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
 
     db.session.add(profile)
     db.session.commit()

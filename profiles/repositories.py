@@ -40,7 +40,7 @@ class Profiles(ABC, collections.Sized):
         raise NotImplementedError
 
     @abstractmethod
-    def list(self, limit: int = None, offset: int = 0) -> List[Profile]:
+    def list(self, limit: int = None, offset: int = 0, desc: bool = True) -> List[Profile]:
         raise NotImplementedError
 
 
@@ -96,8 +96,15 @@ class SQLAlchemyProfiles(Profiles):
 
         return profile_id
 
-    def list(self, limit: int = None, offset: int = 0) -> List[Profile]:
-        return self.db.session.query(Profile).limit(limit).offset(offset).all()
+    def list(self, limit: int = None, offset: int = 0, desc: bool = True) -> List[Profile]:
+        query = self.db.session.query(Profile)
+
+        if desc:
+            query = query.order_by(Profile._index_name.desc())  # pylint: disable=protected-access
+        else:
+            query = query.order_by(Profile._index_name.asc())  # pylint: disable=protected-access
+
+        return query.limit(limit).offset(offset).all()
 
     def __len__(self) -> int:
         return self.db.session.query(Profile).count()
