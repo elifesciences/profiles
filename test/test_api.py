@@ -15,7 +15,7 @@ def test_empty_list_of_profiles(test_client: FlaskClient) -> None:
     data = json.loads(response.data.decode('UTF-8'))
 
     assert data['total'] == 0
-    assert len(data['items']) == 0
+    assert not data['items']
 
 
 def test_list_of_profiles(test_client: FlaskClient) -> None:
