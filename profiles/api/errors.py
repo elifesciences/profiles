@@ -24,10 +24,10 @@ def error_handler(exception: Exception) -> Response:
 def client_error_handler(exception: ClientError) -> Response:
     LOGGER.exception(exception)
 
-    query = remove_none_values({
-        'error': exception.error,
-        'error_description': exception.description,
-    })
+    query = remove_none_values(OrderedDict([
+        ('error', exception.error),
+        ('error_description', exception.description),
+    ]))
 
     return redirect('{}?{}'.format(exception.uri, urlencode(query, True)), exception.status_code)
 
