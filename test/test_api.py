@@ -19,8 +19,8 @@ def test_empty_list_of_profiles(test_client: FlaskClient) -> None:
 
 
 def test_list_of_profiles(test_client: FlaskClient) -> None:
-    for x in range(1, 31):
-        db.session.add(Profile(str(x), 'Profile %s' % x))
+    for number in range(1, 31):
+        db.session.add(Profile(str(number), 'Profile %s' % number))
     db.session.commit()
 
     response = test_client.get('/profiles')
@@ -33,13 +33,13 @@ def test_list_of_profiles(test_client: FlaskClient) -> None:
 
     assert data['total'] == 30
     assert len(data['items']) == 20
-    for x in range(1, 21):
-        assert data['items'][x - 1]['id'] == str(x)
+    for number in range(1, 21):
+        assert data['items'][number - 1]['id'] == str(number)
 
 
 def test_list_of_profiles_in_pages(test_client: FlaskClient) -> None:
-    for x in range(1, 11):
-        db.session.add(Profile(str(x), 'Profile %s' % x))
+    for number in range(1, 11):
+        db.session.add(Profile(str(number), 'Profile %s' % number))
     db.session.commit()
 
     response = test_client.get('/profiles?page=1&per-page=5')
@@ -52,8 +52,8 @@ def test_list_of_profiles_in_pages(test_client: FlaskClient) -> None:
 
     assert data['total'] == 10
     assert len(data['items']) == 5
-    for x in range(1, 6):
-        assert data['items'][x - 1]['id'] == str(x)
+    for number in range(1, 6):
+        assert data['items'][number - 1]['id'] == str(number)
 
     response = test_client.get('/profiles?page=2&per-page=5')
 
@@ -65,8 +65,8 @@ def test_list_of_profiles_in_pages(test_client: FlaskClient) -> None:
 
     assert data['total'] == 10
     assert len(data['items']) == 5
-    for x in range(1, 6):
-        assert data['items'][x - 1]['id'] == str(x + 5)
+    for number in range(1, 6):
+        assert data['items'][number - 1]['id'] == str(number + 5)
 
 
 def test_404s_on_non_existent_page(test_client: FlaskClient) -> None:
