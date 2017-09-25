@@ -1,12 +1,15 @@
 import json
 
 from flask import Blueprint, make_response, request
-from werkzeug.exceptions import NotFound, BadRequest
+from werkzeug.exceptions import BadRequest, NotFound
 from werkzeug.wrappers import Response
 
 from profiles.exceptions import ProfileNotFound
 from profiles.repositories import Profiles
 from profiles.serializer.normalizer import normalize
+
+DEFAULT_PAGE = 1
+DEFAULT_PER_PAGE = 20
 
 
 def create_blueprint(profiles: Profiles) -> Blueprint:
@@ -14,23 +17,23 @@ def create_blueprint(profiles: Profiles) -> Blueprint:
 
     @blueprint.route('/profiles')
     def _list() -> Response:
-        page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per-page', 20, type=int)
+        page = request.args.get('page', DEFAULT_PAGE, type=int)
+        per_page = request.args.get('per-page', DEFAULT_PER_PAGE, type=int)
 
         if page < 1:
             raise BadRequest('Page less than 1')
-        elif page != request.args.get('page'):
+        elif str(page) != str(request.args.get('page', DEFAULT_PAGE)):
             raise BadRequest('Invalid page')
 
         if per_page < 1 or per_page > 100:
             raise BadRequest('Per page out of range')
-        elif page != request.args.get('per-page'):
+        elif str(per_page) != str(request.args.get('per-page', DEFAULT_PER_PAGE)):
             raise BadRequest('Invalid per page')
 
         total = len(profiles)
         profile_list = profiles.list(per_page, (page * per_page) - per_page)
 
-        if page > 1 and len(profile_list) == 0:
+        if page > 1 and not profile_list:
             raise NotFound('No page %s' % page)
 
         response = make_response(
@@ -39,10 +42,10 @@ def create_blueprint(profiles: Profiles) -> Blueprint:
 
         return response
 
-    @blueprint.route('/profiles/<id>')
-    def _get(id: str) -> Response:
+    @blueprint.route('/profiles/<profile_id>')
+    def _get(profile_id: str) -> Response:
         try:
-            profile = profiles.get(id)
+            profile = profiles.get(profile_id)
         except ProfileNotFound as exception:
             raise NotFound(str(exception)) from exception
 
