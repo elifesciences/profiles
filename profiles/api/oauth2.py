@@ -127,10 +127,10 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
 
         try:
             profile = profiles.get_by_orcid(json_data['orcid'])
-            if json_data.get('name', ''):
+            if json_data['name']:
                 profile.name = Name(json_data['name'])
         except ProfileNotFound:
-            if not json_data.get('name', ''):
+            if not json_data['name']:
                 raise InvalidRequest('No name visible')
             profile = Profile(profiles.next_id(), Name(json_data['name']), json_data['orcid'])
             profiles.add(profile)
