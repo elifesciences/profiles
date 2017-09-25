@@ -7,7 +7,7 @@ from freezegun import freeze_time
 from requests import Request
 import requests_mock
 
-from profiles.models import OrcidToken, Profile, db
+from profiles.models import Name, OrcidToken, Profile, db
 from profiles.utilities import expires_at
 
 
@@ -256,11 +256,11 @@ def test_it_creates_a_profile_when_exchanging(test_client: FlaskClient) -> None:
     profile = Profile.query.filter_by(orcid='0000-0002-1825-0097').one()
 
     assert profile.orcid == '0000-0002-1825-0097'
-    assert profile.name == 'Josiah Carberry'
+    assert str(profile.name) == 'Josiah Carberry'
 
 
 def test_it_updates_a_profile_when_exchanging(test_client: FlaskClient) -> None:
-    original_profile = Profile('a1b2c3d4', 'Foo Bar', '0000-0002-1825-0097')
+    original_profile = Profile('a1b2c3d4', Name('Foo', 'Bar'), '0000-0002-1825-0097')
 
     db.session.add(original_profile)
     db.session.commit()
@@ -277,7 +277,7 @@ def test_it_updates_a_profile_when_exchanging(test_client: FlaskClient) -> None:
                                'grant_type': 'authorization_code', 'code': '1234'})
 
     assert Profile.query.count() == 1
-    assert original_profile.name == 'Josiah Carberry'
+    assert str(original_profile.name) == 'Josiah Carberry'
 
 
 @freeze_time('2017-09-15 14:36:43')
