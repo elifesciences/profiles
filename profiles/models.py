@@ -8,6 +8,7 @@ from profiles.database import UTCDateTime, db
 from profiles.utilities import guess_index_name
 
 ID_LENGTH = 8
+UNKNOWN_NAME = '(Unknown)'
 
 
 class OrcidToken(db.Model):
@@ -26,6 +27,9 @@ class OrcidToken(db.Model):
 
 class Name(object):
     def __init__(self, preferred: str, index: str = None) -> None:
+        if preferred == '':
+            preferred = UNKNOWN_NAME
+
         if index is None:
             index = guess_index_name(preferred)
 
