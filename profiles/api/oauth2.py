@@ -11,13 +11,14 @@ from werkzeug.exceptions import BadRequest
 from werkzeug.wrappers import Response
 
 from profiles.clients import Clients
+from profiles.commands import update_profile_from_orcid_record
 from profiles.exceptions import ClientInvalidRequest, ClientInvalidScope, \
     ClientUnsupportedResourceType, InvalidClient, InvalidGrant, InvalidRequest, \
     OrcidTokenNotFound, ProfileNotFound, UnsupportedGrantType
-from profiles.models import OrcidToken, Profile
+from profiles.models import Name, OrcidToken, Profile
 from profiles.orcid import OrcidClient
 from profiles.repositories import OrcidTokens, Profiles
-from profiles.utilities import expires_at, remove_none_values, update_profile_from_orcid_record
+from profiles.utilities import expires_at, remove_none_values
 
 LOGGER = logging.getLogger(__name__)
 
@@ -123,22 +124,21 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
 
         json_data = json.loads(response.text)
 
-        if 'access_token' not in json_data:
-            raise ValueError('No access_token')
-        elif 'expires_in' not in json_data:
-            raise ValueError('No expires_in')
-        elif json_data.get('token_type').lower() != 'bearer':
-            raise ValueError('Got token_type {}, expected Bearer'.format(
-                json_data.get('token_type')))
-
         json_data = {key: json_data[key] for key in
                      ['access_token', 'expires_in', 'name', 'orcid', 'token_type']}
 
+        if json_data.get('token_type').lower() != 'bearer':
+            raise ValueError('Got token_type {}, expected Bearer'.format(
+                json_data.get('token_type')))
+
         try:
             profile = profiles.get_by_orcid(json_data['orcid'])
-            profile.name = json_data['name']
+            if json_data['name']:
+                profile.name = Name(json_data['name'])
         except ProfileNotFound:
-            profile = Profile(profiles.next_id(), json_data['name'], json_data['orcid'])
+            if not json_data['name']:
+                raise InvalidRequest('No name visible')
+            profile = Profile(profiles.next_id(), Name(json_data['name']), json_data['orcid'])
             profiles.add(profile)
 
         json_data['id'] = profile.id

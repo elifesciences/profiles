@@ -1,20 +1,21 @@
-from profiles.models import Profile
-from profiles.utilities import update_profile_from_orcid_record
+from profiles.commands import update_profile_from_orcid_record
+from profiles.models import Name, Profile
 
 
 def test_it_updates_the_name():
-    profile = Profile('12345678', 'Old Name')
+    profile = Profile('12345678', Name('Old Name'))
     orcid_record = {'person': {
-        'name': {'family-name': {'value': 'Name'}, 'given-names': {'value': 'New'}}}
+        'name': {'family-name': {'value': 'Family Name'}, 'given-names': {'value': 'Given Names'}}}
     }
 
     update_profile_from_orcid_record(profile, orcid_record)
 
-    assert profile.name == 'New Name'
+    assert profile.name.preferred == 'Given Names Family Name'
+    assert profile.name.index == 'Family Name, Given Names'
 
 
 def test_it_adds_email_addresses():
-    profile = Profile('12345678', 'Name')
+    profile = Profile('12345678', Name('Name'))
     orcid_record = {'person': {
         'emails': {'email': [
             {'email': '1@example.com', 'primary': False, 'verified': True, 'visibility': 'LIMIT'},
@@ -36,7 +37,7 @@ def test_it_adds_email_addresses():
 
 
 def test_it_ignores_unverified_email_addresses():
-    profile = Profile('12345678', 'Name')
+    profile = Profile('12345678', Name('Name'))
     orcid_record = {'person': {
         'emails': {'email': [
             {'email': '1@example.com', 'primary': True, 'verified': False, 'visibility': 'PUBLIC'},
@@ -49,7 +50,7 @@ def test_it_ignores_unverified_email_addresses():
 
 
 def test_it_removes_email_addresses():
-    profile = Profile('12345678', 'Name')
+    profile = Profile('12345678', Name('Name'))
     profile.add_email_address('1@example.com')
 
     orcid_record = {'person': {}}
@@ -60,7 +61,7 @@ def test_it_removes_email_addresses():
 
 
 def test_it_updates_email_addresses():
-    profile = Profile('12345678', 'Name')
+    profile = Profile('12345678', Name('Name'))
     profile.add_email_address('1@example.com', True, True)
 
     orcid_record = {'person': {

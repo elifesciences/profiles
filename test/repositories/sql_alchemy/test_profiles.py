@@ -2,15 +2,15 @@ import pytest
 
 from profiles.database import db
 from profiles.exceptions import ProfileNotFound
-from profiles.models import Profile
+from profiles.models import Name, Profile
 from profiles.repositories import SQLAlchemyProfiles
 
 
 def test_it_contains_profiles():
     profiles = SQLAlchemyProfiles(db)
 
-    profile1 = Profile('12345678', 'name1', '0000-0002-1825-0097')
-    profile2 = Profile('12345679', 'name2')
+    profile1 = Profile('12345678', Name('name1'), '0000-0002-1825-0097')
+    profile2 = Profile('12345679', Name('name2'))
 
     profiles.add(profile1)
     profiles.add(profile2)
@@ -25,8 +25,8 @@ def test_it_contains_profiles():
 def test_it_gets_profiles_by_their_orcid():
     profiles = SQLAlchemyProfiles(db)
 
-    profile1 = Profile('12345678', 'name1', '0000-0002-1825-0097')
-    profile2 = Profile('12345679', 'name2')
+    profile1 = Profile('12345678', Name('name1'), '0000-0002-1825-0097')
+    profile2 = Profile('12345679', Name('name2'))
 
     profiles.add(profile1)
     profiles.add(profile2)
@@ -56,7 +56,7 @@ def test_it_retries_generating_the_next_profile_id():
 
     profiles = SQLAlchemyProfiles(db, id_generator)
 
-    profiles.add(Profile('11111111', 'name'))
+    profiles.add(Profile('11111111', Name('name')))
 
     assert profiles.next_id() == '11111112'
 
@@ -67,7 +67,7 @@ def test_it_limits_retrying_when_generating_the_next_profile_id():
 
     profiles = SQLAlchemyProfiles(db, id_generator)
 
-    profiles.add(Profile('11111111', 'name'))
+    profiles.add(Profile('11111111', Name('name')))
 
     with pytest.raises(RuntimeError):
         assert profiles.next_id()
