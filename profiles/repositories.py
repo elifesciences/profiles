@@ -21,6 +21,10 @@ class OrcidTokens(ABC):
     def get(self, orcid: str) -> OrcidToken:
         raise NotImplementedError
 
+    @abstractmethod
+    def clear(self) -> None:
+        raise NotImplementedError
+
 
 class Profiles(ABC, collections.Sized):
     @abstractmethod
@@ -39,6 +43,10 @@ class Profiles(ABC, collections.Sized):
     def next_id(self) -> str:
         raise NotImplementedError
 
+    @abstractmethod
+    def clear(self) -> None:
+        raise NotImplementedError
+
 
 class SQLAlchemyOrcidTokens(OrcidTokens):
     def __init__(self, db: SQLAlchemy) -> None:
@@ -53,6 +61,9 @@ class SQLAlchemyOrcidTokens(OrcidTokens):
         except NoResultFound as exception:
             raise OrcidTokenNotFound('ORCID token for the ORCID {} not found'.format(orcid)) \
                 from exception
+
+    def clear(self) -> None:
+        self.db.session.query(OrcidToken).delete()
 
 
 class SQLAlchemyProfiles(Profiles):
@@ -91,6 +102,9 @@ class SQLAlchemyProfiles(Profiles):
             raise RuntimeError('Generated ID already in use')
 
         return profile_id
+
+    def clear(self) -> None:
+        self.db.session.query(Profile).delete()
 
     def __len__(self) -> int:
         return self.db.session.query(Profile).count()
