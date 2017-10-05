@@ -1,0 +1,13 @@
+def orcidDummySummary;
+elifeUpdatePipeline(
+    { commit ->
+        sh "./update-orcid-dummy.sh"
+        sh "git add orcid-dummy.sha1"
+        def gitLogCommand = "cd /srv/orcid-dummy/; git log -1 --pretty=%ci"
+        orcidDummysummary = sh(script: gitLogCommand, returnStdout: true).trim()
+    },
+    {
+        return "Updated orcid-dummy to: ${orcidDummySummary}"
+    },
+    'update_orcid_dummy/'
+)
