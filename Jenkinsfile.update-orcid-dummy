@@ -1,10 +1,14 @@
 def orcidDummySummary;
 elifeUpdatePipeline(
     { commit ->
-        sh "./update-orcid-dummy.sh"
-        sh "git add orcid-dummy.sha1"
-        def gitLogCommand = "cd /srv/orcid-dummy/; git log -1 --pretty=%ci"
-        orcidDummysummary = sh(script: gitLogCommand, returnStdout: true).trim()
+        lock('profiles--ci') {
+            builderDeployRevision 'profiles--ci', commit
+            builderCmd "profiles--ci", "./update-orcid-dummy.sh", "/srv/profiles"
+            builderSync "ci--profiles.elife.internal", "/srv/profiles/"
+            sh "git add orcid-dummy.sha1"
+            def gitLogCommand = "cd /srv/orcid-dummy/; git log -1 --pretty=%B"
+            orcidDummysummary = builderCmd "profiles--ci", "git log -1 --pretty=\"%B\" | head -n 1", "/srv/orcid-dummy", true
+        }
     },
     {
         return "Updated orcid-dummy to: ${orcidDummySummary}"
