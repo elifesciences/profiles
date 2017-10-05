@@ -67,7 +67,7 @@ def test_it_redirects_when_authorizing(test_client: FlaskClient) -> None:
 
     assert response.status_code == 302
     assert response.headers['Location'] == 'http://www.example.com/server/authorize?' + urlencode(
-        {'client_id': 'server_client_id', 'response_type': 'code', 'scope': '/authenticate',
+        {'client_id': 'server_client_id', 'response_type': 'code', 'scope': '/read-limited',
          'redirect_uri': 'http://localhost/oauth2/check',
          'state': dumps({'redirect_uri': 'http://www.example.com/client/redirect',
                          'client_id': 'client_id'}, sort_keys=True)}, True)
@@ -80,7 +80,7 @@ def test_it_redirects_with_the_original_state_when_authorizing(test_client: Flas
 
     assert response.status_code == 302
     assert response.headers['Location'] == 'http://www.example.com/server/authorize?' + urlencode(
-        {'client_id': 'server_client_id', 'response_type': 'code', 'scope': '/authenticate',
+        {'client_id': 'server_client_id', 'response_type': 'code', 'scope': '/read-limited',
          'redirect_uri': 'http://localhost/oauth2/check',
          'state': dumps({'redirect_uri': 'http://www.example.com/client/redirect',
                          'client_id': 'client_id', 'original': 'foo'}, sort_keys=True)}, True)
@@ -224,6 +224,8 @@ def test_it_exchanges(generate_random_string: MagicMock, test_client: FlaskClien
                     json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
                           'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
                           'name': 'Josiah Carberry'})
+        mocker.get('http://www.example.com/api/v2.0/0000-0002-1825-0097/record',
+                   status_code=404)
 
         response = test_client.post('/oauth2/token',
                                     data={'client_id': 'client_id',
@@ -250,6 +252,7 @@ def test_it_creates_a_profile_when_exchanging(test_client: FlaskClient) -> None:
                          data={'client_id': 'client_id', 'client_secret': 'client_secret',
                                'redirect_uri': 'http://www.example.com/client/redirect',
                                'grant_type': 'authorization_code', 'code': '1234'})
+        mocker.get('http://www.example.com/api/v2.0/0000-0002-1825-0097/record', status_code=404)
 
     assert Profile.query.count() == 1
 
@@ -270,6 +273,7 @@ def test_it_updates_a_profile_when_exchanging(test_client: FlaskClient) -> None:
                     json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
                           'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
                           'name': 'Josiah Carberry'})
+        mocker.get('http://www.example.com/api/v2.0/0000-0002-1825-0097/record', status_code=404)
 
         test_client.post('/oauth2/token',
                          data={'client_id': 'client_id', 'client_secret': 'client_secret',
@@ -325,6 +329,7 @@ def test_it_records_the_access_token_when_exchanging(test_client: FlaskClient) -
                     json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
                           'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
                           'name': 'Josiah Carberry'})
+        mocker.get('http://www.example.com/api/v2.0/0000-0002-1825-0097/record', status_code=404)
 
         response = test_client.post('/oauth2/token',
                                     data={'client_id': 'client_id',
