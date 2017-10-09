@@ -30,8 +30,7 @@ def _update_affiliations_from_orcid_record(profile: Profile, orcid_record: dict)
 
     def filter_past(properties: dict) -> bool:
         if 'end-date' in properties:
-            return not date(properties['end-date']['year'], properties['end-date']['month'],
-                            properties['end-date']['day']).is_past()
+            return not date(**properties['end-date']).is_past()
 
         return True
 
