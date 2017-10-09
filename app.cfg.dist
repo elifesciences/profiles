@@ -7,6 +7,7 @@ path = var/logs
 level = DEBUG
 
 [orcid]
+api_uri = https://api.sandbox.orcid.org
 authorize_uri = https://sandbox.orcid.org/oauth/authorize
 token_uri = https://sandbox.orcid.org/oauth/token
 client_id = client_id

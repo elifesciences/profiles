@@ -1,3 +1,4 @@
+import logging
 from collections import OrderedDict
 from json import JSONDecodeError, dumps
 from typing import Dict
@@ -5,20 +6,25 @@ from urllib.parse import urlencode
 
 from flask import Blueprint, json, jsonify, make_response, redirect, request, url_for
 import requests
+from requests import RequestException
 from werkzeug.exceptions import BadRequest
 from werkzeug.wrappers import Response
 
 from profiles.clients import Clients
+from profiles.commands import update_profile_from_orcid_record
 from profiles.exceptions import ClientInvalidRequest, ClientInvalidScope, \
     ClientUnsupportedResourceType, InvalidClient, InvalidGrant, InvalidRequest, \
     OrcidTokenNotFound, ProfileNotFound, UnsupportedGrantType
 from profiles.models import Name, OrcidToken, Profile
+from profiles.orcid import OrcidClient
 from profiles.repositories import OrcidTokens, Profiles
 from profiles.utilities import expires_at, remove_none_values
 
+LOGGER = logging.getLogger(__name__)
+
 
 def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles,
-                     orcid_tokens: OrcidTokens) -> Blueprint:
+                     orcid_client: OrcidClient, orcid_tokens: OrcidTokens) -> Blueprint:
     blueprint = Blueprint('oauth', __name__)
 
     @blueprint.route('/authorize')
@@ -52,7 +58,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
             orcid['authorize_uri'] + '?' + urlencode({
                 'client_id': orcid['client_id'],
                 'response_type': request.args.get('response_type'),
-                'scope': '/authenticate',
+                'scope': '/read-limited',
                 'redirect_uri': url_for('oauth._check', _external=True),
                 'state': dumps(state, sort_keys=True)
             }, True),
@@ -145,6 +151,12 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
             orcid_token = OrcidToken(json_data['orcid'], json_data['access_token'],
                                      expires_at(json_data['expires_in']))
             orcid_tokens.add(orcid_token)
+
+        try:
+            orcid_record = orcid_client.get_record(profile.orcid, orcid_token.access_token)
+            update_profile_from_orcid_record(profile, orcid_record)
+        except RequestException as exception:
+            LOGGER.exception(exception)
 
         return make_response(jsonify(json_data), response.status_code)
 
