@@ -20,7 +20,7 @@ def _update_name_from_orcid_record(profile: Profile, orcid_record: dict) -> None
 
 
 def _update_affiliations_from_orcid_record(profile: Profile, orcid_record: dict) -> None:
-    def create_affiliation(properties: dict):
+    def create_affiliation(properties: dict) -> Affiliation:
         organization = properties['organization']
         address = organization['address']
 
@@ -28,7 +28,7 @@ def _update_affiliations_from_orcid_record(profile: Profile, orcid_record: dict)
                            properties.get('department-name'), address.get('city'),
                            address.get('region'), properties['visibility'] != 'PUBLIC')
 
-    def filter_past(properties: dict):
+    def filter_past(properties: dict) -> bool:
         if 'end-date' in properties:
             return not date(properties['end-date']['year'], properties['end-date']['month'],
                             properties['end-date']['day']).is_past()

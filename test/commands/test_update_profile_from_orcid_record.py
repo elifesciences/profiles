@@ -21,8 +21,7 @@ def test_it_adds_affiliations():
     profile = Profile('12345678', Name('Name'))
     orcid_record = {'activities-summary': {
         'employments': {'employment-summary': [
-            {'organization': {'name': 'Organisation 1',
-                              'address': {'country': 'GB'}},
+            {'organization': {'name': 'Organisation 1', 'address': {'country': 'GB'}},
              'visibility': 'PUBLIC'},
             {'department-name': 'Department 2',
              'organization': {'name': 'Organisation 2',
@@ -77,8 +76,7 @@ def test_it_updates_affiliations():
     profile.add_affiliation(Affiliation(countries.get('gb'), 'Organisation 1'))
     orcid_record = {'activities-summary': {
         'employments': {'employment-summary': [
-            {'organization': {'name': 'Organisation 1',
-                              'address': {'country': 'GB'}},
+            {'organization': {'name': 'Organisation 1', 'address': {'country': 'GB'}},
              'visibility': 'LIMIT'},
         ]},
     }}
