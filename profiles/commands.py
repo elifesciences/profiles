@@ -1,8 +1,11 @@
-from profiles.models import Name, Profile
+from iso3166 import countries
+
+from profiles.models import Affiliation, Name, Profile
 
 
 def update_profile_from_orcid_record(profile: Profile, orcid_record: dict) -> None:
     _update_name_from_orcid_record(profile, orcid_record)
+    _update_affiliations_from_orcid_record(profile, orcid_record)
     _update_email_addresses_from_orcid_record(profile, orcid_record)
 
 
@@ -13,6 +16,27 @@ def _update_name_from_orcid_record(profile: Profile, orcid_record: dict) -> None
 
         profile.name = Name('{} {}'.format(given_name, family_name),
                             '{}, {}'.format(family_name, given_name))
+
+
+def _update_affiliations_from_orcid_record(profile: Profile, orcid_record: dict) -> None:
+    def create_affiliation(properties: dict):
+        organization = properties['organization']
+        address = organization['address']
+
+        return Affiliation(countries.get(address['country']), organization['name'],
+                           properties.get('department-name'), address.get('city'),
+                           address.get('region'), properties['visibility'] != 'PUBLIC')
+
+    orcid_affiliations = orcid_record.get('activities-summary', {}).get('employments', {}).get(
+        'employment-summary', {})
+    orcid_affiliations = list(map(create_affiliation, orcid_affiliations))
+
+    for affiliation in profile.affiliations:
+        if affiliation not in orcid_affiliations:
+            profile.remove_affiliation(affiliation)
+
+    for index, orcid_affiliation in enumerate(orcid_affiliations):
+        profile.add_affiliation(orcid_affiliation, index)
 
 
 def _update_email_addresses_from_orcid_record(profile: Profile, orcid_record: dict) -> None:

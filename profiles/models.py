@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Any, Iterable
 
+from iso3166 import Country
 import pendulum
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import composite
@@ -51,12 +52,53 @@ class Name(object):
         return not self.__eq__(other)
 
 
+class Affiliation(db.Model):
+    _id = db.Column(db.Integer, name='id', primary_key=True)
+    department = db.Column(db.Text())
+    organisation = db.Column(db.Text(), nullable=False)
+    city = db.Column(db.Text(), nullable=False)
+    region = db.Column(db.Text())
+    _country = db.Column(db.String(2), name='country', nullable=False)
+    restricted = db.Column(db.Boolean(), nullable=False)
+    profile_id = db.Column(db.String(ID_LENGTH), db.ForeignKey('profile.id'))
+    profile = db.relationship('Profile', back_populates='affiliations')
+    position = db.Column(db.Integer())
+
+    # pylint: disable=too-many-arguments
+    def __init__(self, country: Country, organisation: str, department: str = None,
+                 city: str = None, region: str = None, restricted: bool = False) -> None:
+        self.department = department
+        self.organisation = organisation
+        self.city = city
+        self.region = region
+        self.country = country
+        self._country = country.alpha2
+        self.restricted = restricted
+
+    def __repr__(self) -> str:
+        return '<Affiliation %r, %r>' % (self.organisation, self.country.alpha2)
+
+    def __eq__(self, other: Any) -> bool:
+        return isinstance(other, Affiliation) and \
+               other.department == self.department and \
+               other.organisation == self.organisation and \
+               other.city == self.city and \
+               other.region == self.region and \
+               other.country.alpha2 == self.country.alpha2
+
+    def __ne__(self, other: Any) -> bool:
+        return not self.__eq__(other)
+
+
 class Profile(db.Model):
     id = db.Column(db.String(ID_LENGTH), primary_key=True)
     name = composite(Name, '_preferred_name', '_index_name')
     _preferred_name = db.Column(db.Text(), name='preferred_name', nullable=False)
     _index_name = db.Column(db.Text(), name='index_name', nullable=False)
     orcid = db.Column(db.String(19), unique=True)
+    affiliations = db.relationship('Affiliation', order_by='Affiliation.position',
+                                   collection_class=ordering_list('position'),
+                                   cascade='all, delete-orphan', back_populates='profile')
     email_addresses = db.relationship('EmailAddress', order_by='EmailAddress.position',
                                       collection_class=ordering_list('position'),
                                       cascade='all, delete-orphan', back_populates='profile')
@@ -65,6 +107,23 @@ class Profile(db.Model):
         self.id = profile_id
         self.name = name
         self.orcid = orcid
+
+    def add_affiliation(self, affiliation: Affiliation, position: int = 0) -> None:
+        for existing_affiliation in self.affiliations:
+            if existing_affiliation == affiliation:
+                existing_affiliation.restricted = affiliation.restricted
+                if position != existing_affiliation.position:
+                    self.affiliations.remove(existing_affiliation)
+                    self.affiliations.insert(position, existing_affiliation)
+                    self.affiliations.reorder()
+                return
+
+        self.affiliations.insert(position, affiliation)
+        self.email_addresses.reorder()
+
+    def remove_affiliation(self, affiliation: Affiliation) -> None:
+        self.affiliations.remove(affiliation)
+        self.email_addresses.reorder()
 
     def add_email_address(self, email: str, primary: bool = False,
                           restricted: bool = False) -> None:

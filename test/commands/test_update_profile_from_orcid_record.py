@@ -1,5 +1,7 @@
+from iso3166 import countries
+
 from profiles.commands import update_profile_from_orcid_record
-from profiles.models import Name, Profile
+from profiles.models import Affiliation, Name, Profile
 
 
 def test_it_updates_the_name():
@@ -12,6 +14,63 @@ def test_it_updates_the_name():
 
     assert profile.name.preferred == 'Given Names Family Name'
     assert profile.name.index == 'Family Name, Given Names'
+
+
+def test_it_adds_affiliations():
+    profile = Profile('12345678', Name('Name'))
+    orcid_record = {'activities-summary': {
+        'employments': {'employment-summary': [
+            {'organization': {'name': 'Organisation 1',
+                              'address': {'country': 'GB'}},
+             'visibility': 'PUBLIC'},
+            {'department-name': 'Department 2',
+             'organization': {'name': 'Organisation 2',
+                              'address': {'city': 'City 2', 'region': 'Region 2', 'country': 'US'}},
+             'visibility': 'LIMIT'},
+        ]},
+    }}
+
+    update_profile_from_orcid_record(profile, orcid_record)
+
+    assert len(profile.affiliations) == 2
+
+    assert profile.affiliations[0] == Affiliation(countries.get('gb'), 'Organisation 1')
+    assert profile.affiliations[0].restricted is False
+    assert profile.affiliations[0].position == 0
+
+    assert profile.affiliations[1] == Affiliation(countries.get('us'), 'Organisation 2',
+                                                  'Department 2', 'City 2', 'Region 2')
+    assert profile.affiliations[1].restricted is True
+    assert profile.affiliations[1].position == 1
+
+
+def test_it_removes_affiliations():
+    profile = Profile('12345678', Name('Name'))
+    profile.add_affiliation(Affiliation(countries.get('gb'), 'Organisation 1'))
+    orcid_record = {}
+
+    update_profile_from_orcid_record(profile, orcid_record)
+
+    assert len(profile.affiliations) == 0
+
+
+def test_it_updates_affiliations():
+    profile = Profile('12345678', Name('Name'))
+    profile.add_affiliation(Affiliation(countries.get('gb'), 'Organisation 1'))
+    orcid_record = {'activities-summary': {
+        'employments': {'employment-summary': [
+            {'organization': {'name': 'Organisation 1',
+                              'address': {'country': 'GB'}},
+             'visibility': 'LIMIT'},
+        ]},
+    }}
+
+    update_profile_from_orcid_record(profile, orcid_record)
+
+    assert len(profile.affiliations) == 1
+    assert profile.affiliations[0] == Affiliation(countries.get('gb'), 'Organisation 1')
+    assert profile.affiliations[0].restricted is True
+    assert profile.affiliations[0].position == 0
 
 
 def test_it_adds_email_addresses():

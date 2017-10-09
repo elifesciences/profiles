@@ -1,4 +1,6 @@
-from profiles.models import Name, Profile
+from iso3166 import countries
+
+from profiles.models import Affiliation, Name, Profile
 
 
 def test_it_can_be_printed():
@@ -23,3 +25,18 @@ def test_it_has_an_orcid():
     profile = Profile('12345678', Name('foo'), '0000-0002-1825-0097')
 
     assert profile.orcid == '0000-0002-1825-0097'
+
+
+def test_it_can_have_affiliations():
+    profile = Profile('12345678', Name('foo'), '0000-0002-1825-0097')
+    affiliation = Affiliation(countries.get('gb'), 'Organisation')
+
+    assert len(profile.affiliations) == 0
+
+    profile.add_affiliation(affiliation)
+
+    assert len(profile.affiliations) == 1
+
+    profile.remove_affiliation(affiliation)
+
+    assert len(profile.affiliations) == 0
