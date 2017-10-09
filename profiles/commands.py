@@ -2,6 +2,8 @@ from flask_script import Command
 
 
 class ClearCommand(Command):
+    NAME = 'clear'
+
     def __init__(self, *repositories):
         super(ClearCommand, self).__init__()
         self.repositories = repositories

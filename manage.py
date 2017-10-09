@@ -34,7 +34,7 @@ manager.add_command('db', MigrateCommand)
 manager.add_command('runserver', Server())
 manager.add_command('shell', Shell(make_context=make_shell_context))
 
-[manager.add_command('delete', c) for c in app.commands]
+[manager.add_command(c.NAME, c) for c in app.commands]
 
 if __name__ == '__main__':
     manager.run()
