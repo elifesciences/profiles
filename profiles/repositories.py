@@ -1,6 +1,6 @@
 import collections
 import string
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Callable
 
 from flask_sqlalchemy import SQLAlchemy
