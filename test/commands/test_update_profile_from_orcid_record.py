@@ -1,3 +1,4 @@
+from freezegun import freeze_time
 from iso3166 import countries
 
 from profiles.commands import update_profile_from_orcid_record
@@ -48,6 +49,23 @@ def test_it_removes_affiliations():
     profile = Profile('12345678', Name('Name'))
     profile.add_affiliation(Affiliation(countries.get('gb'), 'Organisation 1'))
     orcid_record = {}
+
+    update_profile_from_orcid_record(profile, orcid_record)
+
+    assert len(profile.affiliations) == 0
+
+
+@freeze_time('2017-01-01 00:00:00')
+def test_it_removes_past_affiliations():
+    profile = Profile('12345678', Name('Name'))
+    profile.add_affiliation(Affiliation(countries.get('gb'), 'Organisation 1'))
+    orcid_record = {'activities-summary': {
+        'employments': {'employment-summary': [
+            {'end-date': {'year': 2016, 'month': 12, 'day': 31},
+             'organization': {'name': 'Organisation 1', 'address': {'country': 'GB'}},
+             'visibility': 'PUBLIC'},
+        ]},
+    }}
 
     update_profile_from_orcid_record(profile, orcid_record)
 

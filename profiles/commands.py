@@ -1,4 +1,5 @@
 from iso3166 import countries
+from pendulum import create as date
 
 from profiles.models import Affiliation, Name, Profile
 
@@ -27,8 +28,16 @@ def _update_affiliations_from_orcid_record(profile: Profile, orcid_record: dict)
                            properties.get('department-name'), address.get('city'),
                            address.get('region'), properties['visibility'] != 'PUBLIC')
 
+    def filter_past(properties: dict):
+        if 'end-date' in properties:
+            return not date(properties['end-date']['year'], properties['end-date']['month'],
+                            properties['end-date']['day']).is_past()
+
+        return True
+
     orcid_affiliations = orcid_record.get('activities-summary', {}).get('employments', {}).get(
         'employment-summary', {})
+    orcid_affiliations = filter(filter_past, orcid_affiliations)
     orcid_affiliations = list(map(create_affiliation, orcid_affiliations))
 
     for affiliation in profile.affiliations:
