@@ -9,10 +9,11 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from profiles.exceptions import OrcidTokenNotFound, ProfileNotFound
 from profiles.models import ID_LENGTH, OrcidToken, Profile
+from profiles.types import CanBeCleared
 from profiles.utilities import generate_random_string
 
 
-class OrcidTokens(ABC):
+class OrcidTokens(CanBeCleared):
     @abstractmethod
     def add(self, orcid_token: OrcidToken) -> None:
         raise NotImplementedError
@@ -21,12 +22,8 @@ class OrcidTokens(ABC):
     def get(self, orcid: str) -> OrcidToken:
         raise NotImplementedError
 
-    @abstractmethod
-    def clear(self) -> None:
-        raise NotImplementedError
 
-
-class Profiles(ABC, collections.Sized):
+class Profiles(CanBeCleared, collections.Sized):
     @abstractmethod
     def add(self, profile: Profile) -> None:
         raise NotImplementedError
@@ -41,10 +38,6 @@ class Profiles(ABC, collections.Sized):
 
     @abstractmethod
     def next_id(self) -> str:
-        raise NotImplementedError
-
-    @abstractmethod
-    def clear(self) -> None:
         raise NotImplementedError
 
 
