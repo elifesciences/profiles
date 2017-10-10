@@ -28,17 +28,18 @@ def _update_affiliations_from_orcid_record(profile: Profile, orcid_record: dict)
         organization = orcid_affiliation['organization']
         address = organization['address']
 
-        affiliation = Affiliation(str(orcid_affiliation['put-code']),
-                                  countries.get(address['country']), organization['name'],
-                                  date(**{k: int(v['value']) for k, v in
-                                          orcid_affiliation['start-date'].items()}),
-                                  orcid_affiliation.get('department-name'), address.get('city'),
-                                  address.get('region'),
-                                  date(**{k: int(v['value']) for k, v in
-                                          orcid_affiliation['end-date'].items()}, hour=23,
-                                       minute=59, second=59) if orcid_affiliation.get('end-date')
-                                  else None,
-                                  orcid_affiliation['visibility'] != VISIBILITY_PUBLIC)
+        affiliation = Affiliation(
+            affiliation_id=str(orcid_affiliation['put-code']),
+            department=orcid_affiliation.get('department-name'),
+            organisation=organization['name'],
+            city=address.get('city'),
+            region=address.get('region'),
+            country=countries.get(address['country']),
+            starts=date(**{k: int(v['value']) for k, v in orcid_affiliation['start-date'].items()}),
+            ends=date(**{k: int(v['value']) for k, v in orcid_affiliation['end-date'].items()},
+                      hour=23, minute=59, second=59) if orcid_affiliation.get('end-date') else None,
+            restricted=orcid_affiliation['visibility'] != VISIBILITY_PUBLIC,
+        )
         profile.add_affiliation(affiliation, index)
 
     for affiliation in profile.affiliations:
