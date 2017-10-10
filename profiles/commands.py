@@ -2,6 +2,7 @@ from iso3166 import countries
 from pendulum import create as date
 
 from profiles.models import Affiliation, Name, Profile
+from profiles.orcid import VISIBILITY_PUBLIC
 
 
 def update_profile_from_orcid_record(profile: Profile, orcid_record: dict) -> None:
@@ -26,7 +27,7 @@ def _update_affiliations_from_orcid_record(profile: Profile, orcid_record: dict)
 
         return Affiliation(countries.get(address['country']), organization['name'],
                            properties.get('department-name'), address.get('city'),
-                           address.get('region'), properties['visibility'] != 'PUBLIC')
+                           address.get('region'), properties['visibility'] != VISIBILITY_PUBLIC)
 
     def filter_past(properties: dict) -> bool:
         if properties.get('end-date'):
@@ -62,4 +63,4 @@ def _update_email_addresses_from_orcid_record(profile: Profile, orcid_record: di
 
     for orcid_email in orcid_emails:
         profile.add_email_address(orcid_email['email'], orcid_email['primary'],
-                                  orcid_email['visibility'] != 'PUBLIC')
+                                  orcid_email['visibility'] != VISIBILITY_PUBLIC)
