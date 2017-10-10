@@ -119,11 +119,11 @@ class Profile(db.Model):
                 return
 
         self.affiliations.insert(position, affiliation)
-        self.email_addresses.reorder()
+        self.affiliations.reorder()
 
     def remove_affiliation(self, affiliation: Affiliation) -> None:
         self.affiliations.remove(affiliation)
-        self.email_addresses.reorder()
+        self.affiliations.reorder()
 
     def add_email_address(self, email: str, primary: bool = False,
                           restricted: bool = False) -> None:
