@@ -54,27 +54,32 @@ class Name(object):
 
 
 class Affiliation(db.Model):
+    # pylint: disable = too-many-instance-attributes
     id = db.Column(db.Text(), primary_key=True)
     department = db.Column(db.Text())
     organisation = db.Column(db.Text(), nullable=False)
     city = db.Column(db.Text(), nullable=False)
     region = db.Column(db.Text())
     country = db.Column(ISO3166Country, nullable=False)
+    starts = db.Column(UTCDateTime, nullable=False)
+    ends = db.Column(UTCDateTime)
     restricted = db.Column(db.Boolean(), nullable=False)
     profile_id = db.Column(db.String(ID_LENGTH), db.ForeignKey('profile.id'))
     profile = db.relationship('Profile', back_populates='affiliations')
     position = db.Column(db.Integer())
 
     # pylint: disable=too-many-arguments
-    def __init__(self, affiliation_id: str, country: Country, organisation: str,
+    def __init__(self, affiliation_id: str, country: Country, organisation: str, starts: datetime,
                  department: str = None, city: str = None, region: str = None,
-                 restricted: bool = False) -> None:
+                 ends: datetime = None, restricted: bool = False) -> None:
         self.id = affiliation_id
         self.department = department
         self.organisation = organisation
         self.city = city
         self.region = region
         self.country = country
+        self.starts = pendulum.timezone('utc').convert(starts)
+        self.ends = pendulum.timezone('utc').convert(ends) if ends else None
         self.restricted = restricted
 
     def __repr__(self) -> str:
@@ -107,6 +112,8 @@ class Profile(db.Model):
                 existing_affiliation.city = affiliation.city
                 existing_affiliation.region = affiliation.region
                 existing_affiliation.country = affiliation.country
+                existing_affiliation.starts = affiliation.starts
+                existing_affiliation.ends = affiliation.ends
                 existing_affiliation.restricted = affiliation.restricted
                 if position != existing_affiliation.position:
                     self.affiliations.remove(existing_affiliation)

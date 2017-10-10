@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from iso3166 import countries
 import pytest
 
@@ -31,7 +33,7 @@ def test_it_has_an_orcid():
 
 def test_it_can_have_affiliations():
     profile = Profile('12345678', Name('foo'), '0000-0002-1825-0097')
-    affiliation = Affiliation('1', countries.get('gb'), 'Organisation')
+    affiliation = Affiliation('1', countries.get('gb'), 'Organisation', datetime.now())
 
     assert len(profile.affiliations) == 0
 

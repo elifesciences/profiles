@@ -16,6 +16,8 @@ def upgrade():
         sa.Column('city', sa.Text(), nullable=False),
         sa.Column('region', sa.Text(), nullable=True),
         sa.Column('country', sa.String(length=2), nullable=False),
+        sa.Column('starts', sa.DateTime(), nullable=False),
+        sa.Column('ends', sa.DateTime(), nullable=True),
         sa.Column('restricted', sa.Boolean(), nullable=False),
         sa.Column('profile_id', sa.String(length=8), nullable=True),
         sa.Column('position', sa.Integer(), nullable=True),

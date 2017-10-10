@@ -37,8 +37,11 @@ def _update_affiliations_from_orcid_record(profile: Profile, orcid_record: dict)
 
         affiliation = Affiliation(str(orcid_affiliation['put-code']),
                                   countries.get(address['country']), organization['name'],
+                                  date(**orcid_affiliation['start-date']),
                                   orcid_affiliation.get('department-name'), address.get('city'),
                                   address.get('region'),
+                                  date(**orcid_affiliation['end-date'], hour=23, minute=59,
+                                       second=59) if orcid_affiliation.get('end-date') else None,
                                   orcid_affiliation['visibility'] != VISIBILITY_PUBLIC)
         profile.add_affiliation(affiliation, index)
 
