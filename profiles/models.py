@@ -6,7 +6,7 @@ import pendulum
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import composite
 
-from profiles.database import UTCDateTime, db
+from profiles.database import ISO3166Country, UTCDateTime, db
 from profiles.utilities import guess_index_name
 
 ID_LENGTH = 8
@@ -58,7 +58,7 @@ class Affiliation(db.Model):
     organisation = db.Column(db.Text(), nullable=False)
     city = db.Column(db.Text(), nullable=False)
     region = db.Column(db.Text())
-    _country = db.Column(db.String(2), name='country', nullable=False)
+    country = db.Column(ISO3166Country, nullable=False)
     restricted = db.Column(db.Boolean(), nullable=False)
     profile_id = db.Column(db.String(ID_LENGTH), db.ForeignKey('profile.id'))
     profile = db.relationship('Profile', back_populates='affiliations')
@@ -72,7 +72,6 @@ class Affiliation(db.Model):
         self.city = city
         self.region = region
         self.country = country
-        self._country = country.alpha2
         self.restricted = restricted
 
     def __repr__(self) -> str:
