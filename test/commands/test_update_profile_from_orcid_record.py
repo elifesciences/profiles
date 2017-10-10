@@ -25,10 +25,12 @@ def test_it_adds_affiliations():
     profile = Profile('12345678', Name('Name'))
     orcid_record = {'activities-summary': {
         'employments': {'employment-summary': [
-            {'put-code': 1, 'start-date': {'year': '2016', 'month': '12', 'day': '31'},
+            {'put-code': 1, 'start-date': {'year': {'value': '2016'}, 'month': {'value': '12'},
+                                           'day': {'value': '31'}},
              'organization': {'name': 'Organisation 1', 'address': {'country': 'GB'}},
              'visibility': 'PUBLIC'},
-            {'put-code': 2, 'start-date': {'year': '2015', 'month': '12', 'day': '31'},
+            {'put-code': 2, 'start-date': {'year': {'value': '2015'}, 'month': {'value': '12'},
+                                           'day': {'value': '31'}},
              'department-name': 'Department 2',
              'organization': {'name': 'Organisation 2',
                               'address': {'city': 'City 2', 'region': 'Region 2', 'country': 'US'}},
@@ -70,8 +72,10 @@ def test_it_updates_affiliations():
             {'put-code': 1, 'department-name': 'Department 2',
              'organization': {'name': 'Organisation 2',
                               'address': {'city': 'City 2', 'region': 'Region 2', 'country': 'US'}},
-             'start-date': {'year': '2016', 'month': '12', 'day': '31'},
-             'end-date': {'year': '2018', 'month': '02', 'day': '03'},
+             'start-date': {'year': {'value': '2016'}, 'month': {'value': '12'},
+                            'day': {'value': '31'}},
+             'end-date': {'year': {'value': '2018'}, 'month': {'value': '02'},
+                          'day': {'value': '03'}},
              'visibility': 'LIMIT'},
         ]},
     }}
