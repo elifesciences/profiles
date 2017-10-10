@@ -5,7 +5,7 @@ from iso3166 import countries
 import pendulum
 
 from profiles.commands import update_profile_from_orcid_record
-from profiles.models import Affiliation, Name, Profile
+from profiles.models import Address, Affiliation, Name, Profile
 
 
 def test_it_updates_the_name():
@@ -27,7 +27,8 @@ def test_it_adds_affiliations():
         'employments': {'employment-summary': [
             {'put-code': 1, 'start-date': {'year': {'value': '2016'}, 'month': {'value': '12'},
                                            'day': {'value': '31'}},
-             'organization': {'name': 'Organisation 1', 'address': {'country': 'GB'}},
+             'organization': {'name': 'Organisation 1',
+                              'address': {'city': 'City 1', 'country': 'GB'}},
              'visibility': 'PUBLIC'},
             {'put-code': 2, 'start-date': {'year': {'value': '2015'}, 'month': {'value': '12'},
                                            'day': {'value': '31'}},
@@ -53,8 +54,9 @@ def test_it_adds_affiliations():
 
 def test_it_removes_affiliations():
     profile = Profile('12345678', Name('Name'))
-    profile.add_affiliation(Affiliation('1', countries.get('gb'), 'Organisation 1',
-                                        datetime.utcnow()))
+    profile.add_affiliation(
+        Affiliation('1', Address(countries.get('gb'), 'City 1'), 'Organisation 1',
+                    datetime.utcnow()))
     orcid_record = {}
 
     update_profile_from_orcid_record(profile, orcid_record)
@@ -65,8 +67,8 @@ def test_it_removes_affiliations():
 @freeze_time('2017-01-01 00:00:00')
 def test_it_updates_affiliations():
     profile = Profile('12345678', Name('Name'))
-    profile.add_affiliation(Affiliation('1', countries.get('gb'), 'Organisation 1',
-                                        datetime.utcnow()))
+    profile.add_affiliation(Affiliation('1', Address(countries.get('gb'), 'City 1'),
+                                        'Organisation 1', datetime.utcnow()))
     orcid_record = {'activities-summary': {
         'employments': {'employment-summary': [
             {'put-code': 1, 'department-name': 'Department 2',
@@ -87,9 +89,9 @@ def test_it_updates_affiliations():
     assert len(profile.affiliations) == 1
     assert profile.affiliations[0].department == 'Department 2'
     assert profile.affiliations[0].organisation == 'Organisation 2'
-    assert profile.affiliations[0].city == 'City 2'
-    assert profile.affiliations[0].region == 'Region 2'
-    assert profile.affiliations[0].country == countries.get('US')
+    assert profile.affiliations[0].address.city == 'City 2'
+    assert profile.affiliations[0].address.region == 'Region 2'
+    assert profile.affiliations[0].address.country == countries.get('US')
     assert profile.affiliations[0].starts == utc.datetime(2016, 12, 31, 0, 0, 0)
     assert profile.affiliations[0].ends == utc.datetime(2018, 2, 3, 23, 59, 59)
     assert profile.affiliations[0].restricted is True

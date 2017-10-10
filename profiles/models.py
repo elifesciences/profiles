@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Iterable
+from typing import Any, Iterable, Optional
 
 from iso3166 import Country
 import pendulum
@@ -53,14 +53,36 @@ class Name(object):
         return not self.__eq__(other)
 
 
+class Address(object):
+    def __init__(self, country: Country, city: str, region: str = None) -> None:
+        self.city = city
+        self.region = region
+        self.country = country
+
+    def __composite_values__(self) -> Iterable[Optional[str]]:
+        return self.city, self.region, self.country
+
+    def __repr__(self) -> str:
+        return '<Address %r %r %r>' % (self.city, self.region, self.country.alpha2)
+
+    def __eq__(self, other: Any) -> bool:
+        return isinstance(other, Address) and \
+               other.city == self.city and \
+               other.region == self.region and \
+               other.country == self.country
+
+    def __ne__(self, other: Any) -> bool:
+        return not self.__eq__(other)
+
+
 class Affiliation(db.Model):
-    # pylint: disable = too-many-instance-attributes
     id = db.Column(db.Text(), primary_key=True)
     department = db.Column(db.Text())
     organisation = db.Column(db.Text(), nullable=False)
-    city = db.Column(db.Text(), nullable=False)
-    region = db.Column(db.Text())
-    country = db.Column(ISO3166Country, nullable=False)
+    address = composite(Address, '_city', '_region', '_country')
+    _city = db.Column(db.Text(), name='city', nullable=False)
+    _region = db.Column(db.Text(), name='region')
+    _country = db.Column(ISO3166Country, name='country', nullable=False)
     starts = db.Column(UTCDateTime, nullable=False)
     ends = db.Column(UTCDateTime)
     restricted = db.Column(db.Boolean(), nullable=False)
@@ -69,15 +91,12 @@ class Affiliation(db.Model):
     position = db.Column(db.Integer())
 
     # pylint: disable=too-many-arguments
-    def __init__(self, affiliation_id: str, country: Country, organisation: str, starts: datetime,
-                 department: str = None, city: str = None, region: str = None,
-                 ends: datetime = None, restricted: bool = False) -> None:
+    def __init__(self, affiliation_id: str, address: Address, organisation: str, starts: datetime,
+                 department: str = None, ends: datetime = None, restricted: bool = False) -> None:
         self.id = affiliation_id
         self.department = department
         self.organisation = organisation
-        self.city = city
-        self.region = region
-        self.country = country
+        self.address = address
         self.starts = pendulum.timezone('utc').convert(starts)
         self.ends = pendulum.timezone('utc').convert(ends) if ends else None
         self.restricted = restricted
@@ -109,9 +128,7 @@ class Profile(db.Model):
             if existing_affiliation.id == affiliation.id:
                 existing_affiliation.department = affiliation.department
                 existing_affiliation.organisation = affiliation.organisation
-                existing_affiliation.city = affiliation.city
-                existing_affiliation.region = affiliation.region
-                existing_affiliation.country = affiliation.country
+                existing_affiliation.address = affiliation.address
                 existing_affiliation.starts = affiliation.starts
                 existing_affiliation.ends = affiliation.ends
                 existing_affiliation.restricted = affiliation.restricted

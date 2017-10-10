@@ -1,7 +1,7 @@
 from iso3166 import countries
 from pendulum import create as date
 
-from profiles.models import Affiliation, Name, Profile
+from profiles.models import Address, Affiliation, Name, Profile
 from profiles.orcid import VISIBILITY_PUBLIC
 
 
@@ -33,9 +33,11 @@ def _update_affiliations_from_orcid_record(profile: Profile, orcid_record: dict)
             affiliation_id=str(orcid_affiliation['put-code']),
             department=orcid_affiliation.get('department-name'),
             organisation=organization['name'],
-            city=address.get('city'),
-            region=address.get('region'),
-            country=countries.get(address['country']),
+            address=Address(
+                city=address['city'],
+                region=address.get('region'),
+                country=countries.get(address['country']),
+            ),
             starts=date(**{k: int(v['value']) for k, v in orcid_affiliation['start-date'].items()}),
             ends=date(**{k: int(v['value']) for k, v in orcid_affiliation['end-date'].items()},
                       hour=23, minute=59, second=59) if orcid_affiliation.get('end-date') else None,
