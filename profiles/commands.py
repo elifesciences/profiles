@@ -21,15 +21,8 @@ def _update_name_from_orcid_record(profile: Profile, orcid_record: dict) -> None
 
 
 def _update_affiliations_from_orcid_record(profile: Profile, orcid_record: dict) -> None:
-    def filter_past(properties: dict) -> bool:
-        if properties.get('end-date'):
-            return not date(**properties['end-date']).is_past()
-
-        return True
-
     orcid_affiliations = orcid_record.get('activities-summary', {}).get('employments', {}).get(
         'employment-summary', {})
-    orcid_affiliations = list(filter(filter_past, orcid_affiliations))
 
     for index, orcid_affiliation in enumerate(orcid_affiliations):
         organization = orcid_affiliation['organization']
