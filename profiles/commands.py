@@ -24,6 +24,7 @@ def _update_affiliations_from_orcid_record(profile: Profile, orcid_record: dict)
     orcid_affiliations = orcid_record.get('activities-summary', {}).get('employments', {}).get(
         'employment-summary', {})
 
+    found_affiliation_ids = set()
     for index, orcid_affiliation in enumerate(orcid_affiliations):
         organization = orcid_affiliation['organization']
         address = organization['address']
@@ -41,15 +42,10 @@ def _update_affiliations_from_orcid_record(profile: Profile, orcid_record: dict)
             restricted=orcid_affiliation['visibility'] != VISIBILITY_PUBLIC,
         )
         profile.add_affiliation(affiliation, index)
+        found_affiliation_ids.add(affiliation.id)
 
     for affiliation in profile.affiliations:
-        found = False
-        for orcid_affiliation in orcid_affiliations:
-            if str(orcid_affiliation['put-code']) == affiliation.id:
-                found = True
-                break
-
-        if not found:
+        if affiliation.id not in found_affiliation_ids:
             profile.remove_affiliation(affiliation)
 
 
