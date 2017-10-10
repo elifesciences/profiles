@@ -7,6 +7,7 @@ from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import composite
 
 from profiles.database import ISO3166Country, UTCDateTime, db
+from profiles.exceptions import AffiliationNotFound
 from profiles.utilities import guess_index_name
 
 ID_LENGTH = 8
@@ -53,7 +54,7 @@ class Name(object):
 
 
 class Affiliation(db.Model):
-    _id = db.Column(db.Integer, name='id', primary_key=True)
+    id = db.Column(db.Text(), primary_key=True)
     department = db.Column(db.Text())
     organisation = db.Column(db.Text(), nullable=False)
     city = db.Column(db.Text(), nullable=False)
@@ -65,8 +66,10 @@ class Affiliation(db.Model):
     position = db.Column(db.Integer())
 
     # pylint: disable=too-many-arguments
-    def __init__(self, country: Country, organisation: str, department: str = None,
-                 city: str = None, region: str = None, restricted: bool = False) -> None:
+    def __init__(self, affiliation_id: str, country: Country, organisation: str,
+                 department: str = None, city: str = None, region: str = None,
+                 restricted: bool = False) -> None:
+        self.id = affiliation_id
         self.department = department
         self.organisation = organisation
         self.city = city
@@ -75,18 +78,7 @@ class Affiliation(db.Model):
         self.restricted = restricted
 
     def __repr__(self) -> str:
-        return '<Affiliation %r, %r>' % (self.organisation, self.country.alpha2)
-
-    def __eq__(self, other: Any) -> bool:
-        return isinstance(other, Affiliation) and \
-               other.department == self.department and \
-               other.organisation == self.organisation and \
-               other.city == self.city and \
-               other.region == self.region and \
-               other.country.alpha2 == self.country.alpha2
-
-    def __ne__(self, other: Any) -> bool:
-        return not self.__eq__(other)
+        return '<Affiliation %r>' % self.id
 
 
 class Profile(db.Model):
@@ -109,7 +101,12 @@ class Profile(db.Model):
 
     def add_affiliation(self, affiliation: Affiliation, position: int = 0) -> None:
         for existing_affiliation in self.affiliations:
-            if existing_affiliation == affiliation:
+            if existing_affiliation.id == affiliation.id:
+                existing_affiliation.department = affiliation.department
+                existing_affiliation.organisation = affiliation.organisation
+                existing_affiliation.city = affiliation.city
+                existing_affiliation.region = affiliation.region
+                existing_affiliation.country = affiliation.country
                 existing_affiliation.restricted = affiliation.restricted
                 if position != existing_affiliation.position:
                     self.affiliations.remove(existing_affiliation)
@@ -119,6 +116,13 @@ class Profile(db.Model):
 
         self.affiliations.insert(position, affiliation)
         self.affiliations.reorder()
+
+    def get_affiliation(self, affiliation_id: str) -> Affiliation:
+        for affiliation in self.affiliations:
+            if affiliation.id == affiliation_id:
+                return affiliation
+
+        raise AffiliationNotFound('Affiliation with the ID {} not found'.format(id))
 
     def remove_affiliation(self, affiliation: Affiliation) -> None:
         self.affiliations.remove(affiliation)

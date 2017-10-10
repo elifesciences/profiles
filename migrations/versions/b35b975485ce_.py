@@ -10,7 +10,7 @@ depends_on = None
 def upgrade():
     op.create_table(
         'affiliation',
-        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('id', sa.Text(), nullable=False),
         sa.Column('department', sa.Text(), nullable=True),
         sa.Column('organisation', sa.Text(), nullable=False),
         sa.Column('city', sa.Text(), nullable=False),

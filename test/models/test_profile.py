@@ -1,5 +1,7 @@
 from iso3166 import countries
+import pytest
 
+from profiles.exceptions import AffiliationNotFound
 from profiles.models import Affiliation, Name, Profile
 
 
@@ -29,7 +31,7 @@ def test_it_has_an_orcid():
 
 def test_it_can_have_affiliations():
     profile = Profile('12345678', Name('foo'), '0000-0002-1825-0097')
-    affiliation = Affiliation(countries.get('gb'), 'Organisation')
+    affiliation = Affiliation('1', countries.get('gb'), 'Organisation')
 
     assert len(profile.affiliations) == 0
 
@@ -40,3 +42,6 @@ def test_it_can_have_affiliations():
     profile.remove_affiliation(affiliation)
 
     assert len(profile.affiliations) == 0
+
+    with pytest.raises(AffiliationNotFound):
+        profile.get_affiliation('1')

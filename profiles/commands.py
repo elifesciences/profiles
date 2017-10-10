@@ -21,14 +21,6 @@ def _update_name_from_orcid_record(profile: Profile, orcid_record: dict) -> None
 
 
 def _update_affiliations_from_orcid_record(profile: Profile, orcid_record: dict) -> None:
-    def create_affiliation(properties: dict) -> Affiliation:
-        organization = properties['organization']
-        address = organization['address']
-
-        return Affiliation(countries.get(address['country']), organization['name'],
-                           properties.get('department-name'), address.get('city'),
-                           address.get('region'), properties['visibility'] != VISIBILITY_PUBLIC)
-
     def filter_past(properties: dict) -> bool:
         if properties.get('end-date'):
             return not date(**properties['end-date']).is_past()
@@ -37,15 +29,28 @@ def _update_affiliations_from_orcid_record(profile: Profile, orcid_record: dict)
 
     orcid_affiliations = orcid_record.get('activities-summary', {}).get('employments', {}).get(
         'employment-summary', {})
-    orcid_affiliations = filter(filter_past, orcid_affiliations)
-    orcid_affiliations = list(map(create_affiliation, orcid_affiliations))
-
-    for affiliation in profile.affiliations:
-        if affiliation not in orcid_affiliations:
-            profile.remove_affiliation(affiliation)
+    orcid_affiliations = list(filter(filter_past, orcid_affiliations))
 
     for index, orcid_affiliation in enumerate(orcid_affiliations):
-        profile.add_affiliation(orcid_affiliation, index)
+        organization = orcid_affiliation['organization']
+        address = organization['address']
+
+        affiliation = Affiliation(str(orcid_affiliation['put-code']),
+                                  countries.get(address['country']), organization['name'],
+                                  orcid_affiliation.get('department-name'), address.get('city'),
+                                  address.get('region'),
+                                  orcid_affiliation['visibility'] != VISIBILITY_PUBLIC)
+        profile.add_affiliation(affiliation, index)
+
+    for affiliation in profile.affiliations:
+        found = False
+        for orcid_affiliation in orcid_affiliations:
+            if str(orcid_affiliation['put-code']) == affiliation.id:
+                found = True
+                break
+
+        if not found:
+            profile.remove_affiliation(affiliation)
 
 
 def _update_email_addresses_from_orcid_record(profile: Profile, orcid_record: dict) -> None:
