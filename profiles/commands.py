@@ -29,7 +29,7 @@ def _update_affiliations_from_orcid_record(profile: Profile, orcid_record: dict)
                            address.get('region'), properties['visibility'] != 'PUBLIC')
 
     def filter_past(properties: dict) -> bool:
-        if 'end-date' in properties:
+        if properties.get('end-date'):
             return not date(**properties['end-date']).is_past()
 
         return True
