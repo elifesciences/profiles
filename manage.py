@@ -7,7 +7,6 @@ from flask_script import Manager, Server, Shell
 import yaml
 
 from profiles.clients import Client, Clients
-from profiles.commands import ClearCommand
 from profiles.config import create_app_config
 from profiles.factory import create_app
 from profiles.logging import configure_logging
