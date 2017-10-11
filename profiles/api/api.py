@@ -8,7 +8,10 @@ from profiles.exceptions import ProfileNotFound
 from profiles.repositories import Profiles
 from profiles.serializer.normalizer import normalize
 
-DEFAULT_ORDER = 'desc'
+ORDER_ASC = 'asc'
+ORDER_DESC = 'desc'
+
+DEFAULT_ORDER = ORDER_DESC
 DEFAULT_PAGE = 1
 DEFAULT_PER_PAGE = 20
 
@@ -32,17 +35,17 @@ def create_blueprint(profiles: Profiles) -> Blueprint:
         elif str(per_page) != str(request.args.get('per-page', DEFAULT_PER_PAGE)):
             raise BadRequest('Invalid per page')
 
-        if order not in ['asc', 'desc']:
+        if order not in [ORDER_ASC, ORDER_DESC]:
             raise BadRequest('Invalid order')
 
         total = len(profiles)
-        profile_list = profiles.list(per_page, (page * per_page) - per_page, order == 'desc')
+        profile_list = profiles.list(per_page, (page * per_page) - per_page, order == ORDER_DESC)
 
         if page > 1 and not profile_list:
             raise NotFound('No page %s' % page)
 
-        response = make_response(
-            json.dumps({'total': total, 'items': profile_list}, default=normalize))
+        response = make_response(json.dumps({'total': total, 'items': profile_list},
+                                            default=normalize))
         response.headers['Content-Type'] = 'application/vnd.elife.profile-list+json;version=1'
 
         return response

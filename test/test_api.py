@@ -149,8 +149,7 @@ def test_get_profile(test_client: FlaskClient) -> None:
     response = test_client.get('/profiles/a1b2c3d4')
 
     assert response.status_code == 200
-    assert response.headers.get(
-        'Content-Type') == 'application/vnd.elife.profile+json;version=1'
+    assert response.headers.get('Content-Type') == 'application/vnd.elife.profile+json;version=1'
     assert json.loads(response.data.decode('UTF-8'))['id'] == 'a1b2c3d4'
 
 
