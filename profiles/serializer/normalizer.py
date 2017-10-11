@@ -1,4 +1,3 @@
-from collections import OrderedDict
 from functools import singledispatch
 from typing import Any
 
@@ -24,10 +23,10 @@ def normalize_profile(profile: Profile) -> dict:
 
 @normalize_snippet.register(Profile)
 def normalize_profile_snippet(profile: Profile) -> dict:
-    data = OrderedDict([
-        ('id', profile.id),
-        ('name', normalize_name(profile.name)),
-    ])
+    data = {
+        'id': profile.id,
+        'name': normalize_name(profile.name),
+    }
 
     if profile.orcid:
         data['orcid'] = profile.orcid
@@ -37,7 +36,7 @@ def normalize_profile_snippet(profile: Profile) -> dict:
 
 @normalize.register(Name)
 def normalize_name(name: Name) -> dict:
-    return OrderedDict([
-        ('preferred', name.preferred),
-        ('index', name.index),
-    ])
+    return {
+        'preferred': name.preferred,
+        'index': name.index,
+    }
