@@ -52,7 +52,7 @@ def _update_affiliations_from_orcid_record(profile: Profile, orcid_record: dict)
 
     for affiliation in profile.affiliations:
         if affiliation.id not in found_affiliation_ids:
-            profile.remove_affiliation(affiliation)
+            profile.remove_affiliation(affiliation.id)
 
 
 def _update_email_addresses_from_orcid_record(profile: Profile, orcid_record: dict) -> None:

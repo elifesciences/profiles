@@ -42,7 +42,7 @@ def test_it_can_have_affiliations():
 
     assert len(profile.affiliations) == 1
 
-    profile.remove_affiliation(affiliation)
+    profile.remove_affiliation(affiliation.id)
 
     assert len(profile.affiliations) == 0
 

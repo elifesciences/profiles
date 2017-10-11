@@ -148,9 +148,12 @@ class Profile(db.Model):
 
         raise AffiliationNotFound('Affiliation with the ID {} not found'.format(id))
 
-    def remove_affiliation(self, affiliation: Affiliation) -> None:
-        self.affiliations.remove(affiliation)
-        self.affiliations.reorder()
+    def remove_affiliation(self, affiliation_id: str) -> None:
+        for affiliation in self.affiliations:
+            if affiliation.id == affiliation_id:
+                self.affiliations.remove(affiliation)
+                self.affiliations.reorder()
+                return
 
     def add_email_address(self, email: str, primary: bool = False,
                           restricted: bool = False) -> None:
