@@ -21,3 +21,12 @@ def test_it_contains_orcid_tokens():
 
     with pytest.raises(OrcidTokenNotFound):
         orcid_tokens.get('0000-0002-1825-0099')
+
+
+def test_it_clears_orcid_tokens():
+    orcid_tokens = SQLAlchemyOrcidTokens(db)
+    orcid_tokens.add(OrcidToken('0000-0002-1825-0097', '...', expires_at(1234)))
+    orcid_tokens.clear()
+
+    with pytest.raises(OrcidTokenNotFound):
+        orcid_tokens.get('0000-0002-1825-0097')

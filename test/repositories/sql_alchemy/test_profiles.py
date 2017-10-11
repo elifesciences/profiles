@@ -71,3 +71,12 @@ def test_it_limits_retrying_when_generating_the_next_profile_id():
 
     with pytest.raises(RuntimeError):
         assert profiles.next_id()
+
+
+def test_it_clears_profiles():
+    profiles = SQLAlchemyProfiles(db)
+    profiles.add(Profile('11111111', Name('name')))
+    profiles.clear()
+
+    with pytest.raises(ProfileNotFound):
+        profiles.get('11111111')

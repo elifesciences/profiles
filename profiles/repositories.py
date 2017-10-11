@@ -1,6 +1,6 @@
 import collections
 import string
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Callable, List
 
 from flask_sqlalchemy import SQLAlchemy
@@ -9,10 +9,11 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from profiles.exceptions import OrcidTokenNotFound, ProfileNotFound
 from profiles.models import ID_LENGTH, OrcidToken, Profile
+from profiles.types import CanBeCleared
 from profiles.utilities import generate_random_string
 
 
-class OrcidTokens(ABC):
+class OrcidTokens(CanBeCleared):
     @abstractmethod
     def add(self, orcid_token: OrcidToken) -> None:
         raise NotImplementedError
@@ -22,7 +23,7 @@ class OrcidTokens(ABC):
         raise NotImplementedError
 
 
-class Profiles(ABC, collections.Sized):
+class Profiles(CanBeCleared, collections.Sized):
     @abstractmethod
     def add(self, profile: Profile) -> None:
         raise NotImplementedError
@@ -57,6 +58,9 @@ class SQLAlchemyOrcidTokens(OrcidTokens):
         except NoResultFound as exception:
             raise OrcidTokenNotFound('ORCID token for the ORCID {} not found'.format(orcid)) \
                 from exception
+
+    def clear(self) -> None:
+        self.db.session.query(OrcidToken).delete()
 
 
 class SQLAlchemyProfiles(Profiles):
@@ -105,6 +109,9 @@ class SQLAlchemyProfiles(Profiles):
             query = query.order_by(Profile._index_name.asc())  # pylint: disable=protected-access
 
         return query.limit(limit).offset(offset).all()
+
+    def clear(self) -> None:
+        self.db.session.query(Profile).delete()
 
     def __len__(self) -> int:
         return self.db.session.query(Profile).count()

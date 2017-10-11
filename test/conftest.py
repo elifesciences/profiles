@@ -25,6 +25,7 @@ def app(request: FixtureRequest) -> Flask:
     app = create_app(
         CiConfig(
             orcid={
+                'api_uri': 'http://www.example.com/api',
                 'authorize_uri': 'http://www.example.com/server/authorize',
                 'token_uri': 'http://www.example.com/server/token',
                 'client_id': 'server_client_id',
