@@ -13,27 +13,28 @@ from profiles.logging import configure_logging
 
 os.umask(int('002', 8))
 
-config_file = configparser.ConfigParser()
-config_file.read('app.cfg')
+CONFIG_FILE = configparser.ConfigParser()
+CONFIG_FILE.read('app.cfg')
 
-clients_data = yaml.load(open('clients.yaml')) or {}
-clients = Clients(*[Client(name, **clients_data[name]) for name in clients_data])
+CLIENTS_DATA = yaml.load(open('clients.yaml')) or {}
+CLIENTS = Clients(*[Client(name, **CLIENTS_DATA[name]) for name in CLIENTS_DATA])
 
-config = create_app_config(config_file)
-configure_logging(config.name, getattr(logging, config.logging['level']), config.logging['path'])
-app = create_app(config, clients)
-manager = Manager(app)
+CONFIG = create_app_config(CONFIG_FILE)
+configure_logging(CONFIG.name, getattr(logging, CONFIG.logging['level']), CONFIG.logging['path'])
+APP = create_app(CONFIG, CLIENTS)
+MANAGER = Manager(APP)
 
 
 def make_shell_context() -> dict:
-    return {'app': app}
+    return {'app': APP}
 
 
-manager.add_command('db', MigrateCommand)
-manager.add_command('runserver', Server())
-manager.add_command('shell', Shell(make_context=make_shell_context))
+MANAGER.add_command('db', MigrateCommand)
+MANAGER.add_command('runserver', Server())
+MANAGER.add_command('shell', Shell(make_context=make_shell_context))
 
-[manager.add_command(c.NAME, c) for c in app.commands]
+for c in APP.commands:
+    MANAGER.add_command(c.NAME, c)
 
 if __name__ == '__main__':
-    manager.run()
+    MANAGER.run()
