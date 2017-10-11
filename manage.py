@@ -36,5 +36,8 @@ MANAGER.add_command('shell', Shell(make_context=make_shell_context))
 for c in APP.commands:
     MANAGER.add_command(c.NAME, c)
 
+# pylint: disable=invalid-name
+app = APP
+
 if __name__ == '__main__':
     MANAGER.run()
