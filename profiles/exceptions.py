@@ -55,6 +55,10 @@ class ClientInvalidScope(ClientError):
     error = 'invalid_scope'
 
 
+class AffiliationNotFound(Exception):
+    pass
+
+
 class OrcidTokenNotFound(Exception):
     pass
 
