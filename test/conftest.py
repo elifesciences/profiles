@@ -5,6 +5,7 @@ from _pytest.fixtures import FixtureRequest
 from flask import Flask
 from flask.testing import FlaskClient
 from flask_sqlalchemy import SQLAlchemy
+from hypothesis import settings as hyp_settings
 from pytest import fixture
 from sqlalchemy.orm import scoped_session
 
@@ -18,6 +19,9 @@ TEST_DATABASE_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../build/' 
 TEST_DATABASE_URI = 'sqlite:///' + TEST_DATABASE_PATH
 
 logging.disable(logging.CRITICAL)
+
+hyp_settings.register_profile("default", hyp_settings(database_file='build/hypothesis'))
+hyp_settings.load_profile('default')
 
 
 @fixture(scope='session')

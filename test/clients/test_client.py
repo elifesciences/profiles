@@ -1,5 +1,6 @@
 from hypothesis import given
 from hypothesis.strategies import text
+
 from profiles.clients import Client
 
 
