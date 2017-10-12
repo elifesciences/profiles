@@ -7,6 +7,10 @@ from requests import RequestException, Response
 API_VERSION = 'v2.0'
 LOGGER = logging.getLogger(__name__)
 
+VISIBILITY_PUBLIC = 'PUBLIC'
+VISIBILITY_LIMITED = 'LIMITED'
+VISIBILITY_PRIVATE = 'PRIVATE'
+
 
 class OrcidClient(object):
     def __init__(self, api_uri: str) -> None:
