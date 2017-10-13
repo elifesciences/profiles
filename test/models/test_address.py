@@ -38,3 +38,25 @@ def test_it_can_be_compared():
     assert address == address1
     assert address != address2
     assert address != address3
+
+
+def test_it_can_return_formatted_list():
+    address = Address(countries.get('GB'), 'City', 'Region')
+
+    assert address.get_formatted() == ['City', 'Region', 'GB']
+
+    # TODO test it will remove None values
+
+
+def test_it_can_return_components():
+    address = Address(countries.get('GB'), 'City', 'Region')
+
+    assert address.get_components() == {
+        "locality": [
+            "City"
+        ],
+        "area": [
+            "Region"
+        ],
+        "country": "United Kingdom of Great Britain and Northern Ireland"
+    }

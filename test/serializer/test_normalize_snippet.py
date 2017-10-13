@@ -1,4 +1,8 @@
-from profiles.models import Name, Profile
+from datetime import datetime
+
+from iso3166 import countries
+
+from profiles.models import Address, Affiliation, Name, Profile
 from profiles.serializer.normalizer import normalize_snippet
 
 
@@ -28,3 +32,32 @@ def test_it_normalizes_profile_snippets():
         },
         'orcid': '0000-0002-1825-0097',
     }
+
+
+def test_it_normalizes_affiliation_snippet():
+    address = Address(countries.get('gb'), 'City', 'Region')
+    affiliation = Affiliation('1', address=address, organisation='Org', department='Dep', starts=datetime.now())
+
+    assert normalize_snippet(affiliation) == {
+        "name": [
+            "Dep",
+            "Org"
+        ],
+        "address": {
+            "formatted": [
+                "City",
+                "Region",
+                "GB"
+            ],
+            "components": {
+                "locality": [
+                    "City"
+                ],
+                "area": [
+                    "Region"
+                ],
+                "country": "United Kingdom of Great Britain and Northern Ireland"
+            }
+        }
+    }
+

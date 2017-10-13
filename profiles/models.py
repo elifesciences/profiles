@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Iterable, Optional
+from typing import Any, Dict, Iterable, List, Optional
 
 from iso3166 import Country
 import pendulum
@@ -62,6 +62,16 @@ class Address(object):
     def __composite_values__(self) -> Iterable[Optional[str]]:
         return self.city, self.region, self.country
 
+    def get_formatted(self) -> List[str]:
+        return [self.city, self.region, self.country.alpha2]
+
+    def get_components(self) -> Dict:
+        return {
+            "locality": [self.city],
+            "area": [self.region],
+            "country": self.country.name
+        }
+
     def __repr__(self) -> str:
         return '<Address %r %r %r>' % (self.city, self.region, self.country.alpha2)
 
@@ -100,6 +110,18 @@ class Affiliation(db.Model):
         self.starts = pendulum.timezone('utc').convert(starts)
         self.ends = pendulum.timezone('utc').convert(ends) if ends else None
         self.restricted = restricted
+
+    def get_name_list(self) -> List[str]:
+        return [self.department, self.organisation]
+
+    def is_current(self) -> bool:
+        time_now = pendulum.timezone('utc').convert(datetime.now())
+
+        if self.starts <= time_now:
+            if not self.ends or self.ends > time_now:
+                return True
+
+        return False
 
     def __repr__(self) -> str:
         return '<Affiliation %r>' % self.id
@@ -147,6 +169,12 @@ class Profile(db.Model):
                 return affiliation
 
         raise AffiliationNotFound('Affiliation with the ID {} not found'.format(id))
+
+    def get_affiliations(self, current_only: bool = True) -> List[Affiliation]:
+        if current_only:
+            return [aff for aff in self.affiliations if aff.is_current()]
+        else:
+            return [aff for aff in self.affiliations]
 
     def remove_affiliation(self, affiliation_id: str) -> None:
         for affiliation in self.affiliations:

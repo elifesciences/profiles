@@ -158,3 +158,8 @@ def test_profile_not_found(test_client: FlaskClient) -> None:
 
     assert response.status_code == 404
     assert response.headers.get('Content-Type') == 'application/problem+json'
+
+# TODO has valid affiliation data in response
+# TODO has valid email addresses in response
+# TODO can validate profile against json schema
+# TODO can validate affiliation against json schema
