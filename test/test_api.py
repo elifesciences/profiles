@@ -1,8 +1,11 @@
+from datetime import datetime
 import json
 
 from flask.testing import FlaskClient
+from iso3166 import countries
 
-from profiles.models import Name, Profile, db
+from profiles.models import Affiliation, Address, Name, Profile, db
+from profiles.utilities import validate_json
 
 
 def test_empty_list_of_profiles(test_client: FlaskClient) -> None:
@@ -159,7 +162,74 @@ def test_profile_not_found(test_client: FlaskClient) -> None:
     assert response.status_code == 404
     assert response.headers.get('Content-Type') == 'application/problem+json'
 
-# TODO has valid affiliation data in response
-# TODO has valid email addresses in response
-# TODO can validate profile against json schema
-# TODO can validate affiliation against json schema
+
+def test_get_profile_response_contains_email_addresses(test_client: FlaskClient) -> None:
+    profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
+    profile.add_email_address('1@example.com')
+    profile.add_email_address('2@example.com')
+
+    db.session.add(profile)
+    db.session.commit()
+
+    response = test_client.get('/profiles/a1b2c3d4')
+    response_data = json.loads(response.data.decode('UTF-8'))
+
+    assert response.status_code == 200
+    assert response.headers.get('Content-Type') == 'application/vnd.elife.profile+json;version=1'
+    assert response_data['emailAddresses'] == ['1@example.com', '2@example.com']
+
+
+def test_get_profile_response_contains_affiliations(test_client: FlaskClient) -> None:
+    address = Address(country=countries.get('gb'), city='City', region='Region')
+    affiliation = Affiliation('1', address=address, organisation='Org',
+                              department='Dep', starts=datetime.now())
+
+    profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
+
+    db.session.add(profile)
+    profile.add_affiliation(affiliation)
+
+    db.session.commit()
+
+    response = test_client.get('/profiles/a1b2c3d4')
+    response_data = json.loads(response.data.decode('UTF-8'))
+
+    assert response.status_code == 200
+    assert response.headers.get('Content-Type') == 'application/vnd.elife.profile+json;version=1'
+    assert len(response_data['affiliations']) == 1
+    assert response_data['affiliations'][0]['name'] == ['Dep', 'Org']
+    assert response_data['affiliations'][0]['address']['formatted'] == ['City', 'Region', 'GB']
+
+
+def test_get_profile_response_against_json_schema(test_client: FlaskClient) -> None:
+    address = Address(country=countries.get('gb'), city='City', region='Region')
+    affiliation = Affiliation('1', address=address, organisation='Org',
+                              department='Dep', starts=datetime.now())
+
+    profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
+
+    db.session.add(profile)
+    profile.add_affiliation(affiliation)
+
+    db.session.commit()
+
+    response = test_client.get('/profiles/a1b2c3d4')
+    response_data = json.loads(response.data.decode('UTF-8'))
+
+    assert validate_json(response_data, schema_name='profile.v1') is True
+
+
+def test_get_list_of_profiles_response_against_json_schema(test_client: FlaskClient) -> None:
+    for number in range(1, 11):
+        number = str(number).zfill(2)
+        db.session.add(Profile(str(number), Name('Profile %s' % number)))
+    db.session.commit()
+
+    response = test_client.get('/profiles?page=1&per-page=5')
+
+    assert response.status_code == 200
+    assert response.headers.get(
+        'Content-Type') == 'application/vnd.elife.profile-list+json;version=1'
+
+    response_data = json.loads(response.data.decode('UTF-8'))
+    assert validate_json(response_data, schema_name='profile-list.v1') is True

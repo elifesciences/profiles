@@ -1,8 +1,12 @@
+import os
+import json
 import random
 import string
 from datetime import datetime
 
 import pendulum
+from profiles.exceptions import SchemaNotFound
+from jsonschema import validate, SchemaError, ValidationError
 
 
 def expires_at(expires_in: int) -> datetime:
@@ -22,3 +26,25 @@ def guess_index_name(name: str) -> str:
 
 def remove_none_values(items: dict) -> dict:
     return dict(filter(lambda item: item[1] is not None, items.items()))
+
+
+def validate_json(data: dict, schema_name: str):
+    schema_dir = 'test/schema'  # Will be replaced with elife_api.schema_directory
+
+    schema_path = os.path.join(schema_dir, '{}.json'.format(schema_name))
+
+    try:
+        with open(schema_path) as schema_file:
+            validate(data, schema=json.load(schema_file))
+        # data successfully validated
+        return True
+    except FileNotFoundError:
+        raise SchemaNotFound('Could not find schema {}'.format(schema_path))
+    except (SchemaError, ValidationError):
+        '''
+        Need to re raise with schema/validation failure information, 
+        though as this will be replaced by api-validator-python
+        leaving for now
+        '''
+        # validation failed
+        return False

@@ -2,7 +2,13 @@ from datetime import datetime
 
 from iso3166 import countries
 
-from profiles.models import Address, Affiliation, Name, Profile
+from profiles.models import (
+    Address,
+    Affiliation,
+    EmailAddress,
+    Name,
+    Profile
+)
 from profiles.serializer.normalizer import normalize_snippet
 
 
@@ -61,3 +67,8 @@ def test_it_normalizes_affiliation_snippet():
         }
     }
 
+
+def test_it_normalizes_email_address():
+    email_address = EmailAddress('1@example.com')
+
+    assert normalize_snippet(email_address) == '1@example.com'

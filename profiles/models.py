@@ -60,7 +60,7 @@ class Address(object):
         self.country = country
 
     def __composite_values__(self) -> Iterable[Optional[str]]:
-        return self.city, self.region, self.country
+        return self.country, self.city, self.region
 
     def get_formatted(self) -> List[str]:
         return [self.city, self.region, self.country.alpha2]
@@ -89,7 +89,7 @@ class Affiliation(db.Model):
     id = db.Column(db.Text(), primary_key=True)
     department = db.Column(db.Text())
     organisation = db.Column(db.Text(), nullable=False)
-    address = composite(Address, '_city', '_region', '_country')
+    address = composite(Address, '_country', '_city', '_region')
     _city = db.Column(db.Text(), name='city', nullable=False)
     _region = db.Column(db.Text(), name='region')
     _country = db.Column(ISO3166Country, name='country', nullable=False)
@@ -172,9 +172,10 @@ class Profile(db.Model):
 
     def get_affiliations(self, current_only: bool = True) -> List[Affiliation]:
         if current_only:
-            return [aff for aff in self.affiliations if aff.is_current()]
-        else:
-            return [aff for aff in self.affiliations]
+            return sorted([aff for aff in self.affiliations if aff.is_current()],
+                          key=lambda k: k.position)
+
+        return sorted([aff for aff in self.affiliations], key=lambda k: k.position)
 
     def remove_affiliation(self, affiliation_id: str) -> None:
         for affiliation in self.affiliations:

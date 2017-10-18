@@ -1,7 +1,7 @@
 from functools import singledispatch
 from typing import Any
 
-from profiles.models import Affiliation, Name, Profile
+from profiles.models import Affiliation, EmailAddress, Name, Profile
 
 
 @singledispatch
@@ -17,8 +17,8 @@ def normalize_snippet(value: Any) -> str:
 @normalize.register(Profile)
 def normalize_profile(profile: Profile) -> dict:
     data = normalize_profile_snippet(profile)
+    data['emailAddresses'] = [normalize_snippet(email) for email in profile.email_addresses]
     data['affiliations'] = [normalize_snippet(aff) for aff in profile.get_affiliations()]
-    # TODO normalize email addresses
 
     return data
 
@@ -32,6 +32,11 @@ def normalize_affiliation_snippet(affiliation: Affiliation) -> dict:
             "components": affiliation.address.get_components()
         }
     }
+
+
+@normalize_snippet.register(EmailAddress)
+def normalize_email_address_snippet(email_address: EmailAddress):
+    return email_address.email
 
 
 @normalize_snippet.register(Profile)
