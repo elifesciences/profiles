@@ -160,5 +160,3 @@ def test_it_normalizes_profile_with_affiliations():
             }
         ]
     }
-
-

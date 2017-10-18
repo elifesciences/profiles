@@ -1,12 +1,12 @@
-import os
 import json
+import os
 import random
 import string
 from datetime import datetime
 
+from jsonschema import SchemaError, ValidationError, validate
 import pendulum
 from profiles.exceptions import SchemaNotFound
-from jsonschema import validate, SchemaError, ValidationError
 
 
 def expires_at(expires_in: int) -> datetime:
@@ -36,15 +36,11 @@ def validate_json(data: dict, schema_name: str):
     try:
         with open(schema_path) as schema_file:
             validate(data, schema=json.load(schema_file))
-        # data successfully validated
         return True
     except FileNotFoundError:
         raise SchemaNotFound('Could not find schema {}'.format(schema_path))
     except (SchemaError, ValidationError):
-        '''
-        Need to re raise with schema/validation failure information, 
-        though as this will be replaced by api-validator-python
-        leaving for now
-        '''
-        # validation failed
+        # Need to re raise with schema/validation failure information,
+        # though as this will be replaced by api-validator-python
+        # leaving for now
         return False

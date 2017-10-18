@@ -42,7 +42,8 @@ def test_it_normalizes_profile_snippets():
 
 def test_it_normalizes_affiliation_snippet():
     address = Address(countries.get('gb'), 'City', 'Region')
-    affiliation = Affiliation('1', address=address, organisation='Org', department='Dep', starts=datetime.now())
+    affiliation = Affiliation('1', address=address, organisation='Org',
+                              department='Dep', starts=datetime.now())
 
     assert normalize_snippet(affiliation) == {
         "name": [
