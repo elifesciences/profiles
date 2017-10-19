@@ -62,16 +62,6 @@ class Address(object):
     def __composite_values__(self) -> Iterable[Optional[str]]:
         return self.country, self.city, self.region
 
-    def get_formatted(self) -> List[str]:
-        return [self.city, self.region, self.country.alpha2]
-
-    def get_components(self) -> Dict:
-        return {
-            "locality": [self.city],
-            "area": [self.region],
-            "country": self.country.name
-        }
-
     def __repr__(self) -> str:
         return '<Address %r %r %r>' % (self.city, self.region, self.country.alpha2)
 
@@ -110,9 +100,6 @@ class Affiliation(db.Model):
         self.starts = pendulum.timezone('utc').convert(starts)
         self.ends = pendulum.timezone('utc').convert(ends) if ends else None
         self.restricted = restricted
-
-    def get_name_list(self) -> List[str]:
-        return [self.department, self.organisation]
 
     def is_current(self) -> bool:
         starts = pendulum.instance(self.starts)

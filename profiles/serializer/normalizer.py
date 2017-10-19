@@ -17,25 +17,33 @@ def normalize_snippet(value: Any) -> str:
 @normalize.register(Profile)
 def normalize_profile(profile: Profile) -> dict:
     data = normalize_profile_snippet(profile)
-    data['emailAddresses'] = [normalize_snippet(email) for email in profile.email_addresses]
-    data['affiliations'] = [normalize_snippet(aff) for aff in profile.get_affiliations()]
+    data['emailAddresses'] = [normalize(email) for email in profile.email_addresses]
+    data['affiliations'] = [normalize(aff) for aff in profile.get_affiliations()]
 
     return data
 
 
-@normalize_snippet.register(Affiliation)
-def normalize_affiliation_snippet(affiliation: Affiliation) -> dict:
+@normalize.register(Affiliation)
+def normalize_affiliation(affiliation: Affiliation) -> dict:
     return {
-        "name": affiliation.get_name_list(),
+        "name": [affiliation.department, affiliation.organisation],
         "address": {
-            "formatted": affiliation.address.get_formatted(),
-            "components": affiliation.address.get_components()
+            "formatted": [
+                affiliation.address.city,
+                affiliation.address.region,
+                affiliation.address.country.alpha2,
+            ],
+            "components": {
+                "locality": [affiliation.address.city],
+                "area": [affiliation.address.region],
+                "country": affiliation.address.country.name
+            }
         }
     }
 
 
-@normalize_snippet.register(EmailAddress)
-def normalize_email_address_snippet(email_address: EmailAddress):
+@normalize.register(EmailAddress)
+def normalize_email_address(email_address: EmailAddress):
     return email_address.email
 
 

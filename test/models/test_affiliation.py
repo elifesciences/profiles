@@ -89,14 +89,6 @@ def test_it_may_be_restricted():
     assert has_not.restricted is False
 
 
-def test_it_can_get_combined_name_data():
-    address = Address(countries.get('gb'), 'City')
-    affiliation = Affiliation('1', address=address, organisation='Org',
-                              department='Dep', starts=datetime.now())
-
-    assert affiliation.get_name_list() == ['Dep', 'Org']
-
-
 def test_it_can_detect_if_current_without_ends_date():
     start_date = datetime(2017, 1, 1, 1, 0, 0, tzinfo=timezone(timedelta(hours=1)))
     address = Address(countries.get('gb'), 'City')

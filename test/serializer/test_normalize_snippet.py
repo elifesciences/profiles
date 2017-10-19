@@ -40,36 +40,3 @@ def test_it_normalizes_profile_snippets():
     }
 
 
-def test_it_normalizes_affiliation_snippet():
-    address = Address(countries.get('gb'), 'City', 'Region')
-    affiliation = Affiliation('1', address=address, organisation='Org',
-                              department='Dep', starts=datetime.now())
-
-    assert normalize_snippet(affiliation) == {
-        "name": [
-            "Dep",
-            "Org"
-        ],
-        "address": {
-            "formatted": [
-                "City",
-                "Region",
-                "GB"
-            ],
-            "components": {
-                "locality": [
-                    "City"
-                ],
-                "area": [
-                    "Region"
-                ],
-                "country": "United Kingdom of Great Britain and Northern Ireland"
-            }
-        }
-    }
-
-
-def test_it_normalizes_email_address():
-    email_address = EmailAddress('1@example.com')
-
-    assert normalize_snippet(email_address) == '1@example.com'

@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 from iso3166 import countries
 
-from profiles.models import Address, Affiliation, Name, Profile
+from profiles.models import Address, Affiliation, EmailAddress, Name, Profile
 from profiles.serializer.normalizer import normalize
 
 
@@ -162,3 +162,38 @@ def test_it_normalizes_profile_with_affiliations():
             }
         ]
     }
+
+
+def test_it_normalizes_affiliation():
+    address = Address(countries.get('gb'), 'City', 'Region')
+    affiliation = Affiliation('1', address=address, organisation='Org',
+                              department='Dep', starts=datetime.now())
+
+    assert normalize(affiliation) == {
+        "name": [
+            "Dep",
+            "Org"
+        ],
+        "address": {
+            "formatted": [
+                "City",
+                "Region",
+                "GB"
+            ],
+            "components": {
+                "locality": [
+                    "City"
+                ],
+                "area": [
+                    "Region"
+                ],
+                "country": "United Kingdom of Great Britain and Northern Ireland"
+            }
+        }
+    }
+
+
+def test_it_normalizes_email_address():
+    email_address = EmailAddress('1@example.com')
+
+    assert normalize(email_address) == '1@example.com'
