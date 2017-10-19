@@ -19,6 +19,7 @@ def test_empty_list_of_profiles(test_client: FlaskClient) -> None:
 
     assert data['total'] == 0
     assert not data['items']
+    assert validate_json(data, schema_name='profile-list.v1') is True
 
 
 def test_list_of_profiles(test_client: FlaskClient) -> None:
@@ -35,6 +36,7 @@ def test_list_of_profiles(test_client: FlaskClient) -> None:
 
     data = json.loads(response.data.decode('UTF-8'))
 
+    assert validate_json(data, schema_name='profile-list.v1') is True
     assert data['total'] == 30
     assert len(data['items']) == 20
     for number in range(20, 0):
@@ -55,6 +57,7 @@ def test_list_of_profiles_in_ascending_order(test_client: FlaskClient) -> None:
 
     data = json.loads(response.data.decode('UTF-8'))
 
+    assert validate_json(data, schema_name='profile-list.v1') is True
     assert data['total'] == 30
     assert len(data['items']) == 20
     for number in range(1, 21):
@@ -75,6 +78,7 @@ def test_list_of_profiles_in_pages(test_client: FlaskClient) -> None:
 
     data = json.loads(response.data.decode('UTF-8'))
 
+    assert validate_json(data, schema_name='profile-list.v1') is True
     assert data['total'] == 10
     assert len(data['items']) == 5
     for number in range(5, 0):
@@ -88,6 +92,7 @@ def test_list_of_profiles_in_pages(test_client: FlaskClient) -> None:
 
     data = json.loads(response.data.decode('UTF-8'))
 
+    assert validate_json(data, schema_name='profile-list.v1') is True
     assert data['total'] == 10
     assert len(data['items']) == 5
     for number in range(5, 0):
@@ -153,7 +158,11 @@ def test_get_profile(test_client: FlaskClient) -> None:
 
     assert response.status_code == 200
     assert response.headers.get('Content-Type') == 'application/vnd.elife.profile+json;version=1'
-    assert json.loads(response.data.decode('UTF-8'))['id'] == 'a1b2c3d4'
+
+    data = json.loads(response.data.decode('UTF-8'))
+
+    assert validate_json(data, schema_name='profile.v1') is True
+    assert data['id'] == 'a1b2c3d4'
 
 
 def test_profile_not_found(test_client: FlaskClient) -> None:
@@ -172,11 +181,12 @@ def test_get_profile_response_contains_email_addresses(test_client: FlaskClient)
     db.session.commit()
 
     response = test_client.get('/profiles/a1b2c3d4')
-    response_data = json.loads(response.data.decode('UTF-8'))
+    data = json.loads(response.data.decode('UTF-8'))
 
     assert response.status_code == 200
     assert response.headers.get('Content-Type') == 'application/vnd.elife.profile+json;version=1'
-    assert response_data['emailAddresses'] == ['1@example.com', '2@example.com']
+    assert validate_json(data, schema_name='profile.v1') is True
+    assert data['emailAddresses'] == ['1@example.com', '2@example.com']
 
 
 def test_get_profile_response_contains_affiliations(test_client: FlaskClient) -> None:
@@ -193,45 +203,11 @@ def test_get_profile_response_contains_affiliations(test_client: FlaskClient) ->
     db.session.commit()
 
     response = test_client.get('/profiles/a1b2c3d4')
-    response_data = json.loads(response.data.decode('UTF-8'))
+    data = json.loads(response.data.decode('UTF-8'))
 
     assert response.status_code == 200
     assert response.headers.get('Content-Type') == 'application/vnd.elife.profile+json;version=1'
-    assert len(response_data['affiliations']) == 1
-    assert response_data['affiliations'][0]['name'] == ['Dep', 'Org']
-    assert response_data['affiliations'][0]['address']['formatted'] == ['City', 'Region', 'GB']
-
-
-def test_get_profile_response_against_json_schema(test_client: FlaskClient) -> None:
-    start_date = datetime(2017, 1, 1, 1, 0, 0, tzinfo=timezone(timedelta(hours=1)))
-    address = Address(country=countries.get('gb'), city='City', region='Region')
-    affiliation = Affiliation('1', address=address, organisation='Org',
-                              department='Dep', starts=start_date)
-
-    profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
-
-    db.session.add(profile)
-    profile.add_affiliation(affiliation)
-
-    db.session.commit()
-
-    response = test_client.get('/profiles/a1b2c3d4')
-    response_data = json.loads(response.data.decode('UTF-8'))
-
-    assert validate_json(response_data, schema_name='profile.v1') is True
-
-
-def test_get_list_of_profiles_response_against_json_schema(test_client: FlaskClient) -> None:
-    for number in range(1, 11):
-        number = str(number).zfill(2)
-        db.session.add(Profile(str(number), Name('Profile %s' % number)))
-    db.session.commit()
-
-    response = test_client.get('/profiles?page=1&per-page=5')
-
-    assert response.status_code == 200
-    assert response.headers.get(
-        'Content-Type') == 'application/vnd.elife.profile-list+json;version=1'
-
-    response_data = json.loads(response.data.decode('UTF-8'))
-    assert validate_json(response_data, schema_name='profile-list.v1') is True
+    assert validate_json(data, schema_name='profile.v1') is True
+    assert len(data['affiliations']) == 1
+    assert data['affiliations'][0]['name'] == ['Dep', 'Org']
+    assert data['affiliations'][0]['address']['formatted'] == ['City', 'Region', 'GB']
