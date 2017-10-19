@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 from iso3166 import countries
 
@@ -74,9 +74,10 @@ def test_it_normalizes_profile_with_multiple_email_addresses_with_primary_addres
 
 
 def test_it_normalizes_profile_with_an_affiliation():
+    start_date = datetime(2017, 1, 1, 1, 0, 0, tzinfo=timezone(timedelta(hours=1)))
     address = Address(countries.get('gb'), 'City', 'Region')
     affiliation = Affiliation('1', address=address, organisation='Org',
-                              department='Dep', starts=datetime.now())
+                              department='Dep', starts=start_date)
     profile = Profile('12345678', Name('Foo Bar', 'Bar, Foo'))
 
     profile.add_affiliation(affiliation)
@@ -116,12 +117,13 @@ def test_it_normalizes_profile_with_an_affiliation():
 
 
 def test_it_normalizes_profile_with_affiliations():
+    start_date = datetime(2017, 1, 1, 1, 0, 0, tzinfo=timezone(timedelta(hours=1)))
     address = Address(countries.get('gb'), 'City', 'Region')
     address2 = Address(countries.get('gb'), 'City2', 'Region2')
     affiliation = Affiliation('1', address=address, organisation='Org',
-                              department='Dep', starts=datetime.now())
+                              department='Dep', starts=start_date)
     affiliation2 = Affiliation('2', address=address2, organisation='Org2',
-                               department='Dep', starts=datetime.now())
+                               department='Dep', starts=start_date)
 
     profile = Profile('12345678', Name('Foo Bar', 'Bar, Foo'))
 

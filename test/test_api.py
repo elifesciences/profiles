@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 from flask.testing import FlaskClient
 from iso3166 import countries
@@ -180,9 +180,10 @@ def test_get_profile_response_contains_email_addresses(test_client: FlaskClient)
 
 
 def test_get_profile_response_contains_affiliations(test_client: FlaskClient) -> None:
+    start_date = datetime(2017, 1, 1, 1, 0, 0, tzinfo=timezone(timedelta(hours=1)))
     address = Address(country=countries.get('gb'), city='City', region='Region')
     affiliation = Affiliation('1', address=address, organisation='Org',
-                              department='Dep', starts=datetime.now())
+                              department='Dep', starts=start_date)
 
     profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
 
@@ -202,9 +203,10 @@ def test_get_profile_response_contains_affiliations(test_client: FlaskClient) ->
 
 
 def test_get_profile_response_against_json_schema(test_client: FlaskClient) -> None:
+    start_date = datetime(2017, 1, 1, 1, 0, 0, tzinfo=timezone(timedelta(hours=1)))
     address = Address(country=countries.get('gb'), city='City', region='Region')
     affiliation = Affiliation('1', address=address, organisation='Org',
-                              department='Dep', starts=datetime.now())
+                              department='Dep', starts=start_date)
 
     profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
 

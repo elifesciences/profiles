@@ -115,13 +115,10 @@ class Affiliation(db.Model):
         return [self.department, self.organisation]
 
     def is_current(self) -> bool:
-        time_now = pendulum.timezone('utc').convert(datetime.now())
+        starts = pendulum.instance(self.starts)
+        ends = pendulum.instance(self.ends) if self.ends else None
 
-        if self.starts <= time_now:
-            if not self.ends or self.ends > time_now:
-                return True
-
-        return False
+        return starts.is_past() and (not ends or ends.is_future())
 
     def __repr__(self) -> str:
         return '<Affiliation %r>' % self.id
