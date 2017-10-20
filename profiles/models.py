@@ -195,7 +195,7 @@ class Profile(db.Model):
 
     def get_email_addresses(self, include_restricted: bool = False) -> List[str]:
         if include_restricted:
-            return [email for email in self.email_addresses]
+            return self.email_addresses
 
         return [email for email in self.email_addresses if not email.restricted]
 

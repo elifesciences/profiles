@@ -227,7 +227,11 @@ def test_get_profile_response_contains_affiliations(test_client: FlaskClient) ->
     assert validate_json(data, schema_name='profile.v1') is True
     assert len(data['affiliations']) == 1
     assert data['affiliations'][0]['name'] == ['Dep', 'Org']
-    assert data['affiliations'][0]['address']['formatted'] == ['City', 'Region', 'GB']
+    assert data['affiliations'][0]['address']['formatted'] == [
+        'City',
+        'Region',
+        'United Kingdom of Great Britain and Northern Ireland'
+    ]
 
 
 def test_it_does_not_return_restricted_affiliations(test_client: FlaskClient) -> None:

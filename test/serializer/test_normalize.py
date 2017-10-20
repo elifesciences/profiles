@@ -99,7 +99,7 @@ def test_it_normalizes_profile_with_an_affiliation():
                     "formatted": [
                         "City",
                         "Region",
-                        "GB"
+                        "United Kingdom of Great Britain and Northern Ireland"
                     ],
                     "components": {
                         "locality": [
@@ -141,7 +141,11 @@ def test_it_normalizes_profile_with_affiliations():
             {
                 "name": ["Dep", "Org2"],
                 "address": {
-                    "formatted": ["City2", "Region2", "GB"],
+                    "formatted": [
+                        "City2",
+                        "Region2",
+                        "United Kingdom of Great Britain and Northern Ireland"
+                    ],
                     "components": {
                         "locality": ["City2"],
                         "area": ["Region2"],
@@ -152,7 +156,11 @@ def test_it_normalizes_profile_with_affiliations():
             {
                 "name": ["Dep", "Org"],
                 "address": {
-                    "formatted": ["City", "Region", "GB"],
+                    "formatted": [
+                        "City",
+                        "Region",
+                        "United Kingdom of Great Britain and Northern Ireland"
+                    ],
                     "components": {
                         "locality": ["City"],
                         "area": ["Region"],
@@ -178,7 +186,7 @@ def test_it_normalizes_affiliation():
             "formatted": [
                 "City",
                 "Region",
-                "GB"
+                "United Kingdom of Great Britain and Northern Ireland"
             ],
             "components": {
                 "locality": [

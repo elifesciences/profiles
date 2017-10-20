@@ -31,7 +31,7 @@ def normalize_affiliation(affiliation: Affiliation) -> dict:
             "formatted": [
                 affiliation.address.city,
                 affiliation.address.region,
-                affiliation.address.country.alpha2,
+                affiliation.address.country.name,
             ],
             "components": {
                 "locality": [affiliation.address.city],
