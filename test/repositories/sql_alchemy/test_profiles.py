@@ -73,6 +73,54 @@ def test_it_limits_retrying_when_generating_the_next_profile_id():
         assert profiles.next_id()
 
 
+def test_it_lists_profiles():
+    profiles = SQLAlchemyProfiles(db)
+    profiles.add(Profile('11111111', Name('Name 1')))
+    profiles.add(Profile('11111112', Name('Name 2')))
+    profiles.add(Profile('11111113', Name('Name 3')))
+
+    profiles_list = profiles.list()
+
+    assert len(profiles_list) == 3
+    assert str(profiles_list[0].name) == 'Name 3'
+    assert str(profiles_list[1].name) == 'Name 2'
+    assert str(profiles_list[2].name) == 'Name 1'
+
+    profiles_list = profiles.list(desc=False)
+
+    assert len(profiles_list) == 3
+    assert str(profiles_list[0].name) == 'Name 1'
+    assert str(profiles_list[1].name) == 'Name 2'
+    assert str(profiles_list[2].name) == 'Name 3'
+
+
+def test_it_lists_profiles_in_slices():
+    profiles = SQLAlchemyProfiles(db)
+    profiles.add(Profile('11111111', Name('Name 1')))
+    profiles.add(Profile('11111112', Name('Name 2')))
+    profiles.add(Profile('11111113', Name('Name 3')))
+
+    profiles_list = profiles.list(limit=1)
+
+    assert len(profiles_list) == 1
+    assert str(profiles_list[0].name) == 'Name 3'
+
+    profiles_list = profiles.list(offset=1)
+
+    assert len(profiles_list) == 2
+    assert str(profiles_list[0].name) == 'Name 2'
+    assert str(profiles_list[1].name) == 'Name 1'
+
+    profiles_list = profiles.list(limit=1, offset=1)
+
+    assert len(profiles_list) == 1
+    assert str(profiles_list[0].name) == 'Name 2'
+
+    profiles_list = profiles.list(offset=10)
+
+    assert len(profiles_list) == 0
+
+
 def test_it_clears_profiles():
     profiles = SQLAlchemyProfiles(db)
     profiles.add(Profile('11111111', Name('name')))

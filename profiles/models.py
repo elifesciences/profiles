@@ -1,10 +1,11 @@
 from datetime import datetime
-from typing import Any, Iterable, Optional
+from typing import Any, Iterable, List, Optional
 
 from iso3166 import Country
 import pendulum
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import composite
+from sqlalchemy.sql.elements import UnaryExpression
 
 from profiles.database import ISO3166Country, UTCDateTime, db
 from profiles.exceptions import AffiliationNotFound
@@ -60,7 +61,7 @@ class Address(object):
         self.country = country
 
     def __composite_values__(self) -> Iterable[Optional[str]]:
-        return self.city, self.region, self.country
+        return self.country, self.city, self.region
 
     def __repr__(self) -> str:
         return '<Address %r %r %r>' % (self.city, self.region, self.country.alpha2)
@@ -79,7 +80,7 @@ class Affiliation(db.Model):
     id = db.Column(db.Text(), primary_key=True)
     department = db.Column(db.Text())
     organisation = db.Column(db.Text(), nullable=False)
-    address = composite(Address, '_city', '_region', '_country')
+    address = composite(Address, '_country', '_city', '_region')
     _city = db.Column(db.Text(), name='city', nullable=False)
     _region = db.Column(db.Text(), name='region')
     _country = db.Column(ISO3166Country, name='country', nullable=False)
@@ -100,6 +101,12 @@ class Affiliation(db.Model):
         self.starts = pendulum.timezone('utc').convert(starts)
         self.ends = pendulum.timezone('utc').convert(ends) if ends else None
         self.restricted = restricted
+
+    def is_current(self) -> bool:
+        starts = pendulum.instance(self.starts)
+        ends = pendulum.instance(self.ends) if self.ends else None
+
+        return starts.is_past() and (not ends or ends.is_future())
 
     def __repr__(self) -> str:
         return '<Affiliation %r>' % self.id
@@ -123,6 +130,10 @@ class Profile(db.Model):
         self.name = name
         self.orcid = orcid
 
+    @classmethod
+    def asc(cls) -> UnaryExpression:
+        return cls._index_name.asc()
+
     def add_affiliation(self, affiliation: Affiliation, position: int = 0) -> None:
         for existing_affiliation in self.affiliations:
             if existing_affiliation.id == affiliation.id:
@@ -141,12 +152,29 @@ class Profile(db.Model):
         self.affiliations.insert(position, affiliation)
         self.affiliations.reorder()
 
+    @classmethod
+    def desc(cls) -> UnaryExpression:
+        return cls._index_name.desc()
+
     def get_affiliation(self, affiliation_id: str) -> Affiliation:
         for affiliation in self.affiliations:
             if affiliation.id == affiliation_id:
                 return affiliation
 
         raise AffiliationNotFound('Affiliation with the ID {} not found'.format(id))
+
+    def get_affiliations(self, current_only: bool = True,
+                         include_restricted: bool = False) -> List[Affiliation]:
+
+        affiliations = self.affiliations
+
+        if not include_restricted:
+            affiliations = [aff for aff in affiliations if not aff.restricted]
+
+        if current_only:
+            affiliations = [aff for aff in affiliations if aff.is_current()]
+
+        return sorted([aff for aff in affiliations], key=lambda k: k.position)
 
     def remove_affiliation(self, affiliation_id: str) -> None:
         for affiliation in self.affiliations:
@@ -173,6 +201,12 @@ class Profile(db.Model):
             self.email_addresses.append(email_address)
 
         self.email_addresses.reorder()
+
+    def get_email_addresses(self, include_restricted: bool = False) -> List[str]:
+        if include_restricted:
+            return self.email_addresses
+
+        return [email for email in self.email_addresses if not email.restricted]
 
     def remove_email_address(self, email: str) -> None:
         for email_address in self.email_addresses:

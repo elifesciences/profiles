@@ -87,3 +87,41 @@ def test_it_may_be_restricted():
 
     assert has.restricted is True
     assert has_not.restricted is False
+
+
+def test_it_can_detect_if_current_without_ends_date():
+    start_date = datetime(2017, 1, 1, 1, 0, 0, tzinfo=timezone(timedelta(hours=1)))
+    address = Address(countries.get('gb'), 'City')
+    affiliation = Affiliation('1', address=address, organisation='Org',
+                              department='Dep', starts=start_date)
+
+    assert affiliation.is_current() is True
+
+
+def test_it_can_detect_if_current_with_ends_date():
+    start_date = datetime(2017, 1, 1, 1, 0, 0, tzinfo=timezone(timedelta(hours=1)))
+    ends_date = datetime(2100, 1, 1, 1, 0, 0, tzinfo=timezone(timedelta(hours=1)))
+    address = Address(countries.get('gb'), 'City')
+    affiliation = Affiliation('1', address=address, organisation='Org',
+                              department='Dep', starts=start_date, ends=ends_date)
+
+    assert affiliation.is_current() is True
+
+
+@freeze_time('2018-01-01 00:00:00')
+def test_it_can_detect_if_not_current_with_future_starts_date_and_no_ends_date():
+    address = Address(countries.get('gb'), 'City')
+    affiliation = Affiliation('1', address=address, organisation='Org',
+                              department='Dep', starts=datetime.now())
+
+    assert affiliation.is_current() is False
+
+
+def test_it_can_detect_if_not_current_with_past_starts_date_and_past_ends_date():
+    start_date = datetime(2017, 1, 1, 1, 0, 0, tzinfo=timezone(timedelta(hours=1)))
+    ends_date = datetime(2017, 2, 1, 1, 0, 0, tzinfo=timezone(timedelta(hours=1)))
+    address = Address(countries.get('gb'), 'City')
+    affiliation = Affiliation('1', address=address, organisation='Org',
+                              department='Dep', starts=start_date, ends=ends_date)
+
+    assert affiliation.is_current() is False

@@ -1,7 +1,7 @@
 import collections
 import string
 from abc import abstractmethod
-from typing import Callable
+from typing import Callable, List
 
 from flask_sqlalchemy import SQLAlchemy
 from retrying import retry
@@ -38,6 +38,10 @@ class Profiles(CanBeCleared, collections.Sized):
 
     @abstractmethod
     def next_id(self) -> str:
+        raise NotImplementedError
+
+    @abstractmethod
+    def list(self, limit: int = None, offset: int = 0, desc: bool = False) -> List[Profile]:
         raise NotImplementedError
 
 
@@ -95,6 +99,17 @@ class SQLAlchemyProfiles(Profiles):
             raise RuntimeError('Generated ID already in use')
 
         return profile_id
+
+    def list(self, limit: int = None, offset: int = 0, desc: bool = True) -> List[Profile]:
+
+        query = self.db.session.query(Profile)
+
+        if desc:
+            query = query.order_by(Profile.desc())
+        else:
+            query = query.order_by(Profile.asc())
+
+        return query.limit(limit).offset(offset).all()
 
     def clear(self) -> None:
         self.db.session.query(Profile).delete()

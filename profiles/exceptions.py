@@ -65,3 +65,7 @@ class OrcidTokenNotFound(Exception):
 
 class ProfileNotFound(Exception):
     pass
+
+
+class SchemaNotFound(Exception):
+    pass
