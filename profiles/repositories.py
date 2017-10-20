@@ -41,7 +41,7 @@ class Profiles(CanBeCleared, collections.Sized):
         raise NotImplementedError
 
     @abstractmethod
-    def list(self, limit: int = None, offset: int = 0, desc: bool = True) -> List[Profile]:
+    def list(self, limit: int = None, offset: int = 0, desc: bool = False) -> List[Profile]:
         raise NotImplementedError
 
 
@@ -101,12 +101,13 @@ class SQLAlchemyProfiles(Profiles):
         return profile_id
 
     def list(self, limit: int = None, offset: int = 0, desc: bool = True) -> List[Profile]:
+
         query = self.db.session.query(Profile)
 
         if desc:
-            query = query.order_by(Profile._index_name.desc())  # pylint: disable=protected-access
+            query = query.order_by(Profile.desc())
         else:
-            query = query.order_by(Profile._index_name.asc())  # pylint: disable=protected-access
+            query = query.order_by(Profile.asc())
 
         return query.limit(limit).offset(offset).all()
 

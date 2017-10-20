@@ -5,6 +5,7 @@ from iso3166 import Country
 import pendulum
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import composite
+from sqlalchemy.sql.elements import UnaryExpression
 
 from profiles.database import ISO3166Country, UTCDateTime, db
 from profiles.exceptions import AffiliationNotFound
@@ -129,6 +130,10 @@ class Profile(db.Model):
         self.name = name
         self.orcid = orcid
 
+    @classmethod
+    def asc(cls) -> UnaryExpression:
+        return cls._index_name.asc()
+
     def add_affiliation(self, affiliation: Affiliation, position: int = 0) -> None:
         for existing_affiliation in self.affiliations:
             if existing_affiliation.id == affiliation.id:
@@ -146,6 +151,10 @@ class Profile(db.Model):
 
         self.affiliations.insert(position, affiliation)
         self.affiliations.reorder()
+
+    @classmethod
+    def desc(cls) -> UnaryExpression:
+        return cls._index_name.desc()
 
     def get_affiliation(self, affiliation_id: str) -> Affiliation:
         for affiliation in self.affiliations:
