@@ -1,5 +1,5 @@
 alembic==0.9.5
--e git+https://github.com/elifesciences/api-validator-python.git#egg=api-validator-python
+-e git+https://github.com/elifesciences/api-validator-python.git@2971a2146321d48cc88c9c9f36e8fd72740dbfee#egg=api-validator-python
 astroid==1.5.3
 certifi==2017.7.27.1
 chardet==3.0.4
