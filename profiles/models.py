@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Iterable, List, Optional
 
 from iso3166 import Country
 import pendulum
@@ -154,12 +154,18 @@ class Profile(db.Model):
 
         raise AffiliationNotFound('Affiliation with the ID {} not found'.format(id))
 
-    def get_affiliations(self, current_only: bool = True) -> List[Affiliation]:
-        if current_only:
-            return sorted([aff for aff in self.affiliations if aff.is_current()],
-                          key=lambda k: k.position)
+    def get_affiliations(self, current_only: bool = True,
+                         include_restricted: bool = False) -> List[Affiliation]:
 
-        return sorted([aff for aff in self.affiliations], key=lambda k: k.position)
+        affiliations = self.affiliations
+
+        if not include_restricted:
+            affiliations = [aff for aff in affiliations if not aff.restricted]
+
+        if current_only:
+            affiliations = [aff for aff in affiliations if aff.is_current()]
+
+        return sorted([aff for aff in affiliations], key=lambda k: k.position)
 
     def remove_affiliation(self, affiliation_id: str) -> None:
         for affiliation in self.affiliations:
@@ -186,6 +192,12 @@ class Profile(db.Model):
             self.email_addresses.append(email_address)
 
         self.email_addresses.reorder()
+
+    def get_email_addresses(self, include_restricted: bool = False) -> List[str]:
+        if include_restricted:
+            return [email for email in self.email_addresses]
+
+        return [email for email in self.email_addresses if not email.restricted]
 
     def remove_email_address(self, email: str) -> None:
         for email_address in self.email_addresses:

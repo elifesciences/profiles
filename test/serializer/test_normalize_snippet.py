@@ -1,14 +1,4 @@
-from datetime import datetime
-
-from iso3166 import countries
-
-from profiles.models import (
-    Address,
-    Affiliation,
-    EmailAddress,
-    Name,
-    Profile
-)
+from profiles.models import Name, Profile
 from profiles.serializer.normalizer import normalize_snippet
 
 
@@ -38,5 +28,3 @@ def test_it_normalizes_profile_snippets():
         },
         'orcid': '0000-0002-1825-0097',
     }
-
-

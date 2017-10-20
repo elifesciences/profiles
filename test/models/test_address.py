@@ -38,4 +38,3 @@ def test_it_can_be_compared():
     assert address == address1
     assert address != address2
     assert address != address3
-

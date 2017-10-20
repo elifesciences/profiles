@@ -189,6 +189,23 @@ def test_get_profile_response_contains_email_addresses(test_client: FlaskClient)
     assert data['emailAddresses'] == ['1@example.com', '2@example.com']
 
 
+def test_does_not_contain_restricted_email_addresses(test_client: FlaskClient) -> None:
+    profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
+    profile.add_email_address('1@example.com')
+    profile.add_email_address('2@example.com', restricted=True)
+
+    db.session.add(profile)
+    db.session.commit()
+
+    response = test_client.get('/profiles/a1b2c3d4')
+    data = json.loads(response.data.decode('UTF-8'))
+
+    assert response.status_code == 200
+    assert response.headers.get('Content-Type') == 'application/vnd.elife.profile+json;version=1'
+    assert validate_json(data, schema_name='profile.v1') is True
+    assert data['emailAddresses'] == ['1@example.com']
+
+
 def test_get_profile_response_contains_affiliations(test_client: FlaskClient) -> None:
     start_date = datetime(2017, 1, 1, 1, 0, 0, tzinfo=timezone(timedelta(hours=1)))
     address = Address(country=countries.get('gb'), city='City', region='Region')
@@ -211,3 +228,30 @@ def test_get_profile_response_contains_affiliations(test_client: FlaskClient) ->
     assert len(data['affiliations']) == 1
     assert data['affiliations'][0]['name'] == ['Dep', 'Org']
     assert data['affiliations'][0]['address']['formatted'] == ['City', 'Region', 'GB']
+
+
+def test_it_does_not_return_restricted_affiliations(test_client: FlaskClient) -> None:
+    start_date = datetime(2017, 1, 1, 1, 0, 0, tzinfo=timezone(timedelta(hours=1)))
+    address = Address(country=countries.get('gb'), city='City', region='Region')
+    affiliation = Affiliation('1', address=address, organisation='Org',
+                              department='Dep', starts=start_date)
+
+    affiliation2 = Affiliation('2', address=address, organisation='Org2',
+                               department='Dep2', starts=start_date, restricted=True)
+
+    profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
+
+    db.session.add(profile)
+
+    profile.add_affiliation(affiliation)
+    profile.add_affiliation(affiliation2)
+
+    db.session.commit()
+
+    response = test_client.get('/profiles/a1b2c3d4')
+    data = json.loads(response.data.decode('UTF-8'))
+
+    assert response.status_code == 200
+    assert response.headers.get('Content-Type') == 'application/vnd.elife.profile+json;version=1'
+    assert validate_json(data, schema_name='profile.v1') is True
+    assert len(data['affiliations']) == 1
