@@ -1,3 +1,4 @@
+from calendar import monthrange
 from datetime import datetime
 
 from alembic import op
@@ -68,8 +69,9 @@ def downgrade():
                           affiliation.starts_day or 1),
 
         if affiliation.ends_year:
-            ends = datetime(affiliation.ends_year, affiliation.ends_month or 1,
-                            affiliation.ends_day or 1)
+            ends = datetime(affiliation.ends_year, affiliation.ends_month or 12,
+                            affiliation.ends_day or
+                            monthrange(affiliation.ends_year, affiliation.ends_month or 12)[1])
         else:
             ends = None
 
