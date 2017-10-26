@@ -155,7 +155,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
         try:
             orcid_record = orcid_client.get_record(profile.orcid, orcid_token.access_token)
             update_profile_from_orcid_record(profile, orcid_record)
-        except RequestException as exception:
+        except Exception as exception:
             LOGGER.exception(exception)
 
         return make_response(jsonify(json_data), response.status_code)
