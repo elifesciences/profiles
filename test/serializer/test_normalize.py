@@ -1,9 +1,7 @@
-from datetime import datetime, timedelta, timezone
-
-import pendulum
 from iso3166 import countries
+import pendulum
 
-from profiles.models import Address, Affiliation, EmailAddress, Name, Profile, Date
+from profiles.models import Address, Affiliation, Date, EmailAddress, Name, Profile
 from profiles.serializer.normalizer import normalize
 
 

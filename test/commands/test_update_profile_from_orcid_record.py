@@ -1,11 +1,8 @@
-from datetime import datetime
-
 from freezegun import freeze_time
 from iso3166 import countries
-import pendulum
 
 from profiles.commands import update_profile_from_orcid_record
-from profiles.models import Address, Affiliation, Name, Profile, Date
+from profiles.models import Address, Affiliation, Date, Name, Profile
 
 
 def test_it_updates_the_name():
@@ -113,8 +110,6 @@ def test_it_updates_affiliations():
     }}
 
     update_profile_from_orcid_record(profile, orcid_record)
-
-    utc = pendulum.timezone('utc')
 
     assert len(profile.affiliations) == 1
     assert profile.affiliations[0].department == 'Department 2'

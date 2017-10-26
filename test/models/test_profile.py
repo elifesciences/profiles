@@ -1,11 +1,9 @@
-from datetime import datetime, timedelta, timezone
-
 from iso3166 import countries
 import pendulum
 import pytest
 
 from profiles.exceptions import AffiliationNotFound
-from profiles.models import Address, Affiliation, Name, Profile, Date
+from profiles.models import Address, Affiliation, Date, Name, Profile
 
 
 def test_it_can_be_printed():

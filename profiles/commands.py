@@ -2,7 +2,7 @@ from typing import Optional
 
 from iso3166 import countries
 
-from profiles.models import Address, Affiliation, Name, Profile, Date
+from profiles.models import Address, Affiliation, Date, Name, Profile
 from profiles.orcid import VISIBILITY_PUBLIC
 
 

@@ -1,7 +1,7 @@
 from datetime import datetime
 
-import pytest
 from freezegun import freeze_time
+import pytest
 
 from profiles.models import Date
 

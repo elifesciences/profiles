@@ -1,11 +1,10 @@
 import json
-from datetime import datetime, timedelta, timezone
 
-import pendulum
 from flask.testing import FlaskClient
 from iso3166 import countries
+import pendulum
 
-from profiles.models import Address, Affiliation, Name, Profile, db, Date
+from profiles.models import Address, Affiliation, Date, Name, Profile, db
 from profiles.utilities import validate_json
 
 

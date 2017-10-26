@@ -19,7 +19,7 @@ T = TypeVar('T')
 
 class Date(object):
     def __init__(self, year: int, month: int = None, day: int = None) -> None:
-        if day is not None and not month is not None:
+        if day is not None and month is None:
             raise ValueError('Month is missing')
         if month is not None and not 1 <= month <= 12:
             raise ValueError('Invalid date')
@@ -166,6 +166,9 @@ class Affiliation(db.Model):
         if self._ends and self._ends.year:
             return self._ends
 
+    def set_ends(self, ends: Optional[Date]) -> None:
+        self._ends = ends
+
     def is_current(self) -> bool:
         starts = pendulum.instance(self.starts.lowest_possible())
         ends = pendulum.instance(self.ends.highest_possible()) if self.ends else None
@@ -205,7 +208,7 @@ class Profile(db.Model):
                 existing_affiliation.organisation = affiliation.organisation
                 existing_affiliation.address = affiliation.address
                 existing_affiliation.starts = affiliation.starts
-                existing_affiliation._ends = affiliation.ends
+                existing_affiliation.set_ends(affiliation.ends)
                 existing_affiliation.restricted = affiliation.restricted
                 if position != existing_affiliation.position:
                     self.affiliations.remove(existing_affiliation)

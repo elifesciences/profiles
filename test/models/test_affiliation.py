@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from freezegun import freeze_time
 from iso3166 import countries
 import pendulum
