@@ -155,7 +155,11 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
         try:
             orcid_record = orcid_client.get_record(profile.orcid, orcid_token.access_token)
             update_profile_from_orcid_record(profile, orcid_record)
-        except Exception as exception:
+        except RequestException as exception:
+            LOGGER.exception(exception)
+        except (LookupError, TypeError, ValueError) as exception:
+            # We appear to be misunderstanding the ORCID data structure, but let's not block the
+            # authentication flow.
             LOGGER.exception(exception)
 
         return make_response(jsonify(json_data), response.status_code)
