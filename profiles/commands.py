@@ -1,7 +1,8 @@
-from iso3166 import countries
-from pendulum import create as date
+from typing import Optional
 
-from profiles.models import Address, Affiliation, Name, Profile
+from iso3166 import countries
+
+from profiles.models import Address, Affiliation, Date, Name, Profile
 from profiles.orcid import VISIBILITY_PUBLIC
 
 
@@ -38,13 +39,8 @@ def _update_affiliations_from_orcid_record(profile: Profile, orcid_record: dict)
                 region=address.get('region'),
                 country=countries.get(address['country']),
             ),
-            starts=date(int(orcid_affiliation['start-date']['year']['value']),
-                        int(orcid_affiliation['start-date']['month']['value']),
-                        int(orcid_affiliation['start-date']['day']['value'])),
-            ends=date(int(orcid_affiliation['end-date']['year']['value']),
-                      int(orcid_affiliation['end-date']['month']['value']),
-                      int(orcid_affiliation['end-date']['day']['value']),
-                      hour=23, minute=59, second=59) if orcid_affiliation.get('end-date') else None,
+            starts=_convert_orcid_date(orcid_affiliation['start-date']),
+            ends=_convert_orcid_date(orcid_affiliation.get('end-date') or {}),
             restricted=orcid_affiliation['visibility'] != VISIBILITY_PUBLIC,
         )
         profile.add_affiliation(affiliation, index)
@@ -71,3 +67,12 @@ def _update_email_addresses_from_orcid_record(profile: Profile, orcid_record: di
     for orcid_email in orcid_emails:
         profile.add_email_address(orcid_email['email'], orcid_email['primary'],
                                   orcid_email['visibility'] != VISIBILITY_PUBLIC)
+
+
+def _convert_orcid_date(orcid_date: dict) -> Optional[Date]:
+    if 'year' in orcid_date:
+        year = int(orcid_date['year']['value'])
+        month = int(orcid_date['month']['value']) if orcid_date.get('month') else None
+        day = int(orcid_date['day']['value']) if orcid_date.get('day') else None
+
+        return Date(year, month, day)

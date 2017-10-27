@@ -1,8 +1,6 @@
-from datetime import datetime, timedelta, timezone
-
 from iso3166 import countries
 
-from profiles.models import Address, Affiliation, EmailAddress, Name, Profile
+from profiles.models import Address, Affiliation, Date, EmailAddress, Name, Profile
 from profiles.serializer.normalizer import normalize
 
 
@@ -74,10 +72,10 @@ def test_it_normalizes_profile_with_multiple_email_addresses_with_primary_addres
 
 
 def test_it_normalizes_profile_with_an_affiliation():
-    start_date = datetime(2017, 1, 1, 1, 0, 0, tzinfo=timezone(timedelta(hours=1)))
+    starts = Date.yesterday()
     address = Address(countries.get('gb'), 'City', 'Region')
-    affiliation = Affiliation('1', address=address, organisation='Org',
-                              department='Dep', starts=start_date)
+    affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
+                              starts=starts)
     profile = Profile('12345678', Name('Foo Bar', 'Bar, Foo'))
 
     profile.add_affiliation(affiliation)
@@ -117,13 +115,13 @@ def test_it_normalizes_profile_with_an_affiliation():
 
 
 def test_it_normalizes_profile_with_affiliations():
-    start_date = datetime(2017, 1, 1, 1, 0, 0, tzinfo=timezone(timedelta(hours=1)))
+    starts = Date.yesterday()
     address = Address(countries.get('gb'), 'City', 'Region')
     address2 = Address(countries.get('gb'), 'City2', 'Region2')
-    affiliation = Affiliation('1', address=address, organisation='Org',
-                              department='Dep', starts=start_date)
-    affiliation2 = Affiliation('2', address=address2, organisation='Org2',
-                               department='Dep', starts=start_date)
+    affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
+                              starts=starts)
+    affiliation2 = Affiliation('2', address=address2, organisation='Org2', department='Dep',
+                               starts=starts)
 
     profile = Profile('12345678', Name('Foo Bar', 'Bar, Foo'))
 
@@ -173,9 +171,10 @@ def test_it_normalizes_profile_with_affiliations():
 
 
 def test_it_normalizes_affiliation():
+    starts = Date.yesterday()
     address = Address(countries.get('gb'), 'City', 'Region')
-    affiliation = Affiliation('1', address=address, organisation='Org',
-                              department='Dep', starts=datetime.now())
+    affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
+                              starts=starts)
 
     assert normalize(affiliation) == {
         "name": [

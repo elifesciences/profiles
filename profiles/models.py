@@ -1,3 +1,4 @@
+from calendar import monthrange
 from datetime import datetime
 from typing import Any, Iterable, List, Optional
 
@@ -12,6 +13,67 @@ from profiles.exceptions import AffiliationNotFound
 from profiles.utilities import guess_index_name
 
 ID_LENGTH = 8
+
+
+class Date(object):
+    def __init__(self, year: int, month: int = None, day: int = None) -> None:
+        if day is not None and month is None:
+            raise ValueError('Month is missing')
+        if month is not None and not 1 <= month <= 12:
+            raise ValueError('Invalid date')
+        if day is not None:
+            pendulum.date(year, month, day)
+
+        self.year = year
+        self.month = month
+        self.day = day
+
+    @classmethod
+    def from_datetime(cls: 'Date', datetime: datetime) -> 'Date':
+        return Date(datetime.year, datetime.month, datetime.day)
+
+    @classmethod
+    def yesterday(cls: 'Date') -> 'Date':
+        return cls.from_datetime(pendulum.yesterday())
+
+    @classmethod
+    def today(cls: 'Date') -> 'Date':
+        return cls.from_datetime(pendulum.today())
+
+    @classmethod
+    def tomorrow(cls: 'Date') -> 'Date':
+        return cls.from_datetime(pendulum.tomorrow())
+
+    def lowest_possible(self) -> datetime:
+        return datetime(self.year, self.month or 1, self.day or 1)
+
+    def highest_possible(self) -> datetime:
+        return datetime(self.year, self.month or 12,
+                        self.day or monthrange(self.year, self.month or 12)[1])
+
+    def __composite_values__(self) -> Iterable[Optional[int]]:
+        return self.year, self.month, self.day
+
+    def __str__(self) -> str:
+        parts = ['{0:04d}'.format(self.year)]
+        if self.month:
+            parts.append('{0:02d}'.format(self.month))
+        if self.day:
+            parts.append('{0:02d}'.format(self.day))
+
+        return '-'.join(parts)
+
+    def __repr__(self) -> str:
+        return '<Date %r>' % str(self)
+
+    def __eq__(self, other: Any) -> bool:
+        return isinstance(other, Date) and \
+               other.year == self.year and \
+               other.month == self.month and \
+               other.day == self.day
+
+    def __ne__(self, other: Any) -> bool:
+        return not self.__eq__(other)
 
 
 class OrcidToken(db.Model):
@@ -84,27 +146,42 @@ class Affiliation(db.Model):
     _city = db.Column(db.Text(), name='city', nullable=False)
     _region = db.Column(db.Text(), name='region')
     _country = db.Column(ISO3166Country, name='country', nullable=False)
-    starts = db.Column(UTCDateTime, nullable=False)
-    ends = db.Column(UTCDateTime)
+    starts = composite(Date, '_starts_year', '_starts_month', '_starts_day')
+    _starts_year = db.Column(db.Integer(), name='starts_year', nullable=False)
+    _starts_month = db.Column(db.Integer(), name='starts_month')
+    _starts_day = db.Column(db.Integer(), name='starts_day')
+    _ends = composite(Date, '_ends_year', '_ends_month', '_ends_day')
+    _ends_year = db.Column(db.Integer(), name='ends_year')
+    _ends_month = db.Column(db.Integer(), name='ends_month')
+    _ends_day = db.Column(db.Integer(), name='ends_day')
     restricted = db.Column(db.Boolean(), nullable=False)
     profile_id = db.Column(db.String(ID_LENGTH), db.ForeignKey('profile.id'))
     profile = db.relationship('Profile', back_populates='affiliations')
     position = db.Column(db.Integer())
 
     # pylint: disable=too-many-arguments
-    def __init__(self, affiliation_id: str, address: Address, organisation: str, starts: datetime,
-                 department: str = None, ends: datetime = None, restricted: bool = False) -> None:
+    def __init__(self, affiliation_id: str, address: Address, organisation: str, starts: Date,
+                 department: str = None, ends: Date = None, restricted: bool = False) -> None:
         self.id = affiliation_id
         self.department = department
         self.organisation = organisation
         self.address = address
-        self.starts = pendulum.timezone('utc').convert(starts)
-        self.ends = pendulum.timezone('utc').convert(ends) if ends else None
+        self.starts = starts
+        self._ends = ends
         self.restricted = restricted
 
+    @property
+    def ends(self) -> Optional[Date]:
+        # SQLAlchemy appears not to allow nullable composites columns.
+        if self._ends and self._ends.year:
+            return self._ends
+
+    def set_ends(self, ends: Optional[Date]) -> None:
+        self._ends = ends
+
     def is_current(self) -> bool:
-        starts = pendulum.instance(self.starts)
-        ends = pendulum.instance(self.ends) if self.ends else None
+        starts = pendulum.instance(self.starts.lowest_possible())
+        ends = pendulum.instance(self.ends.highest_possible()) if self.ends else None
 
         return starts.is_past() and (not ends or ends.is_future())
 
@@ -141,7 +218,7 @@ class Profile(db.Model):
                 existing_affiliation.organisation = affiliation.organisation
                 existing_affiliation.address = affiliation.address
                 existing_affiliation.starts = affiliation.starts
-                existing_affiliation.ends = affiliation.ends
+                existing_affiliation.set_ends(affiliation.ends)
                 existing_affiliation.restricted = affiliation.restricted
                 if position != existing_affiliation.position:
                     self.affiliations.remove(existing_affiliation)
