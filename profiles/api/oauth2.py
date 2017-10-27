@@ -131,33 +131,48 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
             raise ValueError('Got token_type {}, expected Bearer'.format(
                 json_data.get('token_type')))
 
+        profile = _find_and_update_profile(json_data)
+        json_data['id'] = profile.id
+        orcid_token = _find_and_update_access_token(json_data)
+
+        _update_profile(profile, orcid_token)
+
+        return make_response(jsonify(json_data), response.status_code)
+
+    def _find_and_update_profile(token_data: dict) -> Profile:
         try:
-            profile = profiles.get_by_orcid(json_data['orcid'])
-            if json_data['name']:
-                profile.name = Name(json_data['name'])
+            profile = profiles.get_by_orcid(token_data['orcid'])
+            if token_data['name']:
+                profile.name = Name(token_data['name'])
         except ProfileNotFound:
-            if not json_data['name']:
+            if not token_data['name']:
                 raise InvalidRequest('No name visible')
-            profile = Profile(profiles.next_id(), Name(json_data['name']), json_data['orcid'])
+            profile = Profile(profiles.next_id(), Name(token_data['name']), token_data['orcid'])
             profiles.add(profile)
 
-        json_data['id'] = profile.id
+        return profile
 
+    def _find_and_update_access_token(token_data: dict) -> OrcidToken:
         try:
-            orcid_token = orcid_tokens.get(json_data['orcid'])
-            orcid_token.access_token = json_data['access_token']
-            orcid_token.expires_at = expires_at(json_data['expires_in'])
+            orcid_token = orcid_tokens.get(token_data['orcid'])
+            orcid_token.access_token = token_data['access_token']
+            orcid_token.expires_at = expires_at(token_data['expires_in'])
         except OrcidTokenNotFound:
-            orcid_token = OrcidToken(json_data['orcid'], json_data['access_token'],
-                                     expires_at(json_data['expires_in']))
+            orcid_token = OrcidToken(token_data['orcid'], token_data['access_token'],
+                                     expires_at(token_data['expires_in']))
             orcid_tokens.add(orcid_token)
 
+        return orcid_token
+
+    def _update_profile(profile: Profile, orcid_token: OrcidToken) -> None:
         try:
             orcid_record = orcid_client.get_record(profile.orcid, orcid_token.access_token)
             update_profile_from_orcid_record(profile, orcid_record)
         except RequestException as exception:
             LOGGER.exception(exception)
-
-        return make_response(jsonify(json_data), response.status_code)
+        except (LookupError, TypeError, ValueError) as exception:
+            # We appear to be misunderstanding the ORCID data structure, but let's not block the
+            # authentication flow.
+            LOGGER.exception(exception)
 
     return blueprint

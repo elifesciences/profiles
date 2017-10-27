@@ -284,6 +284,29 @@ def test_it_updates_a_profile_when_exchanging(test_client: FlaskClient) -> None:
     assert str(original_profile.name) == 'Josiah Carberry'
 
 
+def test_it_still_returns_200_when_failing_to_read_orcid_data(test_client: FlaskClient) -> None:
+    with requests_mock.Mocker() as mocker:
+        mocker.post('http://www.example.com/server/token',
+                    json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
+                          'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
+                          'name': 'Josiah Carberry'})
+        mocker.get('http://www.example.com/api/v2.0/0000-0002-1825-0097/record',
+                   json={'person': {'name': 'this is unexpected'}})
+
+        response = test_client.post('/oauth2/token',
+                                    data={'client_id': 'client_id',
+                                          'client_secret': 'client_secret',
+                                          'redirect_uri': 'http://www.example.com/client/redirect',
+                                          'grant_type': 'authorization_code', 'code': '1234'})
+
+    assert response.status_code == 200
+    assert Profile.query.count() == 1
+
+    profile = Profile.query.filter_by(orcid='0000-0002-1825-0097').one()
+
+    assert str(profile.name) == 'Josiah Carberry'
+
+
 def test_it_rejects_a_private_name_when_exchanging(test_client: FlaskClient) -> None:
     with requests_mock.Mocker() as mocker:
         mocker.post('http://www.example.com/server/token',
