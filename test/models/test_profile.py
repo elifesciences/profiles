@@ -1,5 +1,4 @@
 from iso3166 import countries
-import pendulum
 import pytest
 
 from profiles.exceptions import AffiliationNotFound
@@ -49,8 +48,8 @@ def test_it_can_have_affiliations():
 
 
 def test_it_can_get_current_affiliations():
-    yesterday = Date.from_datetime(pendulum.yesterday())
-    tomorrow = Date.from_datetime(pendulum.tomorrow())
+    yesterday = Date.yesterday()
+    tomorrow = Date.tomorrow()
 
     address = Address(countries.get('gb'), 'City')
 
@@ -81,8 +80,8 @@ def test_it_can_get_current_affiliations():
 
 
 def test_it_can_get_all_affiliations_including_non_current():
-    yesterday = Date.from_datetime(pendulum.yesterday())
-    tomorrow = Date.from_datetime(pendulum.tomorrow())
+    yesterday = Date.yesterday()
+    tomorrow = Date.tomorrow()
 
     address = Address(countries.get('gb'), 'City')
 
@@ -135,7 +134,7 @@ def test_it_can_get_all_email_addresses_including_restricted():
 
 
 def test_it_can_get_all_non_restricted_affiliations():
-    yesterday = Date.from_datetime(pendulum.yesterday())
+    yesterday = Date.yesterday()
 
     address = Address(countries.get('gb'), 'City')
 
@@ -156,7 +155,7 @@ def test_it_can_get_all_non_restricted_affiliations():
 
 
 def test_it_can_get_all_affiliations_including_restricted():
-    yesterday = Date.from_datetime(pendulum.yesterday())
+    yesterday = Date.yesterday()
 
     address = Address(countries.get('gb'), 'City')
 

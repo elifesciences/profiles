@@ -2,7 +2,6 @@ import json
 
 from flask.testing import FlaskClient
 from iso3166 import countries
-import pendulum
 
 from profiles.models import Address, Affiliation, Date, Name, Profile, db
 from profiles.utilities import validate_json
@@ -207,11 +206,9 @@ def test_does_not_contain_restricted_email_addresses(test_client: FlaskClient) -
 
 
 def test_get_profile_response_contains_affiliations(test_client: FlaskClient) -> None:
-    starts = Date.from_datetime(pendulum.yesterday())
-
     address = Address(country=countries.get('gb'), city='City', region='Region')
     affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
-                              starts=starts)
+                              starts=Date.yesterday())
 
     profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
 
@@ -236,14 +233,12 @@ def test_get_profile_response_contains_affiliations(test_client: FlaskClient) ->
 
 
 def test_it_does_not_return_restricted_affiliations(test_client: FlaskClient) -> None:
-    starts = Date.from_datetime(pendulum.yesterday())
-
     address = Address(country=countries.get('gb'), city='City', region='Region')
     affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
-                              starts=starts)
+                              starts=Date.yesterday())
 
     affiliation2 = Affiliation('2', address=address, organisation='Org2', department='Dep2',
-                               starts=starts, restricted=True)
+                               starts=Date.yesterday(), restricted=True)
 
     profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
 

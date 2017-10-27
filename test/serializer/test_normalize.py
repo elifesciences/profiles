@@ -1,5 +1,4 @@
 from iso3166 import countries
-import pendulum
 
 from profiles.models import Address, Affiliation, Date, EmailAddress, Name, Profile
 from profiles.serializer.normalizer import normalize
@@ -73,7 +72,7 @@ def test_it_normalizes_profile_with_multiple_email_addresses_with_primary_addres
 
 
 def test_it_normalizes_profile_with_an_affiliation():
-    starts = Date.from_datetime(pendulum.yesterday())
+    starts = Date.yesterday()
     address = Address(countries.get('gb'), 'City', 'Region')
     affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
                               starts=starts)
@@ -116,7 +115,7 @@ def test_it_normalizes_profile_with_an_affiliation():
 
 
 def test_it_normalizes_profile_with_affiliations():
-    starts = Date.from_datetime(pendulum.yesterday())
+    starts = Date.yesterday()
     address = Address(countries.get('gb'), 'City', 'Region')
     address2 = Address(countries.get('gb'), 'City2', 'Region2')
     affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
@@ -172,7 +171,7 @@ def test_it_normalizes_profile_with_affiliations():
 
 
 def test_it_normalizes_affiliation():
-    starts = Date.from_datetime(pendulum.yesterday())
+    starts = Date.yesterday()
     address = Address(countries.get('gb'), 'City', 'Region')
     affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
                               starts=starts)

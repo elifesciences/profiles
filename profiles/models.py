@@ -34,6 +34,18 @@ class Date(object):
     def from_datetime(cls: Type[T], datetime: datetime) -> T:
         return cls(datetime.year, datetime.month, datetime.day)
 
+    @classmethod
+    def yesterday(cls: Type[T]) -> T:
+        return Date.from_datetime(pendulum.yesterday())
+
+    @classmethod
+    def today(cls: Type[T]) -> T:
+        return Date.from_datetime(pendulum.today())
+
+    @classmethod
+    def tomorrow(cls: Type[T]) -> T:
+        return Date.from_datetime(pendulum.tomorrow())
+
     def lowest_possible(self) -> datetime:
         return datetime(self.year, self.month or 1, self.day or 1)
 

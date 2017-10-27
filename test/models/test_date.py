@@ -30,9 +30,28 @@ def test_it_casts_to_a_string():
 def test_it_can_be_created_from_a_datetime():
     date = Date.from_datetime(datetime.now())
 
-    assert date.year == 2017
-    assert date.month == 1
-    assert date.day == 2
+    assert date == Date(2017, 1, 2)
+
+
+@freeze_time('2017-01-02 00:00:00')
+def test_it_can_be_created_for_yesterday():
+    date = Date.yesterday()
+
+    assert date == Date(2017, 1, 1)
+
+
+@freeze_time('2017-01-02 00:00:00')
+def test_it_can_be_created_for_today():
+    date = Date.today()
+
+    assert date == Date(2017, 1, 2)
+
+
+@freeze_time('2017-01-02 00:00:00')
+def test_it_can_be_created_for_tomorrow():
+    date = Date.tomorrow()
+
+    assert date == Date(2017, 1, 3)
 
 
 def test_it_has_a_year():
