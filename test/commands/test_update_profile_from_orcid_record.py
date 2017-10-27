@@ -1,4 +1,3 @@
-from freezegun import freeze_time
 from iso3166 import countries
 
 from profiles.commands import update_profile_from_orcid_record
@@ -17,7 +16,6 @@ def test_it_updates_the_name():
     assert profile.name.index == 'Family Name, Given Names'
 
 
-@freeze_time('2017-01-01 00:00:00')
 def test_it_adds_affiliations():
     profile = Profile('12345678', Name('Name'))
     orcid_record = {'activities-summary': {
@@ -49,7 +47,6 @@ def test_it_adds_affiliations():
     assert profile.affiliations[1].position == 1
 
 
-@freeze_time('2017-01-01 00:00:00')
 def test_it_adds_affiliations_with_a_partial_start_dates():
     profile = Profile('12345678', Name('Name'))
     orcid_record = {'activities-summary': {
@@ -58,8 +55,7 @@ def test_it_adds_affiliations_with_a_partial_start_dates():
              'organization': {'name': 'Organisation 1',
                               'address': {'city': 'City 1', 'country': 'GB'}},
              'visibility': 'PUBLIC'},
-            {'put-code': 2, 'start-date': {'year': {'value': '2015'}, 'month': {'value': '12'},
-                                           'day': {'value': '31'}},
+            {'put-code': 2, 'start-date': {'year': {'value': '2015'}, 'month': {'value': '12'}},
              'department-name': 'Department 2',
              'organization': {'name': 'Organisation 2',
                               'address': {'city': 'City 2', 'region': 'Region 2', 'country': 'US'}},
@@ -74,10 +70,47 @@ def test_it_adds_affiliations_with_a_partial_start_dates():
     assert profile.affiliations[0].id == '1'
     assert profile.affiliations[0].restricted is False
     assert profile.affiliations[0].position == 0
+    assert profile.affiliations[0].starts == Date(2016)
 
     assert profile.affiliations[1].id == '2'
     assert profile.affiliations[1].restricted is True
     assert profile.affiliations[1].position == 1
+    assert profile.affiliations[1].starts == Date(2015, 12)
+
+
+def test_it_adds_affiliations_with_a_partial_end_dates():
+    profile = Profile('12345678', Name('Name'))
+    orcid_record = {'activities-summary': {
+        'employments': {'employment-summary': [
+            {'put-code': 1, 'start-date': {'year': {'value': '2015'}, 'month': {'value': '1'},
+                                           'day': {'value': '1'}},
+             'end-date': {'year': {'value': '2016'}},
+             'organization': {'name': 'Organisation 1',
+                              'address': {'city': 'City 1', 'country': 'GB'}},
+             'visibility': 'PUBLIC'},
+            {'put-code': 2, 'start-date': {'year': {'value': '2015'}, 'month': {'value': '1'},
+                                           'day': {'value': '1'}},
+             'end-date': {'year': {'value': '2017'}, 'month': {'value': '12'}},
+             'department-name': 'Department 2',
+             'organization': {'name': 'Organisation 2',
+                              'address': {'city': 'City 2', 'region': 'Region 2', 'country': 'US'}},
+             'visibility': 'LIMIT'},
+        ]},
+    }}
+
+    update_profile_from_orcid_record(profile, orcid_record)
+
+    assert len(profile.affiliations) == 2
+
+    assert profile.affiliations[0].id == '1'
+    assert profile.affiliations[0].restricted is False
+    assert profile.affiliations[0].position == 0
+    assert profile.affiliations[0].ends == Date(2016)
+
+    assert profile.affiliations[1].id == '2'
+    assert profile.affiliations[1].restricted is True
+    assert profile.affiliations[1].position == 1
+    assert profile.affiliations[1].ends == Date(2017, 12)
 
 
 def test_it_removes_affiliations():
@@ -91,7 +124,6 @@ def test_it_removes_affiliations():
     assert len(profile.affiliations) == 0
 
 
-@freeze_time('2017-01-01 00:00:00')
 def test_it_updates_affiliations():
     profile = Profile('12345678', Name('Name'))
     profile.add_affiliation(Affiliation('1', Address(countries.get('gb'), 'City 1'),
