@@ -1,6 +1,6 @@
 from calendar import monthrange
 from datetime import datetime
-from typing import Any, Iterable, List, Optional, Type, TypeVar
+from typing import Any, Iterable, List, Optional
 
 from iso3166 import Country
 import pendulum
@@ -13,8 +13,6 @@ from profiles.exceptions import AffiliationNotFound
 from profiles.utilities import guess_index_name
 
 ID_LENGTH = 8
-
-T = TypeVar('T')
 
 
 class Date(object):
@@ -31,20 +29,20 @@ class Date(object):
         self.day = day
 
     @classmethod
-    def from_datetime(cls: Type[T], datetime: datetime) -> T:
-        return cls(datetime.year, datetime.month, datetime.day)
+    def from_datetime(cls: 'Date', datetime: datetime) -> 'Date':
+        return Date(datetime.year, datetime.month, datetime.day)
 
     @classmethod
-    def yesterday(cls: Type[T]) -> T:
-        return Date.from_datetime(pendulum.yesterday())
+    def yesterday(cls: 'Date') -> 'Date':
+        return cls.from_datetime(pendulum.yesterday())
 
     @classmethod
-    def today(cls: Type[T]) -> T:
-        return Date.from_datetime(pendulum.today())
+    def today(cls: 'Date') -> 'Date':
+        return cls.from_datetime(pendulum.today())
 
     @classmethod
-    def tomorrow(cls: Type[T]) -> T:
-        return Date.from_datetime(pendulum.tomorrow())
+    def tomorrow(cls: 'Date') -> 'Date':
+        return cls.from_datetime(pendulum.tomorrow())
 
     def lowest_possible(self) -> datetime:
         return datetime(self.year, self.month or 1, self.day or 1)
