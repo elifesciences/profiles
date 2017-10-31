@@ -6,9 +6,11 @@ elifePipeline {
     }
 
     stage 'Deploy to prod', {
-        elifeDeploySlackNotification 'profiles', 'prod'
-        elifeGitMoveToBranch commit, 'master'
-        builderDeployRevision 'profiles--prod', commit
-        builderSmokeTests 'profiles--prod', '/srv/profiles'
+        lock ('profiles--prod') {
+            elifeDeploySlackNotification 'profiles', 'prod'
+            elifeGitMoveToBranch commit, 'master'
+            builderDeployRevision 'profiles--prod', commit
+            builderSmokeTests 'profiles--prod', '/srv/profiles'
+        }
     }
 }
