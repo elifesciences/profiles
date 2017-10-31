@@ -19,9 +19,9 @@ class Date(object):
     def __init__(self, year: int, month: int = None, day: int = None) -> None:
         if day is not None and month is None:
             raise ValueError('Month is missing')
-        if month is not None and not 1 <= month <= 12:
+        elif month is not None and not 1 <= month <= 12:
             raise ValueError('Invalid date')
-        if day is not None:
+        elif day is not None:
             pendulum.date(year, month, day)
 
         self.year = year

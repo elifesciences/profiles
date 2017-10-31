@@ -4,7 +4,7 @@ from urllib.parse import urlencode
 
 from flask.testing import FlaskClient
 from freezegun import freeze_time
-from requests import Request
+from requests import PreparedRequest
 import requests_mock
 
 from profiles.models import Name, OrcidToken, Profile, db
@@ -211,14 +211,14 @@ def test_it_exchanges(generate_random_string: MagicMock, test_client: FlaskClien
     generate_random_string.return_value = '1a2b3c4e'
 
     with requests_mock.Mocker() as mocker:
-        def token_text(request: Request):
+        def token_text(request: PreparedRequest):
             return urlencode({
                 'client_id': 'server_client_id',
                 'client_secret': 'server_client_secret',
                 'redirect_uri': 'http://localhost/oauth2/check',
                 'grant_type': 'authorization_code',
                 'code': '1234',
-            }) == request.text
+            }) == request.body
 
         mocker.post('http://www.example.com/server/token', additional_matcher=token_text,
                     json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
