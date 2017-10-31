@@ -5,13 +5,13 @@ from profiles.models import Affiliation, EmailAddress, Name, Profile
 
 
 @singledispatch
-def normalize(value: Any) -> str:
-    return str(value)
+def normalize(value: Any) -> Any:
+    return value
 
 
 @singledispatch
-def normalize_snippet(value: Any) -> str:
-    return str(value)
+def normalize_snippet(value: Any) -> Any:
+    return value
 
 
 @normalize.register(Profile)

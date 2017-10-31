@@ -6,7 +6,7 @@ from profiles.serializer.normalizer import normalize
 
 def test_it_normalizes_scalars():
     assert normalize('foo') == 'foo'
-    assert normalize(1) == '1'
+    assert normalize(1) == 1
 
 
 def test_it_normalizes_profiles():
