@@ -54,7 +54,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
             'original': request.args.get('state')
         })
 
-        return redirect(
+        response = redirect(
             orcid['authorize_uri'] + '?' + urlencode({
                 'client_id': orcid['client_id'],
                 'response_type': request.args.get('response_type'),
@@ -63,6 +63,10 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
                 'state': dumps(state, sort_keys=True)
             }, True),
             code=302)
+
+        response.headers['Cache-Control'] = 'must-revalidate, no-cache, no-store, private'
+
+        return response
 
     @blueprint.route('/check')
     def _check() -> Response:
@@ -89,7 +93,11 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
             ('state', state.get('original')),
         ]))
 
-        return redirect('{}?{}'.format(client.redirect_uri, urlencode(query, True)), code=302)
+        response = redirect('{}?{}'.format(client.redirect_uri, urlencode(query, True)), code=302)
+
+        response.headers['Cache-Control'] = 'must-revalidate, no-cache, no-store, private'
+
+        return response
 
     @blueprint.route('/token', methods=['POST'])
     def _token() -> Response:
@@ -137,7 +145,11 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
 
         _update_profile(profile, orcid_token)
 
-        return make_response(jsonify(json_data), response.status_code)
+        response = make_response(jsonify(json_data), response.status_code)
+
+        response.headers['Cache-Control'] = 'must-revalidate, no-cache, no-store, private'
+
+        return response
 
     def _find_and_update_profile(token_data: dict) -> Profile:
         try:
