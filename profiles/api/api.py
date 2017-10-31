@@ -49,6 +49,7 @@ def create_blueprint(profiles: Profiles) -> Blueprint:
         response.headers['Cache-Control'] = 'max-age=300, public, stale-if-error=86400,' \
                                             'stale-while-revalidate=300'
         response.headers['Content-Type'] = 'application/vnd.elife.profile-list+json;version=1'
+        response.headers['Vary'] = 'Accept'
 
         return response
 
@@ -63,6 +64,7 @@ def create_blueprint(profiles: Profiles) -> Blueprint:
         response.headers['Cache-Control'] = 'max-age=300, public, stale-if-error=86400,' \
                                             'stale-while-revalidate=300'
         response.headers['Content-Type'] = 'application/vnd.elife.profile+json;version=1'
+        response.headers['Vary'] = 'Accept'
 
         return response
 
