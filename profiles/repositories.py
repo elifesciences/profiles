@@ -8,7 +8,7 @@ from retrying import retry
 from sqlalchemy.orm.exc import NoResultFound
 
 from profiles.exceptions import OrcidTokenNotFound, ProfileNotFound
-from profiles.models import ID_LENGTH, OrcidToken, Profile
+from profiles.models import EmailAddress, ID_LENGTH, OrcidToken, Profile
 from profiles.types import CanBeCleared
 from profiles.utilities import generate_random_string
 
@@ -34,6 +34,10 @@ class Profiles(CanBeCleared, collections.Sized):
 
     @abstractmethod
     def get_by_orcid(self, orcid: str) -> Profile:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_by_email_address(self, email_address: str) -> Profile:
         raise NotImplementedError
 
     @abstractmethod
@@ -90,6 +94,14 @@ class SQLAlchemyProfiles(Profiles):
         except NoResultFound as exception:
             raise ProfileNotFound('Profile with the ORCID {} not found'.format(orcid)) \
                 from exception
+
+    def get_by_email_address(self, email_address: str) -> Profile:
+        try:
+            return self.db.session.query(Profile).join(EmailAddress) \
+                .filter(EmailAddress.email == email_address).one()
+        except NoResultFound as exception:
+            raise ProfileNotFound('Profile with the email address {} not found'
+                                  .format(email_address)) from exception
 
     @retry(stop_max_attempt_number=10)
     def next_id(self) -> str:

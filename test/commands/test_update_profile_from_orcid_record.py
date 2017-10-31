@@ -1,7 +1,43 @@
 from iso3166 import countries
 
-from profiles.commands import update_profile_from_orcid_record
+from profiles.commands import extract_email_addresses, update_profile_from_orcid_record
 from profiles.models import Address, Affiliation, Date, Name, Profile
+
+
+def test_it_extracts_email_addresses():
+    orcid_record = {'person': {
+        'emails': {'email': [
+            {'email': '1@example.com', 'primary': False, 'verified': True, 'visibility': 'LIMIT'},
+            {'email': '2@example.com', 'primary': True, 'verified': True, 'visibility': 'PUBLIC'},
+        ]},
+    }}
+
+    expected = [
+        {'email': '1@example.com', 'primary': False, 'verified': True, 'visibility': 'LIMIT'},
+        {'email': '2@example.com', 'primary': True, 'verified': True, 'visibility': 'PUBLIC'}
+    ]
+
+    assert extract_email_addresses(orcid_record) == expected
+
+
+def test_it_can_extract_email_addresses_ignoring_unverified():
+    orcid_record = {'person': {
+        'emails': {'email': [
+            {'email': '1@example.com', 'primary': False, 'verified': False, 'visibility': 'LIMIT'},
+            {'email': '2@example.com', 'primary': True, 'verified': True, 'visibility': 'PUBLIC'},
+        ]},
+    }}
+
+    expected_with = [
+        {'email': '1@example.com', 'primary': False, 'verified': False, 'visibility': 'LIMIT'},
+        {'email': '2@example.com', 'primary': True, 'verified': True, 'visibility': 'PUBLIC'}
+    ]
+    expected_without = [
+        {'email': '2@example.com', 'primary': True, 'verified': True, 'visibility': 'PUBLIC'}
+    ]
+
+    assert extract_email_addresses(orcid_record, only_verified=False) == expected_with
+    assert extract_email_addresses(orcid_record, only_verified=True) == expected_without
 
 
 def test_it_updates_the_name():

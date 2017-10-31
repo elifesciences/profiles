@@ -11,7 +11,7 @@ from werkzeug.exceptions import BadRequest
 from werkzeug.wrappers import Response
 
 from profiles.clients import Clients
-from profiles.commands import update_profile_from_orcid_record
+from profiles.commands import extract_email_addresses, update_profile_from_orcid_record
 from profiles.exceptions import ClientInvalidRequest, ClientInvalidScope, \
     ClientUnsupportedResourceType, InvalidClient, InvalidGrant, InvalidRequest, \
     OrcidTokenNotFound, ProfileNotFound, UnsupportedGrantType
@@ -133,22 +133,36 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
 
         profile = _find_and_update_profile(json_data)
         json_data['id'] = profile.id
-        orcid_token = _find_and_update_access_token(json_data)
-
-        _update_profile(profile, orcid_token)
+        _find_and_update_access_token(json_data)
 
         return make_response(jsonify(json_data), response.status_code)
 
     def _find_and_update_profile(token_data: dict) -> Profile:
         try:
             profile = profiles.get_by_orcid(token_data['orcid'])
-            if token_data['name']:
-                profile.name = Name(token_data['name'])
+            orcid_record = _fetch_orcid_record(profile.orcid, token_data['access_token'])
         except ProfileNotFound:
             if not token_data['name']:
                 raise InvalidRequest('No name visible')
-            profile = Profile(profiles.next_id(), Name(token_data['name']), token_data['orcid'])
-            profiles.add(profile)
+            orcid_record = _fetch_orcid_record(token_data['orcid'], token_data['access_token'])
+
+            profile = None
+
+            if orcid_record:
+                for email_address in extract_email_addresses(orcid_record):
+                    try:
+                        profile = profiles.get_by_email_address(email_address['email'])
+                    except ProfileNotFound:
+                        continue
+
+            if not profile:
+                profile = Profile(profiles.next_id(), Name(token_data['name']), token_data['orcid'])
+                profiles.add(profile)
+
+        if token_data['name']:
+            profile.name = Name(token_data['name'])
+
+        _update_profile(profile, orcid_record)
 
         return profile
 
@@ -164,12 +178,17 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
 
         return orcid_token
 
-    def _update_profile(profile: Profile, orcid_token: OrcidToken) -> None:
+    def _fetch_orcid_record(orcid: str, access_token: str) -> dict:
         try:
-            orcid_record = orcid_client.get_record(profile.orcid, orcid_token.access_token)
-            update_profile_from_orcid_record(profile, orcid_record)
+            return orcid_client.get_record(orcid, access_token)
         except RequestException as exception:
             LOGGER.exception(exception)
+
+        return {}
+
+    def _update_profile(profile: Profile, orcid_record: dict) -> None:
+        try:
+            update_profile_from_orcid_record(profile, orcid_record)
         except (LookupError, TypeError, ValueError) as exception:
             # We appear to be misunderstanding the ORCID data structure, but let's not block the
             # authentication flow.
