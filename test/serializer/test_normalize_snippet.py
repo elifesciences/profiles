@@ -4,7 +4,7 @@ from profiles.serializer.normalizer import normalize_snippet
 
 def test_it_normalizes_scalars():
     assert normalize_snippet('foo') == 'foo'
-    assert normalize_snippet(1) == '1'
+    assert normalize_snippet(1) == 1
 
 
 def test_it_normalizes_profile_snippets():
