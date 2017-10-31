@@ -46,6 +46,8 @@ def create_blueprint(profiles: Profiles) -> Blueprint:
 
         response = make_response(json.dumps({'total': total, 'items': profile_list},
                                             default=normalize))
+        response.headers['Cache-Control'] = 'max-age=300, public, stale-if-error=86400,' \
+                                            'stale-while-revalidate=300'
         response.headers['Content-Type'] = 'application/vnd.elife.profile-list+json;version=1'
 
         return response
@@ -58,6 +60,8 @@ def create_blueprint(profiles: Profiles) -> Blueprint:
             raise NotFound(str(exception)) from exception
 
         response = make_response(json.dumps(profile, default=normalize))
+        response.headers['Cache-Control'] = 'max-age=300, public, stale-if-error=86400,' \
+                                            'stale-while-revalidate=300'
         response.headers['Content-Type'] = 'application/vnd.elife.profile+json;version=1'
 
         return response

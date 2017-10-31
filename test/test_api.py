@@ -11,6 +11,8 @@ def test_empty_list_of_profiles(test_client: FlaskClient) -> None:
     response = test_client.get('/profiles')
 
     assert response.status_code == 200
+    assert response.headers.get('Cache-Control') == 'max-age=300, public, stale-if-error=86400,' \
+                                                    'stale-while-revalidate=300'
     assert response.headers.get(
         'Content-Type') == 'application/vnd.elife.profile-list+json;version=1'
 
@@ -156,6 +158,8 @@ def test_get_profile(test_client: FlaskClient) -> None:
     response = test_client.get('/profiles/a1b2c3d4')
 
     assert response.status_code == 200
+    assert response.headers.get('Cache-Control') == 'max-age=300, public, stale-if-error=86400,' \
+                                                    'stale-while-revalidate=300'
     assert response.headers.get('Content-Type') == 'application/vnd.elife.profile+json;version=1'
 
     data = json.loads(response.data.decode('UTF-8'))
