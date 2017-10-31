@@ -51,6 +51,9 @@ def create_blueprint(profiles: Profiles) -> Blueprint:
         response.headers['Content-Type'] = 'application/vnd.elife.profile-list+json;version=1'
         response.headers['Vary'] = 'Accept'
 
+        response.add_etag()
+        response.make_conditional(request)
+
         return response
 
     @blueprint.route('/profiles/<profile_id>')
@@ -65,6 +68,9 @@ def create_blueprint(profiles: Profiles) -> Blueprint:
                                             'stale-while-revalidate=300'
         response.headers['Content-Type'] = 'application/vnd.elife.profile+json;version=1'
         response.headers['Vary'] = 'Accept'
+
+        response.add_etag()
+        response.make_conditional(request)
 
         return response
 
