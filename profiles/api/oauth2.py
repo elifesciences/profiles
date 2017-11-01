@@ -1,5 +1,6 @@
 import logging
 from collections import OrderedDict
+from functools import wraps
 from json import JSONDecodeError, dumps
 from typing import Dict
 from urllib.parse import urlencode
@@ -24,6 +25,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 def cache_control_headers(func):
+    @wraps(func)
     def wrapper(*args, **kwargs):
         response = func(*args, **kwargs)
         response.headers['Cache-Control'] = 'must-revalidate, no-cache, no-store, private'
@@ -35,7 +37,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
                      orcid_client: OrcidClient, orcid_tokens: OrcidTokens) -> Blueprint:
     blueprint = Blueprint('oauth', __name__)
 
-    @blueprint.route('/authorize', endpoint='_authorize')
+    @blueprint.route('/authorize')
     @cache_control_headers
     def _authorize() -> Response:
         if 'client_id' not in request.args:
@@ -75,7 +77,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
 
         return response
 
-    @blueprint.route('/check', endpoint='_check')
+    @blueprint.route('/check')
     @cache_control_headers
     def _check() -> Response:
         if not any(parameter in request.args for parameter in ['code', 'error']):
@@ -105,7 +107,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
 
         return response
 
-    @blueprint.route('/token', methods=['POST'], endpoint='_token')
+    @blueprint.route('/token', methods=['POST'])
     @cache_control_headers
     def _token() -> Response:
         if 'client_id' not in request.form:

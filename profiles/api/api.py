@@ -1,3 +1,4 @@
+from functools import wraps
 import json
 
 from flask import Blueprint, make_response, request
@@ -17,6 +18,7 @@ DEFAULT_PER_PAGE = 20
 
 
 def cache_control_headers(func):
+    @wraps(func)
     def wrapper(*args, **kwargs):
         response = func(*args, **kwargs)
         response.headers['Cache-Control'] = 'max-age=300, public, stale-if-error=86400,' \
@@ -28,7 +30,7 @@ def cache_control_headers(func):
 def create_blueprint(profiles: Profiles) -> Blueprint:
     blueprint = Blueprint('api', __name__)
 
-    @blueprint.route('/profiles', endpoint='_list')
+    @blueprint.route('/profiles')
     @cache_control_headers
     def _list() -> Response:
         page = request.args.get('page', DEFAULT_PAGE, type=int)
@@ -65,7 +67,7 @@ def create_blueprint(profiles: Profiles) -> Blueprint:
 
         return response
 
-    @blueprint.route('/profiles/<profile_id>', endpoint='_get')
+    @blueprint.route('/profiles/<profile_id>')
     @cache_control_headers
     def _get(profile_id: str) -> Response:
         try:
