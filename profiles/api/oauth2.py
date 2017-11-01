@@ -4,6 +4,8 @@ from json import JSONDecodeError, dumps
 from typing import Dict
 from urllib.parse import urlencode
 
+from elife_bus_sdk import get_publisher
+from elife_bus_sdk.events import ProfileEvent
 from flask import Blueprint, json, jsonify, make_response, redirect, request, url_for
 import requests
 from requests import RequestException
@@ -12,6 +14,7 @@ from werkzeug.wrappers import Response
 
 from profiles.clients import Clients
 from profiles.commands import update_profile_from_orcid_record
+from profiles.database import db
 from profiles.exceptions import ClientInvalidRequest, ClientInvalidScope, \
     ClientUnsupportedResourceType, InvalidClient, InvalidGrant, InvalidRequest, \
     OrcidTokenNotFound, ProfileNotFound, UnsupportedGrantType
@@ -21,6 +24,7 @@ from profiles.repositories import OrcidTokens, Profiles
 from profiles.utilities import expires_at, remove_none_values
 
 LOGGER = logging.getLogger(__name__)
+PUBLISHER = get_publisher('profiles')
 
 
 def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles,
@@ -136,6 +140,12 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
         orcid_token = _find_and_update_access_token(json_data)
 
         _update_profile(profile, orcid_token)
+
+        # manually commit session here?
+        db.session.commit()
+
+        # send message to bus indicating a profile change
+        PUBLISHER.publish(ProfileEvent(id=profile.id))
 
         return make_response(jsonify(json_data), response.status_code)
 

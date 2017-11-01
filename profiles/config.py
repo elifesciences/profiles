@@ -9,7 +9,7 @@ from typing import Dict
 class Config(ABC):
     name = 'unknown'
     DEBUG = False
-    SQLALCHEMY_COMMIT_ON_TEARDOWN = True
+    SQLALCHEMY_COMMIT_ON_TEARDOWN = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     TESTING = False
 
