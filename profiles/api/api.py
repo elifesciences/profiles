@@ -16,10 +16,20 @@ DEFAULT_PAGE = 1
 DEFAULT_PER_PAGE = 20
 
 
+def cache_headers(func):
+    def wrapper(*args, **kwargs):
+        response = func(*args, **kwargs)
+        response.headers['Cache-Control'] = 'max-age=300, public, stale-if-error=86400,' \
+                                            'stale-while-revalidate=300'
+        return response
+    return wrapper
+
+
 def create_blueprint(profiles: Profiles) -> Blueprint:
     blueprint = Blueprint('api', __name__)
 
-    @blueprint.route('/profiles')
+    @blueprint.route('/profiles', endpoint='_list')
+    @cache_headers
     def _list() -> Response:
         page = request.args.get('page', DEFAULT_PAGE, type=int)
         per_page = request.args.get('per-page', DEFAULT_PER_PAGE, type=int)
@@ -46,8 +56,7 @@ def create_blueprint(profiles: Profiles) -> Blueprint:
 
         response = make_response(json.dumps({'total': total, 'items': profile_list},
                                             default=normalize))
-        response.headers['Cache-Control'] = 'max-age=300, public, stale-if-error=86400,' \
-                                            'stale-while-revalidate=300'
+
         response.headers['Content-Type'] = 'application/vnd.elife.profile-list+json;version=1'
         response.headers['Vary'] = 'Accept'
 
@@ -56,7 +65,8 @@ def create_blueprint(profiles: Profiles) -> Blueprint:
 
         return response
 
-    @blueprint.route('/profiles/<profile_id>')
+    @blueprint.route('/profiles/<profile_id>', endpoint='_get')
+    @cache_headers
     def _get(profile_id: str) -> Response:
         try:
             profile = profiles.get(profile_id)
@@ -64,8 +74,6 @@ def create_blueprint(profiles: Profiles) -> Blueprint:
             raise NotFound(str(exception)) from exception
 
         response = make_response(json.dumps(profile, default=normalize))
-        response.headers['Cache-Control'] = 'max-age=300, public, stale-if-error=86400,' \
-                                            'stale-while-revalidate=300'
         response.headers['Content-Type'] = 'application/vnd.elife.profile+json;version=1'
         response.headers['Vary'] = 'Accept'
 

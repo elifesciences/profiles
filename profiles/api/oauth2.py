@@ -23,11 +23,20 @@ from profiles.utilities import expires_at, remove_none_values
 LOGGER = logging.getLogger(__name__)
 
 
+def cache_control_headers(func):
+    def wrapper(*args, **kwargs):
+        response = func(*args, **kwargs)
+        response.headers['Cache-Control'] = 'must-revalidate, no-cache, no-store, private'
+        return response
+    return wrapper
+
+
 def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles,
                      orcid_client: OrcidClient, orcid_tokens: OrcidTokens) -> Blueprint:
     blueprint = Blueprint('oauth', __name__)
 
-    @blueprint.route('/authorize')
+    @blueprint.route('/authorize', endpoint='_authorize')
+    @cache_control_headers
     def _authorize() -> Response:
         if 'client_id' not in request.args:
             raise BadRequest('Invalid client_id')
@@ -64,11 +73,10 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
             }, True),
             code=302)
 
-        response.headers['Cache-Control'] = 'must-revalidate, no-cache, no-store, private'
-
         return response
 
-    @blueprint.route('/check')
+    @blueprint.route('/check', endpoint='_check')
+    @cache_control_headers
     def _check() -> Response:
         if not any(parameter in request.args for parameter in ['code', 'error']):
             raise BadRequest('Invalid code')
@@ -95,11 +103,10 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
 
         response = redirect('{}?{}'.format(client.redirect_uri, urlencode(query, True)), code=302)
 
-        response.headers['Cache-Control'] = 'must-revalidate, no-cache, no-store, private'
-
         return response
 
-    @blueprint.route('/token', methods=['POST'])
+    @blueprint.route('/token', methods=['POST'], endpoint='_token')
+    @cache_control_headers
     def _token() -> Response:
         if 'client_id' not in request.form:
             raise InvalidClient
@@ -146,8 +153,6 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
         _update_profile(profile, orcid_token)
 
         response = make_response(jsonify(json_data), response.status_code)
-
-        response.headers['Cache-Control'] = 'must-revalidate, no-cache, no-store, private'
 
         return response
 
