@@ -1,5 +1,5 @@
-from functools import wraps
 import json
+from functools import wraps
 
 from flask import Blueprint, make_response, request
 from werkzeug.exceptions import BadRequest, NotFound
