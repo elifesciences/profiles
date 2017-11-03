@@ -1,6 +1,5 @@
 import logging
 from collections import OrderedDict
-from functools import wraps
 from json import JSONDecodeError, dumps
 from typing import Dict
 from urllib.parse import urlencode
@@ -19,18 +18,9 @@ from profiles.exceptions import ClientInvalidRequest, ClientInvalidScope, \
 from profiles.models import Name, OrcidToken, Profile
 from profiles.orcid import OrcidClient
 from profiles.repositories import OrcidTokens, Profiles
-from profiles.utilities import expires_at, remove_none_values
+from profiles.utilities import expires_at, no_cache, remove_none_values
 
 LOGGER = logging.getLogger(__name__)
-
-
-def cache_control_headers(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        response = func(*args, **kwargs)
-        response.headers['Cache-Control'] = 'must-revalidate, no-cache, no-store, private'
-        return response
-    return wrapper
 
 
 def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles,
@@ -38,7 +28,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
     blueprint = Blueprint('oauth', __name__)
 
     @blueprint.route('/authorize')
-    @cache_control_headers
+    @no_cache
     def _authorize() -> Response:
         if 'client_id' not in request.args:
             raise BadRequest('Invalid client_id')
@@ -65,7 +55,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
             'original': request.args.get('state')
         })
 
-        response = redirect(
+        return redirect(
             orcid['authorize_uri'] + '?' + urlencode({
                 'client_id': orcid['client_id'],
                 'response_type': request.args.get('response_type'),
@@ -75,10 +65,8 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
             }, True),
             code=302)
 
-        return response
-
     @blueprint.route('/check')
-    @cache_control_headers
+    @no_cache
     def _check() -> Response:
         if not any(parameter in request.args for parameter in ['code', 'error']):
             raise BadRequest('Invalid code')
@@ -103,12 +91,10 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
             ('state', state.get('original')),
         ]))
 
-        response = redirect('{}?{}'.format(client.redirect_uri, urlencode(query, True)), code=302)
-
-        return response
+        return redirect('{}?{}'.format(client.redirect_uri, urlencode(query, True)), code=302)
 
     @blueprint.route('/token', methods=['POST'])
-    @cache_control_headers
+    @no_cache
     def _token() -> Response:
         if 'client_id' not in request.form:
             raise InvalidClient
@@ -154,9 +140,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
 
         _update_profile(profile, orcid_token)
 
-        response = make_response(jsonify(json_data), response.status_code)
-
-        return response
+        return make_response(jsonify(json_data), response.status_code)
 
     def _find_and_update_profile(token_data: dict) -> Profile:
         try:
