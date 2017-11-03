@@ -4,7 +4,7 @@ from json import JSONDecodeError, dumps
 from typing import Dict
 from urllib.parse import urlencode
 
-from elife_bus_sdk import get_publisher
+from elife_bus_sdk import EventPublisher
 from elife_bus_sdk.events import ProfileEvent
 from flask import Blueprint, json, jsonify, make_response, redirect, request, url_for
 import requests
@@ -24,11 +24,11 @@ from profiles.repositories import OrcidTokens, Profiles
 from profiles.utilities import expires_at, remove_none_values
 
 LOGGER = logging.getLogger(__name__)
-PUBLISHER = get_publisher('profiles')
 
 
 def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles,
-                     orcid_client: OrcidClient, orcid_tokens: OrcidTokens) -> Blueprint:
+                     orcid_client: OrcidClient, orcid_tokens: OrcidTokens,
+                     publisher: EventPublisher) -> Blueprint:
     blueprint = Blueprint('oauth', __name__)
 
     @blueprint.route('/authorize')
@@ -144,8 +144,13 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
         # manually commit session here?
         db.session.commit()
 
-        # send message to bus indicating a profile change
-        PUBLISHER.publish(ProfileEvent(id=profile.id))
+        try:
+            # send message to bus indicating a profile change
+            publisher.publish(ProfileEvent(id=profile.id))
+        except (AttributeError, RuntimeError) as exception:
+            # exceptions should be logged but should not prevent
+            # the response from being returned
+            LOGGER.exception(exception)
 
         return make_response(jsonify(json_data), response.status_code)
 

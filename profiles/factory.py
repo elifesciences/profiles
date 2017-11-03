@@ -1,3 +1,4 @@
+from elife_bus_sdk import get_publisher
 from flask import Flask
 from flask_migrate import Migrate
 
@@ -24,11 +25,14 @@ def create_app(config: Config, clients: Clients) -> Flask:
     orcid_client = OrcidClient(config.orcid['api_uri'])
     orcid_tokens = SQLAlchemyOrcidTokens(db)
     profiles = SQLAlchemyProfiles(db)
+
+    publisher = get_publisher(pub_name='profiles', config={**config.bus})
     app.commands = [ClearCommand(orcid_tokens, profiles)]
 
     app.register_blueprint(api.create_blueprint(profiles))
-    app.register_blueprint(oauth2.create_blueprint(config.orcid, clients, profiles, orcid_client,
-                                                   orcid_tokens), url_prefix='/oauth2')
+    app.register_blueprint(oauth2.create_blueprint(config.orcid, clients, profiles,
+                                                   orcid_client, orcid_tokens,
+                                                   publisher=publisher), url_prefix='/oauth2')
     app.register_blueprint(ping.create_blueprint())
 
     from werkzeug.exceptions import default_exceptions

@@ -32,7 +32,13 @@ def app(request: FixtureRequest) -> Flask:
                 'client_secret': 'server_client_secret',
             },
             db=TEST_DATABASE_URI,
-            logging={}
+            logging={},
+            bus={
+                'region': 'us-east-1',
+                'subscriber': '1234567890',
+                'name': 'profiles',
+                'env': 'local-test'
+            }
         ),
         clients=Clients(
             Client(name='client', client_id='client_id', client_secret='client_secret',
