@@ -15,19 +15,21 @@ from werkzeug.wrappers import Response
 from profiles.exceptions import SchemaNotFound
 
 
-def cache(func: Callable[..., Response]) -> Callable[..., Response]:
-    @wraps(func)
-    def wrapper(*args, **kwargs) -> Response:
-        response = func(*args, **kwargs)
-        response.headers['Cache-Control'] = 'max-age=300, public, stale-if-error=86400,' \
-                                            'stale-while-revalidate=300'
+def cache(allow_revalidation: bool = True) -> Callable[..., Response]:
+    def outer_wrapper(func: Callable[..., Response]) -> Callable[..., Response]:
+        @wraps(func)
+        def wrapper(*args, **kwargs) -> Response:
+            response = func(*args, **kwargs)
+            response.headers['Cache-Control'] = 'max-age=300, public, stale-if-error=86400,' \
+                                                'stale-while-revalidate=300'
+            if allow_revalidation:
+                response.add_etag()
+                response.make_conditional(request)
 
-        response.add_etag()
-        response.make_conditional(request)
+            return response
+        return wrapper
 
-        return response
-
-    return wrapper
+    return outer_wrapper
 
 
 def no_cache(func: Callable[..., Response]) -> Callable[..., Response]:
