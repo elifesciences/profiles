@@ -17,4 +17,3 @@ client_secret = client_secret
 region = us-east-1
 subscriber = 512686554592
 name = bus-profiles
-env = dev

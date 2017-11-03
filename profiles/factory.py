@@ -26,7 +26,10 @@ def create_app(config: Config, clients: Clients) -> Flask:
     orcid_tokens = SQLAlchemyOrcidTokens(db)
     profiles = SQLAlchemyProfiles(db)
 
-    publisher = get_publisher(pub_name='profiles', config={**config.bus})
+    publisher = get_publisher(pub_name='profiles', config={'region': config.bus['region'],
+                                                           'subscriber': config.bus['subscriber'],
+                                                           'name': config.bus['name'],
+                                                           'env': config.name})
     app.commands = [ClearCommand(orcid_tokens, profiles)]
 
     app.register_blueprint(api.create_blueprint(profiles))

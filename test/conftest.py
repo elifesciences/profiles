@@ -36,8 +36,7 @@ def app(request: FixtureRequest) -> Flask:
             bus={
                 'region': 'us-east-1',
                 'subscriber': '1234567890',
-                'name': 'profiles',
-                'env': 'local-test'
+                'name': 'bus-profiles'
             }
         ),
         clients=Clients(
