@@ -145,17 +145,11 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
             if not token_data['name']:
                 raise InvalidRequest('No name visible')
             orcid_record = _fetch_orcid_record(token_data['orcid'], token_data['access_token'])
+            email_addresses = [e['email'] for e in extract_email_addresses(orcid_record)]
 
-            profile = None
-
-            if orcid_record:
-                for email_address in extract_email_addresses(orcid_record):
-                    try:
-                        profile = profiles.get_by_email_address(email_address['email'])
-                    except ProfileNotFound:
-                        continue
-
-            if not profile:
+            try:
+                profile = profiles.get_by_email_address(*email_addresses)
+            except ProfileNotFound:
                 profile = Profile(profiles.next_id(), Name(token_data['name']), token_data['orcid'])
                 profiles.add(profile)
 

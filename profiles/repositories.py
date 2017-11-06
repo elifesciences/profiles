@@ -37,7 +37,7 @@ class Profiles(CanBeCleared, collections.Sized):
         raise NotImplementedError
 
     @abstractmethod
-    def get_by_email_address(self, email_address: str) -> Profile:
+    def get_by_email_address(self, *email_addresses: str) -> Profile:
         raise NotImplementedError
 
     @abstractmethod
@@ -95,13 +95,16 @@ class SQLAlchemyProfiles(Profiles):
             raise ProfileNotFound('Profile with the ORCID {} not found'.format(orcid)) \
                 from exception
 
-    def get_by_email_address(self, email_address: str) -> Profile:
+    def get_by_email_address(self, *email_addresses: str) -> Profile:
+        if not email_addresses:
+            raise ProfileNotFound('No email address(es) provided')
+
         try:
             return self.db.session.query(Profile).join(EmailAddress) \
-                .filter(EmailAddress.email == email_address).one()
+                .filter(EmailAddress.email.in_(email_addresses)).one()
         except NoResultFound as exception:
-            raise ProfileNotFound('Profile with the email address {} not found'
-                                  .format(email_address)) from exception
+            raise ProfileNotFound('Profile with the email address(es) {} not found'
+                                  .format(email_addresses)) from exception
 
     @retry(stop_max_attempt_number=10)
     def next_id(self) -> str:
