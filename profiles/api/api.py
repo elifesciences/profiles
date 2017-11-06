@@ -21,7 +21,7 @@ def create_blueprint(profiles: Profiles) -> Blueprint:
     blueprint = Blueprint('api', __name__)
 
     @blueprint.route('/profiles')
-    @cache
+    @cache()
     def _list() -> Response:
         page = request.args.get('page', DEFAULT_PAGE, type=int)
         per_page = request.args.get('per-page', DEFAULT_PER_PAGE, type=int)
@@ -55,7 +55,7 @@ def create_blueprint(profiles: Profiles) -> Blueprint:
         return response
 
     @blueprint.route('/profiles/<profile_id>')
-    @cache
+    @cache()
     def _get(profile_id: str) -> Response:
         try:
             profile = profiles.get(profile_id)
