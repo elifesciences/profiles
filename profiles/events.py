@@ -1,3 +1,4 @@
+import logging
 from typing import Callable
 
 from elife_bus_sdk.events import ProfileEvent
@@ -8,6 +9,9 @@ from profiles.exceptions import UpdateEventFailure
 from profiles.models import Profile
 
 
+LOGGER = logging.getLogger(__name__)
+
+
 def send_update_events(publisher: EventPublisher) -> Callable[..., None]:
     def wrapper(sender: Flask, changes: tuple) -> None:  # pylint:disable=unused-argument
         for instance, operation in changes:
@@ -16,7 +20,8 @@ def send_update_events(publisher: EventPublisher) -> Callable[..., None]:
                     # send message to bus indicating a profile change
                     publisher.publish(ProfileEvent(id=instance.id))
                 except (AttributeError, RuntimeError):
-                    raise UpdateEventFailure('Failed to send {0} '
-                                             'event for Profile {1}'.format(instance, operation))
+                    LOGGER.exception(UpdateEventFailure('Failed to send {0} '
+                                                        'event for Profile {1}'.format(instance,
+                                                                                       operation)))
 
     return wrapper
