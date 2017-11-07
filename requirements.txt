@@ -2,6 +2,7 @@ alembic==0.9.5
 -e git+https://github.com/elifesciences/bus-sdk-python.git@49a0b0ecc55f99bc55a61f3e9b613ea88e3ff5a5#egg=bus-sdk-python
 -e git+https://github.com/elifesciences/api-validator-python.git@2971a2146321d48cc88c9c9f36e8fd72740dbfee#egg=api-validator-python
 astroid==1.5.3
+blinker==1.4
 certifi==2017.7.27.1
 chardet==3.0.4
 click==6.7
