@@ -37,6 +37,32 @@ def test_it_gets_profiles_by_their_orcid():
         profiles.get_by_orcid('0000-0002-1825-0098')
 
 
+def test_it_gets_profiles_by_their_email_address():
+    profiles = SQLAlchemyProfiles(db)
+
+    profile1 = Profile('12345678', Name('name1'))
+    profile1.add_email_address('foo@example.com')
+    profile1.add_email_address('bar@example.com')
+    profile2 = Profile('12345679', Name('name2'))
+    profile2.add_email_address('baz@example.com')
+
+    profiles.add(profile1)
+    profiles.add(profile2)
+
+    assert profiles.get_by_email_address('foo@example.com') == profile1
+    assert profiles.get_by_email_address('bar@example.com') == profile1
+    assert profiles.get_by_email_address('foo@example.com', 'bar@example.com') == profile1
+    assert profiles.get_by_email_address('foobar@example.com', 'bar@example.com') == profile1
+    assert profiles.get_by_email_address('baz@example.com') == profile2
+
+    with pytest.raises(ProfileNotFound):
+        profiles.get_by_email_address()
+    with pytest.raises(ProfileNotFound):
+        profiles.get_by_email_address('qux@example.com')
+    with pytest.raises(ProfileNotFound):
+        profiles.get_by_email_address('qux@example.com', 'quxx@example.com')
+
+
 def test_it_generates_the_next_profile_id():
     def id_generator():
         return '11111111'
