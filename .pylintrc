@@ -1,5 +1,5 @@
 [MESSAGE CONTROL]
-disable = abstract-method,missing-docstring,redefined-outer-name,too-few-public-methods, too-many-arguments
+disable = abstract-method,missing-docstring,redefined-outer-name,too-few-public-methods
 
 [TYPECHECK]
 ignored-classes = responses,scoped_session,SQLAlchemy
