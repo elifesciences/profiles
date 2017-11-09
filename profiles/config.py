@@ -10,7 +10,7 @@ class Config(ABC):
     name = 'unknown'
     DEBUG = False
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
     TESTING = False
 
     def __init__(self, orcid: Dict[str, str], db: str, logging: Dict[str, str],
