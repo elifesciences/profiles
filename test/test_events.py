@@ -17,6 +17,14 @@ def test_it_will_send_event_for_profile_insert(app, mock_publisher, profile):
     assert mock_publisher.publish.call_args[0] == ({'id': '12345678', 'type': 'profile'}, )
 
 
+def test_it_will_send_event_for_profile_deleted(app, mock_publisher, profile):
+    event_publisher = send_update_events(publisher=mock_publisher)
+    event_publisher(app, [(profile, 'delete')])
+
+    assert mock_publisher.publish.called
+    assert mock_publisher.publish.call_args[0] == ({'id': '12345678', 'type': 'profile'}, )
+
+
 def test_it_will_send_event_for_affiliation_insert(app, mock_publisher, profile):
     affiliation = Affiliation('1', Address(countries.get('gb'), 'City'), 'Organisation', Date(2017))
 
