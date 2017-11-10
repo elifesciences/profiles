@@ -1,5 +1,6 @@
 import logging
 import os
+from unittest.mock import MagicMock
 
 from _pytest.fixtures import FixtureRequest
 from flask import Flask
@@ -11,7 +12,11 @@ from sqlalchemy.orm import scoped_session
 from profiles.clients import Client, Clients
 from profiles.config import CiConfig
 from profiles.factory import create_app
-from profiles.models import db
+from profiles.models import (
+    Name,
+    Profile,
+    db
+)
 
 TEST_DATABASE_NAME = 'test.db'
 TEST_DATABASE_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../build/' + TEST_DATABASE_NAME
@@ -32,7 +37,12 @@ def app(request: FixtureRequest) -> Flask:
                 'client_secret': 'server_client_secret',
             },
             db=TEST_DATABASE_URI,
-            logging={}
+            logging={},
+            bus={
+                'region': 'us-east-1',
+                'subscriber': '1234567890',
+                'name': 'bus-profiles'
+            }
         ),
         clients=Clients(
             Client(name='client', client_id='client_id', client_secret='client_secret',
@@ -88,3 +98,15 @@ def session(database: SQLAlchemy, request: FixtureRequest) -> scoped_session:
 @fixture
 def test_client(app: Flask) -> FlaskClient:
     return app.test_client()
+
+
+@fixture
+def mock_publisher() -> MagicMock:
+    publisher = MagicMock()
+    publisher.publish = MagicMock()
+    return publisher
+
+
+@fixture
+def profile() -> Profile:
+    return Profile('12345678', Name('foo'), '0001-0002-1825-0097')

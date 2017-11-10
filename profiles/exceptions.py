@@ -69,3 +69,7 @@ class ProfileNotFound(Exception):
 
 class SchemaNotFound(Exception):
     pass
+
+
+class UpdateEventFailure(Exception):
+    pass
