@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from iso3166 import countries
 
@@ -10,6 +10,15 @@ def update_profile_from_orcid_record(profile: Profile, orcid_record: dict) -> No
     _update_name_from_orcid_record(profile, orcid_record)
     _update_affiliations_from_orcid_record(profile, orcid_record)
     _update_email_addresses_from_orcid_record(profile, orcid_record)
+
+
+def extract_email_addresses(orcid_record: dict, only_verified: bool = True) -> List[dict]:
+    orcid_emails = orcid_record.get('person', {}).get('emails', {}).get('email', {})
+
+    if only_verified:
+        orcid_emails = list(filter(lambda x: x['verified'], orcid_emails))
+
+    return orcid_emails
 
 
 def _update_name_from_orcid_record(profile: Profile, orcid_record: dict) -> None:
@@ -52,8 +61,7 @@ def _update_affiliations_from_orcid_record(profile: Profile, orcid_record: dict)
 
 
 def _update_email_addresses_from_orcid_record(profile: Profile, orcid_record: dict) -> None:
-    orcid_emails = orcid_record.get('person', {}).get('emails', {}).get('email', {})
-    orcid_emails = list(filter(lambda x: x['verified'], orcid_emails))
+    orcid_emails = extract_email_addresses(orcid_record)
 
     for email in profile.email_addresses:
         found = False
