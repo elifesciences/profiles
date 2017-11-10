@@ -1,5 +1,7 @@
 from iso3166 import countries
 
+from flask_sqlalchemy import models_committed
+
 from profiles.events import send_update_events
 from profiles.models import (
     Address,
@@ -61,3 +63,7 @@ def test_it_only_sends_one_event_if_multiple_changes_are_detected(app, mock_publ
 
     assert mock_publisher.publish.call_count == 1
     assert mock_publisher.publish.call_args[0] == ({'id': '12345678', 'type': 'profile'},)
+
+
+def test_it_has_a_valid_signal_handler_registered_on_app():
+    assert len(models_committed.receivers) == 1
