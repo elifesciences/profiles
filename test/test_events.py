@@ -1,6 +1,5 @@
-from iso3166 import countries
-
 from flask_sqlalchemy import models_committed
+from iso3166 import countries
 
 from profiles.events import send_update_events
 from profiles.models import (
