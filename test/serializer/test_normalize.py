@@ -71,11 +71,10 @@ def test_it_normalizes_profile_with_multiple_email_addresses_with_primary_addres
     assert normalized_profile['emailAddresses'][0] == primary_address
 
 
-def test_it_normalizes_profile_with_an_affiliation():
-    starts = Date.yesterday()
+def test_it_normalizes_profile_with_an_affiliation(yesterday):
     address = Address(countries.get('gb'), 'City', 'Region')
     affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
-                              starts=starts)
+                              starts=yesterday)
     profile = Profile('12345678', Name('Foo Bar', 'Bar, Foo'))
 
     profile.add_affiliation(affiliation)
@@ -114,14 +113,13 @@ def test_it_normalizes_profile_with_an_affiliation():
     }
 
 
-def test_it_normalizes_profile_with_affiliations():
-    starts = Date.yesterday()
+def test_it_normalizes_profile_with_affiliations(yesterday):
     address = Address(countries.get('gb'), 'City', 'Region')
     address2 = Address(countries.get('gb'), 'City2', 'Region2')
     affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
-                              starts=starts)
+                              starts=yesterday)
     affiliation2 = Affiliation('2', address=address2, organisation='Org2', department='Dep',
-                               starts=starts)
+                               starts=yesterday)
 
     profile = Profile('12345678', Name('Foo Bar', 'Bar, Foo'))
 
@@ -170,11 +168,10 @@ def test_it_normalizes_profile_with_affiliations():
     }
 
 
-def test_it_normalizes_affiliation():
-    starts = Date.yesterday()
+def test_it_normalizes_affiliation(yesterday):
     address = Address(countries.get('gb'), 'City', 'Region')
     affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
-                              starts=starts)
+                              starts=yesterday)
 
     assert normalize(affiliation) == {
         "name": [

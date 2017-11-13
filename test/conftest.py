@@ -15,6 +15,7 @@ from profiles.clients import Client, Clients
 from profiles.config import CiConfig
 from profiles.factory import create_app
 from profiles.models import (
+    Date,
     Name,
     Profile,
     db,
@@ -109,6 +110,11 @@ def test_client(app: Flask) -> FlaskClient:
 
 
 @fixture
+def tomorrow():
+    return Date.tomorrow()
+
+
+@fixture
 def mock_publisher() -> MagicMock:
     publisher = MagicMock()
     publisher.publish = MagicMock()
@@ -118,3 +124,8 @@ def mock_publisher() -> MagicMock:
 @fixture
 def profile() -> Profile:
     return Profile('12345678', Name('foo'), '0001-0002-1825-0097')
+
+
+@fixture
+def yesterday():
+    return Date.yesterday()
