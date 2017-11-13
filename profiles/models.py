@@ -1,16 +1,79 @@
+from calendar import monthrange
 from datetime import datetime
-from typing import Any, Iterable, Optional
+from typing import Any, Iterable, List, Optional
 
 from iso3166 import Country
 import pendulum
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import composite
+from sqlalchemy.sql.elements import UnaryExpression
 
 from profiles.database import ISO3166Country, UTCDateTime, db
 from profiles.exceptions import AffiliationNotFound
 from profiles.utilities import guess_index_name
 
 ID_LENGTH = 8
+
+
+class Date(object):
+    def __init__(self, year: int, month: int = None, day: int = None) -> None:
+        if day is not None and month is None:
+            raise ValueError('Month is missing')
+        elif month is not None and not 1 <= month <= 12:
+            raise ValueError('Invalid date')
+        elif day is not None:
+            pendulum.date(year, month, day)
+
+        self.year = year
+        self.month = month
+        self.day = day
+
+    @classmethod
+    def from_datetime(cls: 'Date', datetime: datetime) -> 'Date':
+        return Date(datetime.year, datetime.month, datetime.day)
+
+    @classmethod
+    def yesterday(cls: 'Date') -> 'Date':
+        return cls.from_datetime(pendulum.yesterday())
+
+    @classmethod
+    def today(cls: 'Date') -> 'Date':
+        return cls.from_datetime(pendulum.today())
+
+    @classmethod
+    def tomorrow(cls: 'Date') -> 'Date':
+        return cls.from_datetime(pendulum.tomorrow())
+
+    def lowest_possible(self) -> datetime:
+        return datetime(self.year, self.month or 1, self.day or 1)
+
+    def highest_possible(self) -> datetime:
+        return datetime(self.year, self.month or 12,
+                        self.day or monthrange(self.year, self.month or 12)[1])
+
+    def __composite_values__(self) -> Iterable[Optional[int]]:
+        return self.year, self.month, self.day
+
+    def __str__(self) -> str:
+        parts = ['{0:04d}'.format(self.year)]
+        if self.month:
+            parts.append('{0:02d}'.format(self.month))
+        if self.day:
+            parts.append('{0:02d}'.format(self.day))
+
+        return '-'.join(parts)
+
+    def __repr__(self) -> str:
+        return '<Date %r>' % str(self)
+
+    def __eq__(self, other: Any) -> bool:
+        return isinstance(other, Date) and \
+               other.year == self.year and \
+               other.month == self.month and \
+               other.day == self.day
+
+    def __ne__(self, other: Any) -> bool:
+        return not self.__eq__(other)
 
 
 class OrcidToken(db.Model):
@@ -60,7 +123,7 @@ class Address(object):
         self.country = country
 
     def __composite_values__(self) -> Iterable[Optional[str]]:
-        return self.city, self.region, self.country
+        return self.country, self.city, self.region
 
     def __repr__(self) -> str:
         return '<Address %r %r %r>' % (self.city, self.region, self.country.alpha2)
@@ -79,27 +142,48 @@ class Affiliation(db.Model):
     id = db.Column(db.Text(), primary_key=True)
     department = db.Column(db.Text())
     organisation = db.Column(db.Text(), nullable=False)
-    address = composite(Address, '_city', '_region', '_country')
+    address = composite(Address, '_country', '_city', '_region')
     _city = db.Column(db.Text(), name='city', nullable=False)
     _region = db.Column(db.Text(), name='region')
     _country = db.Column(ISO3166Country, name='country', nullable=False)
-    starts = db.Column(UTCDateTime, nullable=False)
-    ends = db.Column(UTCDateTime)
+    starts = composite(Date, '_starts_year', '_starts_month', '_starts_day')
+    _starts_year = db.Column(db.Integer(), name='starts_year', nullable=False)
+    _starts_month = db.Column(db.Integer(), name='starts_month')
+    _starts_day = db.Column(db.Integer(), name='starts_day')
+    _ends = composite(Date, '_ends_year', '_ends_month', '_ends_day')
+    _ends_year = db.Column(db.Integer(), name='ends_year')
+    _ends_month = db.Column(db.Integer(), name='ends_month')
+    _ends_day = db.Column(db.Integer(), name='ends_day')
     restricted = db.Column(db.Boolean(), nullable=False)
     profile_id = db.Column(db.String(ID_LENGTH), db.ForeignKey('profile.id'))
     profile = db.relationship('Profile', back_populates='affiliations')
     position = db.Column(db.Integer())
 
     # pylint: disable=too-many-arguments
-    def __init__(self, affiliation_id: str, address: Address, organisation: str, starts: datetime,
-                 department: str = None, ends: datetime = None, restricted: bool = False) -> None:
+    def __init__(self, affiliation_id: str, address: Address, organisation: str, starts: Date,
+                 department: str = None, ends: Date = None, restricted: bool = False) -> None:
         self.id = affiliation_id
         self.department = department
         self.organisation = organisation
         self.address = address
-        self.starts = pendulum.timezone('utc').convert(starts)
-        self.ends = pendulum.timezone('utc').convert(ends) if ends else None
+        self.starts = starts
+        self._ends = ends
         self.restricted = restricted
+
+    @property
+    def ends(self) -> Optional[Date]:
+        # SQLAlchemy appears not to allow nullable composites columns.
+        if self._ends and self._ends.year:
+            return self._ends
+
+    def set_ends(self, ends: Optional[Date]) -> None:
+        self._ends = ends
+
+    def is_current(self) -> bool:
+        starts = pendulum.instance(self.starts.lowest_possible())
+        ends = pendulum.instance(self.ends.highest_possible()) if self.ends else None
+
+        return starts.is_past() and (not ends or ends.is_future())
 
     def __repr__(self) -> str:
         return '<Affiliation %r>' % self.id
@@ -123,6 +207,10 @@ class Profile(db.Model):
         self.name = name
         self.orcid = orcid
 
+    @classmethod
+    def asc(cls) -> UnaryExpression:
+        return cls._index_name.asc()
+
     def add_affiliation(self, affiliation: Affiliation, position: int = 0) -> None:
         for existing_affiliation in self.affiliations:
             if existing_affiliation.id == affiliation.id:
@@ -130,7 +218,7 @@ class Profile(db.Model):
                 existing_affiliation.organisation = affiliation.organisation
                 existing_affiliation.address = affiliation.address
                 existing_affiliation.starts = affiliation.starts
-                existing_affiliation.ends = affiliation.ends
+                existing_affiliation.set_ends(affiliation.ends)
                 existing_affiliation.restricted = affiliation.restricted
                 if position != existing_affiliation.position:
                     self.affiliations.remove(existing_affiliation)
@@ -141,12 +229,29 @@ class Profile(db.Model):
         self.affiliations.insert(position, affiliation)
         self.affiliations.reorder()
 
+    @classmethod
+    def desc(cls) -> UnaryExpression:
+        return cls._index_name.desc()
+
     def get_affiliation(self, affiliation_id: str) -> Affiliation:
         for affiliation in self.affiliations:
             if affiliation.id == affiliation_id:
                 return affiliation
 
         raise AffiliationNotFound('Affiliation with the ID {} not found'.format(id))
+
+    def get_affiliations(self, current_only: bool = True,
+                         include_restricted: bool = False) -> List[Affiliation]:
+
+        affiliations = self.affiliations
+
+        if not include_restricted:
+            affiliations = [aff for aff in affiliations if not aff.restricted]
+
+        if current_only:
+            affiliations = [aff for aff in affiliations if aff.is_current()]
+
+        return sorted([aff for aff in affiliations], key=lambda k: k.position)
 
     def remove_affiliation(self, affiliation_id: str) -> None:
         for affiliation in self.affiliations:
@@ -173,6 +278,12 @@ class Profile(db.Model):
             self.email_addresses.append(email_address)
 
         self.email_addresses.reorder()
+
+    def get_email_addresses(self, include_restricted: bool = False) -> List[str]:
+        if include_restricted:
+            return self.email_addresses
+
+        return [email for email in self.email_addresses if not email.restricted]
 
     def remove_email_address(self, email: str) -> None:
         for email_address in self.email_addresses:

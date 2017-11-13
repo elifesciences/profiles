@@ -21,6 +21,7 @@ CLIENTS = Clients(*[Client(name, **CLIENTS_DATA[name]) for name in CLIENTS_DATA]
 
 CONFIG = create_app_config(CONFIG_FILE)
 configure_logging(CONFIG.name, getattr(logging, CONFIG.logging['level']), CONFIG.logging['path'])
+
 APP = create_app(CONFIG, CLIENTS)
 MANAGER = Manager(APP)
 

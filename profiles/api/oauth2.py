@@ -11,7 +11,7 @@ from werkzeug.exceptions import BadRequest
 from werkzeug.wrappers import Response
 
 from profiles.clients import Clients
-from profiles.commands import update_profile_from_orcid_record
+from profiles.commands import extract_email_addresses, update_profile_from_orcid_record
 from profiles.exceptions import ClientInvalidRequest, ClientInvalidScope, \
     ClientUnsupportedResourceType, InvalidClient, InvalidGrant, InvalidRequest, \
     OrcidTokenNotFound, ProfileNotFound, UnsupportedGrantType
@@ -131,33 +131,61 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
             raise ValueError('Got token_type {}, expected Bearer'.format(
                 json_data.get('token_type')))
 
-        try:
-            profile = profiles.get_by_orcid(json_data['orcid'])
-            if json_data['name']:
-                profile.name = Name(json_data['name'])
-        except ProfileNotFound:
-            if not json_data['name']:
-                raise InvalidRequest('No name visible')
-            profile = Profile(profiles.next_id(), Name(json_data['name']), json_data['orcid'])
-            profiles.add(profile)
-
+        profile = _find_and_update_profile(json_data)
         json_data['id'] = profile.id
+        _find_and_update_access_token(json_data)
 
+        return make_response(jsonify(json_data), response.status_code)
+
+    def _find_and_update_profile(token_data: dict) -> Profile:
         try:
-            orcid_token = orcid_tokens.get(json_data['orcid'])
-            orcid_token.access_token = json_data['access_token']
-            orcid_token.expires_at = expires_at(json_data['expires_in'])
+            profile = profiles.get_by_orcid(token_data['orcid'])
+            orcid_record = _fetch_orcid_record(profile.orcid, token_data['access_token'])
+        except ProfileNotFound:
+            if not token_data['name']:
+                raise InvalidRequest('No name visible')
+            orcid_record = _fetch_orcid_record(token_data['orcid'], token_data['access_token'])
+            email_addresses = [e['email'] for e in extract_email_addresses(orcid_record)]
+
+            try:
+                profile = profiles.get_by_email_address(*email_addresses)
+            except ProfileNotFound:
+                profile = Profile(profiles.next_id(), Name(token_data['name']), token_data['orcid'])
+                profiles.add(profile)
+
+        if token_data['name']:
+            profile.name = Name(token_data['name'])
+
+        _update_profile(profile, orcid_record)
+
+        return profile
+
+    def _find_and_update_access_token(token_data: dict) -> OrcidToken:
+        try:
+            orcid_token = orcid_tokens.get(token_data['orcid'])
+            orcid_token.access_token = token_data['access_token']
+            orcid_token.expires_at = expires_at(token_data['expires_in'])
         except OrcidTokenNotFound:
-            orcid_token = OrcidToken(json_data['orcid'], json_data['access_token'],
-                                     expires_at(json_data['expires_in']))
+            orcid_token = OrcidToken(token_data['orcid'], token_data['access_token'],
+                                     expires_at(token_data['expires_in']))
             orcid_tokens.add(orcid_token)
 
+        return orcid_token
+
+    def _fetch_orcid_record(orcid: str, access_token: str) -> dict:
         try:
-            orcid_record = orcid_client.get_record(profile.orcid, orcid_token.access_token)
-            update_profile_from_orcid_record(profile, orcid_record)
+            return orcid_client.get_record(orcid, access_token)
         except RequestException as exception:
             LOGGER.exception(exception)
 
-        return make_response(jsonify(json_data), response.status_code)
+        return {}
+
+    def _update_profile(profile: Profile, orcid_record: dict) -> None:
+        try:
+            update_profile_from_orcid_record(profile, orcid_record)
+        except (LookupError, TypeError, ValueError) as exception:
+            # We appear to be misunderstanding the ORCID data structure, but let's not block the
+            # authentication flow.
+            LOGGER.exception(exception)
 
     return blueprint

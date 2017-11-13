@@ -1,14 +1,14 @@
 import collections
 import string
 from abc import abstractmethod
-from typing import Callable
+from typing import Callable, List
 
 from flask_sqlalchemy import SQLAlchemy
 from retrying import retry
 from sqlalchemy.orm.exc import NoResultFound
 
 from profiles.exceptions import OrcidTokenNotFound, ProfileNotFound
-from profiles.models import ID_LENGTH, OrcidToken, Profile
+from profiles.models import EmailAddress, ID_LENGTH, OrcidToken, Profile
 from profiles.types import CanBeCleared
 from profiles.utilities import generate_random_string
 
@@ -37,7 +37,15 @@ class Profiles(CanBeCleared, collections.Sized):
         raise NotImplementedError
 
     @abstractmethod
+    def get_by_email_address(self, *email_addresses: str) -> Profile:
+        raise NotImplementedError
+
+    @abstractmethod
     def next_id(self) -> str:
+        raise NotImplementedError
+
+    @abstractmethod
+    def list(self, limit: int = None, offset: int = 0, desc: bool = False) -> List[Profile]:
         raise NotImplementedError
 
 
@@ -87,6 +95,17 @@ class SQLAlchemyProfiles(Profiles):
             raise ProfileNotFound('Profile with the ORCID {} not found'.format(orcid)) \
                 from exception
 
+    def get_by_email_address(self, *email_addresses: str) -> Profile:
+        if not email_addresses:
+            raise ProfileNotFound('No email address(es) provided')
+
+        try:
+            return self.db.session.query(Profile).join(EmailAddress) \
+                .filter(EmailAddress.email.in_(email_addresses)).one()
+        except NoResultFound as exception:
+            raise ProfileNotFound('Profile with the email address(es) {} not found'
+                                  .format(email_addresses)) from exception
+
     @retry(stop_max_attempt_number=10)
     def next_id(self) -> str:
         profile_id = self._next_id_generator()
@@ -95,6 +114,17 @@ class SQLAlchemyProfiles(Profiles):
             raise RuntimeError('Generated ID already in use')
 
         return profile_id
+
+    def list(self, limit: int = None, offset: int = 0, desc: bool = True) -> List[Profile]:
+
+        query = self.db.session.query(Profile)
+
+        if desc:
+            query = query.order_by(Profile.desc())
+        else:
+            query = query.order_by(Profile.asc())
+
+        return query.limit(limit).offset(offset).all()
 
     def clear(self) -> None:
         self.db.session.query(Profile).delete()

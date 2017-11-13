@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "Dummy",
+  "type": "object",
+  "allOf": [
+      {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "title": "Dummy snippet",
+          "type": "object",
+          "allOf": [
+              {
+                  "$schema": "http://json-schema.org/draft-04/schema#",
+                  "title": "DummyPerson",
+                  "type": "object",
+                  "properties": {
+                      "name": {
+                          "title": "Name",
+                          "type": "object",
+                          "properties": {
+                              "preferred": {
+                                  "title": "Preferred name",
+                                  "type": "string",
+                                  "minLength": 1
+                              }
+                          },
+                          "required": [
+                              "preferred"
+                          ]
+                      }
+                  },
+                  "required": [
+                      "name"
+                  ]
+              }
+          ]
+      }
+  ]
+}
