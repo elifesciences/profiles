@@ -7,6 +7,7 @@ from flask import Flask
 from flask.testing import FlaskClient
 from flask_sqlalchemy import SQLAlchemy
 from hypothesis import settings as hyp_settings
+from hypothesis.configuration import set_hypothesis_home_dir
 from pytest import fixture
 from sqlalchemy.orm import scoped_session
 
@@ -16,16 +17,19 @@ from profiles.factory import create_app
 from profiles.models import (
     Name,
     Profile,
-    db
+    db,
 )
 
+BUILD_PATH = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/build/'
+
 TEST_DATABASE_NAME = 'test.db'
-TEST_DATABASE_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../build/' + TEST_DATABASE_NAME
+TEST_DATABASE_PATH = BUILD_PATH + TEST_DATABASE_NAME
 TEST_DATABASE_URI = 'sqlite:///' + TEST_DATABASE_PATH
 
 logging.disable(logging.CRITICAL)
 
-hyp_settings.register_profile("default", hyp_settings(database_file='build/hypothesis'))
+set_hypothesis_home_dir(BUILD_PATH + 'hypothesis/home')
+hyp_settings.register_profile('default', hyp_settings(database_file=BUILD_PATH + 'hypothesis/db'))
 hyp_settings.load_profile('default')
 
 
