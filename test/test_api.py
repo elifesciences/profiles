@@ -3,7 +3,7 @@ import json
 from flask.testing import FlaskClient
 from iso3166 import countries
 
-from profiles.models import Address, Affiliation, Date, Name, Profile, db
+from profiles.models import Address, Affiliation, Name, Profile, db
 from profiles.utilities import validate_json
 
 
