@@ -13,7 +13,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 def send_update_events(publisher: EventPublisher) -> Callable[..., None]:
-    def wrapper(sender: Flask, changes: tuple) -> None:  # pylint:disable=unused-argument
+    def event_handler(sender: Flask, changes: tuple) -> None:  # pylint:disable=unused-argument
         ids = []
 
         for instance, operation in changes:  # pylint:disable=unused-variable
@@ -30,4 +30,4 @@ def send_update_events(publisher: EventPublisher) -> Callable[..., None]:
                 LOGGER.exception(UpdateEventFailure('Failed to send event '
                                                     'for Profile {}'.format(profile_id)))
 
-    return wrapper
+    return event_handler
