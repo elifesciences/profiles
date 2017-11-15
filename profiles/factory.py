@@ -3,7 +3,7 @@ from flask import Flask
 from flask_migrate import Migrate
 from flask_sqlalchemy import models_committed
 
-from profiles.api import api, errors, oauth2, ping
+from profiles.api import api, errors, oauth2, ping, webhook
 from profiles.cli import ClearCommand
 from profiles.clients import Clients
 from profiles.config import Config
@@ -38,6 +38,7 @@ def create_app(config: Config, clients: Clients) -> Flask:
     app.register_blueprint(oauth2.create_blueprint(config.orcid, clients, profiles, orcid_client,
                                                    orcid_tokens), url_prefix='/oauth2')
     app.register_blueprint(ping.create_blueprint())
+    app.register_blueprint(webhook.create_blueprint(profiles))
 
     from werkzeug.exceptions import default_exceptions
     for code in default_exceptions:
