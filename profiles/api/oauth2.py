@@ -134,30 +134,31 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
             raise ValueError('Got token_type {}, expected Bearer'.format(
                 json_data.get('token_type')))
 
-        profile = _find_and_update_profile(json_data)
+        profile = _find_profile(json_data)
         json_data['id'] = profile.id
         _find_and_update_access_token(json_data)
 
         return make_response(jsonify(json_data), response.status_code)
 
-    def _find_and_update_profile(token_data: dict) -> Profile:
+    def _find_profile(token_data: dict) -> Profile:
         try:
-            profile = profiles.get_by_orcid(token_data['orcid'])
-            orcid_record = _fetch_orcid_record(profile.orcid, token_data['access_token'])
+            return profiles.get_by_orcid(token_data['orcid'])
         except ProfileNotFound:
-            if not token_data['name']:
-                raise InvalidRequest('No name visible')
             orcid_record = _fetch_orcid_record(token_data['orcid'], token_data['access_token'])
             email_addresses = [e['email'] for e in extract_email_addresses(orcid_record)]
 
             try:
-                profile = profiles.get_by_email_address(*email_addresses)
+                return profiles.get_by_email_address(*email_addresses)
             except ProfileNotFound:
-                profile = Profile(profiles.next_id(), Name(token_data['name']), token_data['orcid'])
-                profiles.add(profile)
+                return _create_profile(token_data, orcid_record)
 
-        if token_data['name']:
-            profile.name = Name(token_data['name'])
+    def _create_profile(token_data: dict, orcid_record: dict) -> Profile:
+        if not token_data['name']:
+            raise InvalidRequest('No name visible')
+        profile = Profile(profiles.next_id(), Name(token_data['name']), token_data['orcid'])
+        profiles.add(profile)
+
+        profile.name = Name(token_data['name'])
 
         _update_profile(profile, orcid_record)
 
