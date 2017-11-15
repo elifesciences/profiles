@@ -65,4 +65,5 @@ def test_it_only_sends_one_event_if_multiple_changes_are_detected(app, mock_publ
 
 
 def test_it_has_a_valid_signal_handler_registered_on_app():
-    assert len(models_committed.receivers) == 1
+    registered_handler_names = [recv.__name__ for id_, recv in models_committed.receivers.items()]
+    assert 'event_handler' in registered_handler_names
