@@ -7,6 +7,7 @@ from werkzeug.wrappers import Response
 from profiles.exceptions import ProfileNotFound
 from profiles.repositories import Profiles
 from profiles.serializer.normalizer import normalize
+from profiles.utilities import cache
 
 ORDER_ASC = 'asc'
 ORDER_DESC = 'desc'
@@ -20,6 +21,7 @@ def create_blueprint(profiles: Profiles) -> Blueprint:
     blueprint = Blueprint('api', __name__)
 
     @blueprint.route('/profiles')
+    @cache()
     def _list() -> Response:
         page = request.args.get('page', DEFAULT_PAGE, type=int)
         per_page = request.args.get('per-page', DEFAULT_PER_PAGE, type=int)
@@ -46,11 +48,14 @@ def create_blueprint(profiles: Profiles) -> Blueprint:
 
         response = make_response(json.dumps({'total': total, 'items': profile_list},
                                             default=normalize))
+
         response.headers['Content-Type'] = 'application/vnd.elife.profile-list+json;version=1'
+        response.headers['Vary'] = 'Accept'
 
         return response
 
     @blueprint.route('/profiles/<profile_id>')
+    @cache()
     def _get(profile_id: str) -> Response:
         try:
             profile = profiles.get(profile_id)
@@ -59,6 +64,7 @@ def create_blueprint(profiles: Profiles) -> Blueprint:
 
         response = make_response(json.dumps(profile, default=normalize))
         response.headers['Content-Type'] = 'application/vnd.elife.profile+json;version=1'
+        response.headers['Vary'] = 'Accept'
 
         return response
 

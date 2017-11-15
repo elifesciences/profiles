@@ -66,6 +66,7 @@ def test_it_redirects_when_authorizing(test_client: FlaskClient) -> None:
                                query_string={'client_id': 'client_id', 'response_type': 'code'})
 
     assert response.status_code == 302
+    assert response.headers.get('Cache-Control') == 'must-revalidate, no-cache, no-store, private'
     assert response.headers['Location'] == 'http://www.example.com/server/authorize?' + urlencode(
         {'client_id': 'server_client_id', 'response_type': 'code', 'scope': '/read-limited',
          'redirect_uri': 'http://localhost/oauth2/check',
@@ -130,6 +131,7 @@ def test_it_redirects_when_checking(test_client: FlaskClient) -> None:
         sort_keys=True)})
 
     assert response.status_code == 302
+    assert response.headers.get('Cache-Control') == 'must-revalidate, no-cache, no-store, private'
     assert response.headers['Location'] == 'http://www.example.com/client/redirect?' + urlencode(
         {'code': 1234}, True)
 
@@ -234,6 +236,7 @@ def test_it_exchanges(generate_random_string: MagicMock, test_client: FlaskClien
                                           'grant_type': 'authorization_code', 'code': '1234'})
 
     assert response.status_code == 200
+    assert response.headers.get('Cache-Control') == 'must-revalidate, no-cache, no-store, private'
     assert response.headers.get('Content-Type') == 'application/json'
     assert loads(response.data.decode('UTF-8')) == {'access_token': '1/fFAGRNJru1FTz70BzhT3Zg',
                                                     'expires_in': 3920, 'token_type': 'Bearer',
