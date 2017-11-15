@@ -18,7 +18,7 @@ from profiles.exceptions import ClientInvalidRequest, ClientInvalidScope, \
 from profiles.models import Name, OrcidToken, Profile
 from profiles.orcid import OrcidClient
 from profiles.repositories import OrcidTokens, Profiles
-from profiles.utilities import expires_at, remove_none_values
+from profiles.utilities import expires_at, no_cache, remove_none_values
 
 LOGGER = logging.getLogger(__name__)
 
@@ -28,6 +28,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
     blueprint = Blueprint('oauth', __name__)
 
     @blueprint.route('/authorize')
+    @no_cache
     def _authorize() -> Response:
         if 'client_id' not in request.args:
             raise BadRequest('Invalid client_id')
@@ -65,6 +66,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
             code=302)
 
     @blueprint.route('/check')
+    @no_cache
     def _check() -> Response:
         if not any(parameter in request.args for parameter in ['code', 'error']):
             raise BadRequest('Invalid code')
@@ -92,6 +94,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
         return redirect('{}?{}'.format(client.redirect_uri, urlencode(query, True)), code=302)
 
     @blueprint.route('/token', methods=['POST'])
+    @no_cache
     def _token() -> Response:
         if 'client_id' not in request.form:
             raise InvalidClient

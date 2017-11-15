@@ -11,14 +11,32 @@ def test_empty_list_of_profiles(test_client: FlaskClient) -> None:
     response = test_client.get('/profiles')
 
     assert response.status_code == 200
+    assert response.headers.get('Cache-Control') == 'max-age=300, public, stale-if-error=86400,' \
+                                                    'stale-while-revalidate=300'
     assert response.headers.get(
         'Content-Type') == 'application/vnd.elife.profile-list+json;version=1'
+    assert response.headers.get('Vary') == 'Accept'
 
     data = json.loads(response.data.decode('UTF-8'))
 
     assert data['total'] == 0
     assert not data['items']
     assert validate_json(data, schema_name='profile-list.v1') is True
+
+
+def test_list_of_profiles_revalidation(test_client: FlaskClient) -> None:
+    response = test_client.get('/profiles')
+
+    assert response.status_code == 200
+    assert 'ETag' in response.headers
+
+    response = test_client.get('/profiles', headers={'If-None-Match': response.headers.get('ETag')})
+
+    assert response.status_code == 304
+
+    response = test_client.get('/profiles', headers={'If-None-Match': 'foo'})
+
+    assert response.status_code == 200
 
 
 def test_list_of_profiles(test_client: FlaskClient) -> None:
@@ -156,12 +174,36 @@ def test_get_profile(test_client: FlaskClient) -> None:
     response = test_client.get('/profiles/a1b2c3d4')
 
     assert response.status_code == 200
+    assert response.headers.get('Cache-Control') == 'max-age=300, public, stale-if-error=86400,' \
+                                                    'stale-while-revalidate=300'
     assert response.headers.get('Content-Type') == 'application/vnd.elife.profile+json;version=1'
+    assert response.headers.get('Vary') == 'Accept'
 
     data = json.loads(response.data.decode('UTF-8'))
 
     assert validate_json(data, schema_name='profile.v1') is True
     assert data['id'] == 'a1b2c3d4'
+
+
+def test_get_profile_revalidation(test_client: FlaskClient) -> None:
+    profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
+
+    db.session.add(profile)
+    db.session.commit()
+
+    response = test_client.get('/profiles/a1b2c3d4')
+
+    assert response.status_code == 200
+    assert 'ETag' in response.headers
+
+    response = test_client.get('/profiles/a1b2c3d4',
+                               headers={'If-None-Match': response.headers.get('ETag')})
+
+    assert response.status_code == 304
+
+    response = test_client.get('/profiles/a1b2c3d4', headers={'If-None-Match': 'foo'})
+
+    assert response.status_code == 200
 
 
 def test_profile_not_found(test_client: FlaskClient) -> None:
