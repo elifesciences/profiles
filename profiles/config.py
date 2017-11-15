@@ -10,13 +10,15 @@ class Config(ABC):
     name = 'unknown'
     DEBUG = False
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_TRACK_MODIFICATIONS = True
     TESTING = False
 
-    def __init__(self, orcid: Dict[str, str], db: str, logging: Dict[str, str], **_kwargs) -> None:
+    def __init__(self, orcid: Dict[str, str], db: str, logging: Dict[str, str],
+                 bus: Dict[str, str], **_kwargs) -> None:
         self.orcid = orcid
         self.SQLALCHEMY_DATABASE_URI = db  # pylint: disable=invalid-name
         self.logging = logging
+        self.bus = bus
 
 
 class DevConfig(Config):
