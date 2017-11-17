@@ -28,6 +28,7 @@ class DevConfig(Config):
 
 class CiConfig(DevConfig):
     TESTING = True
+    SERVER_NAME = 'localhost'
     name = 'ci'
 
 

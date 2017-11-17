@@ -14,12 +14,8 @@ from sqlalchemy.orm import scoped_session
 from profiles.clients import Client, Clients
 from profiles.config import CiConfig
 from profiles.factory import create_app
-from profiles.models import (
-    Date,
-    Name,
-    Profile,
-    db,
-)
+from profiles.models import Date, Name, OrcidToken, Profile, db
+from profiles.utilities import expires_at
 
 BUILD_PATH = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/build/'
 
@@ -119,6 +115,11 @@ def mock_publisher() -> MagicMock:
     publisher = MagicMock()
     publisher.publish = MagicMock()
     return publisher
+
+
+@fixture
+def orcid_token() -> OrcidToken:
+    return OrcidToken('0001-0002-1825-0097', '1/fFAGRNJru1FTz70BzhT3Zg', expires_at(1234))
 
 
 @fixture

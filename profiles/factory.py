@@ -7,7 +7,7 @@ from profiles.api import api, errors, oauth2, ping, webhook
 from profiles.cli import ClearCommand
 from profiles.clients import Clients
 from profiles.config import Config
-from profiles.events import send_update_events
+from profiles.events import maintain_orcid_webhook, send_update_events
 from profiles.exceptions import ClientError, OAuth2Error
 from profiles.models import db
 from profiles.orcid import OrcidClient
@@ -48,6 +48,7 @@ def create_app(config: Config, clients: Clients) -> Flask:
     app.register_error_handler(ClientError, errors.client_error_handler)
     app.register_error_handler(OAuth2Error, errors.oauth2_error_handler)
 
+    models_committed.connect(maintain_orcid_webhook(config.orcid, orcid_client), app, weak=False)
     models_committed.connect(send_update_events(publisher=publisher), app, weak=False)
 
     return app
