@@ -138,4 +138,4 @@ def test_it_ignores_other_models_being_committed(app: Flask, orcid_token: OrcidT
 
 def test_it_has_a_valid_signal_handler_registered_on_app():
     registered_handler_names = [recv.__name__ for id_, recv in models_committed.receivers.items()]
-    assert 'event_handler' in registered_handler_names
+    assert 'webhook_maintainer' in registered_handler_names
