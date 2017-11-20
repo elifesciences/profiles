@@ -23,7 +23,7 @@ OPERATION_UPDATE = 'update'
 def maintain_orcid_webhook(orcid: Dict[str, str], orcid_client: OrcidClient) -> Callable[..., None]:
     # pylint:disable=unused-argument
     def webhook_maintainer(sender: Flask, changes: List[Tuple[db.Model, str]]) -> None:
-        profiles = list(filter(lambda x: isinstance(x[0], Profile) and x[0].orcid, changes))
+        profiles = [x for x in changes if isinstance(x[0], Profile) and x[0].orcid]
 
         if not profiles:
             return
@@ -56,7 +56,7 @@ def maintain_orcid_webhook(orcid: Dict[str, str], orcid_client: OrcidClient) -> 
 
 
 def send_update_events(publisher: EventPublisher) -> Callable[..., None]:
-    def event_handler(sender: Flask, changes: tuple) -> None:  # pylint:disable=unused-argument
+    def event_handler(sender: Flask, changes: List[Tuple[db.Model, str]]) -> None:  # pylint:disable=unused-argument
         ids = []
 
         for instance, operation in changes:  # pylint:disable=unused-variable
