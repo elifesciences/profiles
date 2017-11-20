@@ -1,5 +1,6 @@
 from flask import Blueprint
-from werkzeug.exceptions import NotFound
+from requests import RequestException
+from werkzeug.exceptions import Forbidden, NotFound
 from werkzeug.wrappers import Response
 
 from profiles.commands import update_profile_from_orcid_record
@@ -20,7 +21,11 @@ def create_blueprint(profiles: Profiles, orcid_client: OrcidClient,
             raise NotFound(str(exception)) from exception
 
         access_token = orcid_tokens.get(profile.orcid)
-        orcid_record = orcid_client.get_record(orcid, access_token.access_token)
+
+        try:
+            orcid_record = orcid_client.get_record(orcid, access_token.access_token)
+        except RequestException as exception:
+            raise Forbidden(str(exception)) from exception
 
         update_profile_from_orcid_record(profile, orcid_record)
 

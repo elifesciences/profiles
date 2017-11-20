@@ -1,5 +1,6 @@
 from flask.testing import FlaskClient
 import requests_mock
+from werkzeug.exceptions import Forbidden
 
 from profiles.database import db
 from profiles.models import Name, OrcidToken, Profile
@@ -38,4 +39,21 @@ def test_it_has_to_be_a_post(test_client: FlaskClient) -> None:
     response = test_client.get('/orcid-webhook/foo')
 
     assert response.status_code == 405
+    assert response.headers.get('Content-Type') == 'application/problem+json'
+
+
+def test_it_returns_403_if_an_access_token_is_rejected(profile: Profile,
+                                                       test_client: FlaskClient) -> None:
+    orcid_token = OrcidToken('0001-0002-1825-0097', 'access-token', expires_at(1234))
+
+    db.session.add(profile)
+    db.session.add(orcid_token)
+    db.session.commit()
+
+    with requests_mock.Mocker() as mocker:
+        mocker.get('http://www.example.com/api/v2.0/0001-0002-1825-0097/record', exc=Forbidden)
+
+        response = test_client.post('/orcid-webhook/0001-0002-1825-0097')
+
+    assert response.status_code == 403
     assert response.headers.get('Content-Type') == 'application/problem+json'

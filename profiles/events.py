@@ -56,7 +56,8 @@ def maintain_orcid_webhook(orcid: Dict[str, str], orcid_client: OrcidClient) -> 
 
 
 def send_update_events(publisher: EventPublisher) -> Callable[..., None]:
-    def event_handler(sender: Flask, changes: List[Tuple[db.Model, str]]) -> None:  # pylint:disable=unused-argument
+    # pylint:disable=unused-argument
+    def event_handler(sender: Flask, changes: List[Tuple[db.Model, str]]) -> None:
         ids = []
 
         for instance, operation in changes:  # pylint:disable=unused-variable
