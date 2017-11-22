@@ -1,31 +1,39 @@
+from hypothesis import given
+from hypothesis.strategies import text
+
 from profiles.clients import Client
 
 
-def test_it_can_be_printed():
-    client = Client('name', 'client_id', 'client_secret', 'redirect_uri')
+@given(text(min_size=1), text(min_size=1), text(min_size=1), text(min_size=1))
+def test_it_can_be_printed(name, client_id, client_secret, redirect_uri):
+    client = Client(name, client_id, client_secret, redirect_uri)
 
-    assert repr(client) == "<Client 'name'>"
-
-
-def test_it_has_a_name():
-    client = Client('name', 'client_id', 'client_secret', 'redirect_uri')
-
-    assert client.name == 'name'
+    assert '{!r}'.format(client) == "<Client {name!r}>".format(name=name)
 
 
-def test_it_has_a_client_id():
-    client = Client('name', 'client_id', 'client_secret', 'redirect_uri')
+@given(text(min_size=1), text(min_size=1), text(min_size=1), text(min_size=1))
+def test_it_has_a_name(name, client_id, client_secret, redirect_uri):
+    client = Client(name, client_id, client_secret, redirect_uri)
 
-    assert client.client_id == 'client_id'
-
-
-def test_it_has_a_client_secret():
-    client = Client('name', 'client_id', 'client_secret', 'redirect_uri')
-
-    assert client.client_secret == 'client_secret'
+    assert client.name == name
 
 
-def test_it_has_a_redirect_uri():
-    client = Client('name', 'client_id', 'client_secret', 'redirect_uri')
+@given(text(min_size=1), text(min_size=1), text(min_size=1), text(min_size=1))
+def test_it_has_a_client_id(name, client_id, client_secret, redirect_uri):
+    client = Client(name, client_id, client_secret, redirect_uri)
 
-    assert client.redirect_uri == 'redirect_uri'
+    assert client.client_id == client_id
+
+
+@given(text(min_size=1), text(min_size=1), text(min_size=1), text(min_size=1))
+def test_it_has_a_client_secret(name, client_id, client_secret, redirect_uri):
+    client = Client(name, client_id, client_secret, redirect_uri)
+
+    assert client.client_secret == client_secret
+
+
+@given(text(min_size=1), text(min_size=1), text(min_size=1), text(min_size=1))
+def test_it_has_a_redirect_uri(name, client_id, client_secret, redirect_uri):
+    client = Client(name, client_id, client_secret, redirect_uri)
+
+    assert client.redirect_uri == redirect_uri

@@ -1,28 +1,35 @@
+from hypothesis import given
+from hypothesis.strategies import text
+
 from profiles.models import Name
 
 
-def test_it_can_be_printed():
-    name = Name('Foo Bar')
+@given(text())
+def test_it_can_be_printed(name_text):
+    name = Name(name_text)
 
-    assert repr(name) == "<Name 'Foo Bar'>"
-
-
-def test_it_casts_to_a_string():
-    name = Name('Foo Bar')
-
-    assert str(name) == 'Foo Bar'
+    assert repr(name) == "<Name {!r}>".format(name_text)
 
 
-def test_it_has_a_preferred_name():
-    name = Name('Foo Bar')
+@given(text())
+def test_it_casts_to_a_string(name_text):
+    name = Name(name_text)
 
-    assert name.preferred == 'Foo Bar'
+    assert str(name) == name_text
 
 
-def test_it_has_an_index_name():
-    name = Name('Foo Bar', 'Bar, Foo')
+@given(text())
+def test_it_has_a_preferred_name(name_text):
+    name = Name(name_text)
 
-    assert name.index == 'Bar, Foo'
+    assert name.preferred == name_text
+
+
+@given(text(), text())
+def test_it_has_an_index_name(name_text, name_text2):
+    name = Name(name_text, name_text2)
+
+    assert name.index == name_text2
 
 
 def test_it_guesses_the_index_name():
