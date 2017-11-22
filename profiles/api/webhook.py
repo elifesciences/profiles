@@ -1,10 +1,10 @@
 from flask import Blueprint
 from requests import RequestException
-from werkzeug.exceptions import Forbidden, NotFound
+from werkzeug.exceptions import NotFound
 from werkzeug.wrappers import Response
 
 from profiles.commands import update_profile_from_orcid_record
-from profiles.exceptions import ProfileNotFound
+from profiles.exceptions import OrcidTokenNotFound, ProfileNotFound
 from profiles.orcid import OrcidClient
 from profiles.repositories import OrcidTokens, Profiles
 
@@ -15,17 +15,26 @@ def create_blueprint(profiles: Profiles, orcid_client: OrcidClient,
 
     @blueprint.route('/orcid-webhook/<orcid>', methods=['POST'])
     def _update(orcid: str) -> Response:
+        is_token_public_flag = False
+
         try:
             profile = profiles.get_by_orcid(orcid)
         except ProfileNotFound as exception:
             raise NotFound(str(exception)) from exception
 
-        access_token = orcid_tokens.get(profile.orcid)
+        try:
+            access_token = orcid_tokens.get(profile.orcid).access_token
+        except OrcidTokenNotFound:
+            access_token = orcid_client.get_access_token(public_token=True)
+            is_token_public_flag = True
 
         try:
-            orcid_record = orcid_client.get_record(orcid, access_token.access_token)
+            orcid_record = orcid_client.get_record(orcid, access_token)
         except RequestException as exception:
-            raise Forbidden(str(exception)) from exception
+            if exception.response.status_code == 403 and not is_token_public_flag:
+                orcid_tokens.remove(profile.orcid)
+
+            raise exception
 
         update_profile_from_orcid_record(profile, orcid_record)
 

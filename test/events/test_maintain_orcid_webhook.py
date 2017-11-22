@@ -10,12 +10,9 @@ from profiles.models import OrcidToken, Profile
 from profiles.orcid import OrcidClient
 
 
-def test_it_sets_a_webhook_when_a_profile_is_inserted(app: Flask, profile: Profile):
-    webhook_maintainer = maintain_orcid_webhook({
-        'token_uri': 'http://www.example.com/server/token',
-        'client_id': 'server_client_id',
-        'client_secret': 'server_client_secret',
-    }, OrcidClient('http://www.example.com/api'))
+def test_it_sets_a_webhook_when_a_profile_is_inserted(app: Flask, profile: Profile,
+                                                      orcid_client: OrcidClient):
+    webhook_maintainer = maintain_orcid_webhook(orcid_client)
 
     with requests_mock.Mocker() as mocker:
         def token_text(request: PreparedRequest):
@@ -26,7 +23,7 @@ def test_it_sets_a_webhook_when_a_profile_is_inserted(app: Flask, profile: Profi
                 'grant_type': 'client_credentials',
             }, doseq=True) == request.body
 
-        mocker.post('http://www.example.com/server/token', additional_matcher=token_text,
+        mocker.post('http://www.example.com/oauth/token', additional_matcher=token_text,
                     json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg'})
 
         mocker.put('http://www.example.com/api/v2.0/0001-0002-1825-0097/webhook/'
@@ -38,12 +35,9 @@ def test_it_sets_a_webhook_when_a_profile_is_inserted(app: Flask, profile: Profi
     assert mocker.call_count == 2
 
 
-def test_it_sets_a_webhook_when_a_profile_is_updated(app: Flask, profile: Profile):
-    webhook_maintainer = maintain_orcid_webhook({
-        'token_uri': 'http://www.example.com/server/token',
-        'client_id': 'server_client_id',
-        'client_secret': 'server_client_secret',
-    }, OrcidClient('http://www.example.com/api'))
+def test_it_sets_a_webhook_when_a_profile_is_updated(app: Flask, profile: Profile,
+                                                     orcid_client: OrcidClient):
+    webhook_maintainer = maintain_orcid_webhook(orcid_client)
 
     with requests_mock.Mocker() as mocker:
         def token_text(request: PreparedRequest):
@@ -54,7 +48,7 @@ def test_it_sets_a_webhook_when_a_profile_is_updated(app: Flask, profile: Profil
                 'grant_type': 'client_credentials',
             }, doseq=True) == request.body
 
-        mocker.post('http://www.example.com/server/token', additional_matcher=token_text,
+        mocker.post('http://www.example.com/oauth/token', additional_matcher=token_text,
                     json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg'})
 
         mocker.put('http://www.example.com/api/v2.0/0001-0002-1825-0097/webhook/'
@@ -66,12 +60,9 @@ def test_it_sets_a_webhook_when_a_profile_is_updated(app: Flask, profile: Profil
     assert mocker.call_count == 2
 
 
-def test_it_will_remove_the_webhook_when_a_profile_is_deleted(app: Flask, profile: Profile):
-    webhook_maintainer = maintain_orcid_webhook({
-        'token_uri': 'http://www.example.com/server/token',
-        'client_id': 'server_client_id',
-        'client_secret': 'server_client_secret',
-    }, OrcidClient('http://www.example.com/api'))
+def test_it_will_remove_the_webhook_when_a_profile_is_deleted(app: Flask, profile: Profile,
+                                                              orcid_client: OrcidClient):
+    webhook_maintainer = maintain_orcid_webhook(orcid_client)
 
     with requests_mock.Mocker() as mocker:
         def token_text(request: PreparedRequest):
@@ -82,7 +73,7 @@ def test_it_will_remove_the_webhook_when_a_profile_is_deleted(app: Flask, profil
                 'grant_type': 'client_credentials',
             }, doseq=True) == request.body
 
-        mocker.post('http://www.example.com/server/token', additional_matcher=token_text,
+        mocker.post('http://www.example.com/oauth/token', additional_matcher=token_text,
                     json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg'})
 
         mocker.delete('http://www.example.com/api/v2.0/0001-0002-1825-0097/webhook/'
@@ -94,12 +85,9 @@ def test_it_will_remove_the_webhook_when_a_profile_is_deleted(app: Flask, profil
     assert mocker.call_count == 2
 
 
-def test_it_only_requests_a_token_once(app: Flask, profile: Profile):
-    webhook_maintainer = maintain_orcid_webhook({
-        'token_uri': 'http://www.example.com/server/token',
-        'client_id': 'server_client_id',
-        'client_secret': 'server_client_secret',
-    }, OrcidClient('http://www.example.com/api'))
+def test_it_only_requests_a_token_once(app: Flask, profile: Profile,
+                                       orcid_client: OrcidClient):
+    webhook_maintainer = maintain_orcid_webhook(orcid_client)
 
     with requests_mock.Mocker() as mocker:
         def token_text(request: PreparedRequest):
@@ -110,7 +98,7 @@ def test_it_only_requests_a_token_once(app: Flask, profile: Profile):
                 'grant_type': 'client_credentials',
             }, doseq=True) == request.body
 
-        mocker.post('http://www.example.com/server/token', additional_matcher=token_text,
+        mocker.post('http://www.example.com/oauth/token', additional_matcher=token_text,
                     json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg'})
 
         mocker.put('http://www.example.com/api/v2.0/0001-0002-1825-0097/webhook/'
@@ -126,12 +114,9 @@ def test_it_only_requests_a_token_once(app: Flask, profile: Profile):
     assert mocker.call_count == 3
 
 
-def test_it_ignores_other_models_being_committed(app: Flask, orcid_token: OrcidToken):
-    webhook_maintainer = maintain_orcid_webhook({
-        'token_uri': 'http://www.example.com/server/token',
-        'client_id': 'server_client_id',
-        'client_secret': 'server_client_secret',
-    }, OrcidClient('http://www.example.com/api'))
+def test_it_ignores_other_models_being_committed(app: Flask, orcid_token: OrcidToken,
+                                                 orcid_client: OrcidClient):
+    webhook_maintainer = maintain_orcid_webhook(orcid_client)
 
     webhook_maintainer(app, [(orcid_token, 'delete')])
 

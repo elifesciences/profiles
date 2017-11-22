@@ -1,11 +1,9 @@
-import json
 import logging
-from typing import Callable, Dict, List, Tuple
+from typing import Callable, List, Tuple
 
 from elife_bus_sdk.events import ProfileEvent
 from elife_bus_sdk.publishers import EventPublisher
 from flask import Flask, url_for
-import requests
 from requests import RequestException
 
 from profiles.database import db
@@ -20,7 +18,7 @@ OPERATION_INSERT = 'insert'
 OPERATION_UPDATE = 'update'
 
 
-def maintain_orcid_webhook(orcid: Dict[str, str], orcid_client: OrcidClient) -> Callable[..., None]:
+def maintain_orcid_webhook(orcid_client: OrcidClient) -> Callable[..., None]:
     # pylint:disable=unused-argument
     def webhook_maintainer(sender: Flask, changes: List[Tuple[db.Model, str]]) -> None:
         profiles = [x for x in changes if isinstance(x[0], Profile) and x[0].orcid]
@@ -28,18 +26,7 @@ def maintain_orcid_webhook(orcid: Dict[str, str], orcid_client: OrcidClient) -> 
         if not profiles:
             return
 
-        data = {
-            'client_id': orcid['client_id'],
-            'client_secret': orcid['client_secret'],
-            'scope': '/webhook',
-            'grant_type': 'client_credentials',
-        }
-
-        response = requests.post(url=orcid['token_uri'], data=data,
-                                 headers={'Accept': 'application/json'})
-
-        json_data = json.loads(response.text)
-        access_token = json_data['access_token']
+        access_token = orcid_client.get_access_token()
 
         for profile, operation in profiles:
             uri = url_for('webhook._update', orcid=profile.orcid, _external=True)

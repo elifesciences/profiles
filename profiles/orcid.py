@@ -2,10 +2,13 @@ import json
 import logging
 from urllib.parse import quote
 
-from requests import RequestException, Response, request
+from requests import RequestException, Response, post, request
 
 API_VERSION = 'v2.0'
 LOGGER = logging.getLogger(__name__)
+
+PRIVATE_SCOPE = '/webhook'
+PUBLIC_SCOPE = '/read-public'
 
 VISIBILITY_PUBLIC = 'PUBLIC'
 VISIBILITY_LIMITED = 'LIMITED'
@@ -13,8 +16,37 @@ VISIBILITY_PRIVATE = 'PRIVATE'
 
 
 class OrcidClient(object):
-    def __init__(self, api_uri: str) -> None:
+    def __init__(self, api_uri: str, token_uri: str, client_id: str, client_secret: str) -> None:
         self.api_uri = api_uri
+        self.token_uri = token_uri
+        self.client_id = client_id
+        self.client_secret = client_secret
+
+    def get_access_token(self, public_token: bool = False) -> str:
+        LOGGER.debug('Requesting ORCID access token')
+
+        if public_token:
+            scope = PUBLIC_SCOPE
+        else:
+            scope = PRIVATE_SCOPE
+
+        data = {
+            'client_id': self.client_id,
+            'client_secret': self.client_secret,
+            'scope': scope,
+            'grant_type': 'client_credentials',
+        }
+
+        try:
+            response = post(url=self.token_uri, data=data, headers={'Accept': 'application/json'})
+        except RequestException as exception:
+            LOGGER.warning('Failed to obtain ORCID access token (%s)', str(exception))
+            raise exception
+
+        LOGGER.debug('Received ORCID public data token')
+        json_data = response.json()
+
+        return json_data.get('access_token', '')
 
     def get_record(self, orcid: str, access_token: str) -> dict:
         LOGGER.debug('Requesting ORCID record for %s', format(orcid))

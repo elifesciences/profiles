@@ -15,6 +15,8 @@ from profiles.clients import Client, Clients
 from profiles.config import CiConfig
 from profiles.factory import create_app
 from profiles.models import Date, Name, OrcidToken, Profile, db
+from profiles.orcid import OrcidClient
+from profiles.repositories import SQLAlchemyOrcidTokens
 from profiles.utilities import expires_at
 
 BUILD_PATH = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/build/'
@@ -36,8 +38,8 @@ def app(request: FixtureRequest) -> Flask:
         CiConfig(
             orcid={
                 'api_uri': 'http://www.example.com/api',
-                'authorize_uri': 'http://www.example.com/server/authorize',
-                'token_uri': 'http://www.example.com/server/token',
+                'authorize_uri': 'http://www.example.com/oauth/authorize',
+                'token_uri': 'http://www.example.com/oauth/token',
                 'client_id': 'server_client_id',
                 'client_secret': 'server_client_secret',
             },
@@ -118,8 +120,19 @@ def mock_publisher() -> MagicMock:
 
 
 @fixture
+def orcid_client() -> OrcidClient:
+    return OrcidClient('http://www.example.com/api', 'http://www.example.com/oauth/token',
+                       'server_client_id', 'server_client_secret')
+
+
+@fixture
 def orcid_token() -> OrcidToken:
     return OrcidToken('0001-0002-1825-0097', '1/fFAGRNJru1FTz70BzhT3Zg', expires_at(1234))
+
+
+@fixture
+def orcid_tokens() -> SQLAlchemyOrcidTokens:
+    return SQLAlchemyOrcidTokens(db)
 
 
 @fixture
@@ -130,3 +143,13 @@ def profile() -> Profile:
 @fixture
 def yesterday():
     return Date.yesterday()
+
+
+@fixture
+def public_token_resp_data():
+    return {"access_token": "4bed1e13-7792-4129-9f07-aaf7b88ba88f",
+            "token_type": "bearer",
+            "refresh_token": "2d76d8d0-6fd6-426b-a017-61e0ceda0ad2",
+            "expires_in": 631138518,
+            "scope": "/read-public",
+            "orcid": None}

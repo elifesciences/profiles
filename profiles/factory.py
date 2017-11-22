@@ -24,7 +24,8 @@ def create_app(config: Config, clients: Clients) -> Flask:
 
     Migrate(app, db)
 
-    orcid_client = OrcidClient(config.orcid['api_uri'])
+    orcid_client = OrcidClient(api_uri=config.orcid['api_uri'], token_uri=config.orcid['token_uri'],
+                               client_id=config.orcid['client_id'], client_secret=['client_secret'])
     orcid_tokens = SQLAlchemyOrcidTokens(db)
     profiles = SQLAlchemyProfiles(db)
 
@@ -48,7 +49,7 @@ def create_app(config: Config, clients: Clients) -> Flask:
     app.register_error_handler(ClientError, errors.client_error_handler)
     app.register_error_handler(OAuth2Error, errors.oauth2_error_handler)
 
-    models_committed.connect(maintain_orcid_webhook(config.orcid, orcid_client), app, weak=False)
+    models_committed.connect(maintain_orcid_webhook(orcid_client), app, weak=False)
     models_committed.connect(send_update_events(publisher=publisher), app, weak=False)
 
     return app
