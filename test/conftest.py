@@ -6,6 +6,8 @@ from _pytest.fixtures import FixtureRequest
 from flask import Flask
 from flask.testing import FlaskClient
 from flask_sqlalchemy import SQLAlchemy
+from hypothesis import settings as hyp_settings
+from hypothesis.configuration import set_hypothesis_home_dir
 from pytest import fixture
 from sqlalchemy.orm import scoped_session
 
@@ -13,16 +15,23 @@ from profiles.clients import Client, Clients
 from profiles.config import CiConfig
 from profiles.factory import create_app
 from profiles.models import (
+    Date,
     Name,
     Profile,
-    db
+    db,
 )
 
+BUILD_PATH = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/build/'
+
 TEST_DATABASE_NAME = 'test.db'
-TEST_DATABASE_PATH = os.path.dirname(os.path.realpath(__file__)) + '/../build/' + TEST_DATABASE_NAME
+TEST_DATABASE_PATH = BUILD_PATH + TEST_DATABASE_NAME
 TEST_DATABASE_URI = 'sqlite:///' + TEST_DATABASE_PATH
 
 logging.disable(logging.CRITICAL)
+
+set_hypothesis_home_dir(BUILD_PATH + 'hypothesis/home')
+hyp_settings.register_profile('default', hyp_settings(database_file=BUILD_PATH + 'hypothesis/db'))
+hyp_settings.load_profile('default')
 
 
 @fixture(scope='session')
@@ -101,6 +110,11 @@ def test_client(app: Flask) -> FlaskClient:
 
 
 @fixture
+def tomorrow():
+    return Date.tomorrow()
+
+
+@fixture
 def mock_publisher() -> MagicMock:
     publisher = MagicMock()
     publisher.publish = MagicMock()
@@ -110,3 +124,8 @@ def mock_publisher() -> MagicMock:
 @fixture
 def profile() -> Profile:
     return Profile('12345678', Name('foo'), '0001-0002-1825-0097')
+
+
+@fixture
+def yesterday():
+    return Date.yesterday()

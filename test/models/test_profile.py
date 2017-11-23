@@ -1,3 +1,5 @@
+from hypothesis import given
+from hypothesis.strategies import text
 from iso3166 import countries
 import pytest
 
@@ -5,28 +7,32 @@ from profiles.exceptions import AffiliationNotFound
 from profiles.models import Address, Affiliation, Date, Name, Profile
 
 
-def test_it_can_be_printed():
-    profile = Profile('12345678', Name('foo'), '0000-0002-1825-0097')
+@given(text(), text(), text())
+def test_it_can_be_printed(id_, name, orcid):
+    profile = Profile(id_, Name(name), orcid)
 
-    assert repr(profile) == "<Profile '12345678'>"
-
-
-def test_it_has_an_id():
-    profile = Profile('12345678', Name('foo'), '0000-0002-1825-0097')
-
-    assert profile.id == '12345678'
+    assert repr(profile) == "<Profile {!r}>".format(id_)
 
 
-def test_it_has_a_name():
-    profile = Profile('12345678', Name('foo'), '0000-0002-1825-0097')
+@given(text(), text(), text())
+def test_it_has_an_id(id_, name, orcid):
+    profile = Profile(id_, Name(name), orcid)
 
-    assert profile.name == Name('foo')
+    assert profile.id == '{}'.format(id_)
 
 
-def test_it_has_an_orcid():
-    profile = Profile('12345678', Name('foo'), '0000-0002-1825-0097')
+@given(text(), text(), text())
+def test_it_has_a_name(id_, name, orcid):
+    profile = Profile(id_, Name(name), orcid)
 
-    assert profile.orcid == '0000-0002-1825-0097'
+    assert profile.name == Name(name)
+
+
+@given(text(), text(), text())
+def test_it_has_an_orcid(id_, name, orcid):
+    profile = Profile(id_, Name(name), orcid)
+
+    assert profile.orcid == '{}'.format(orcid)
 
 
 def test_it_can_have_affiliations():
@@ -47,10 +53,7 @@ def test_it_can_have_affiliations():
         profile.get_affiliation('1')
 
 
-def test_it_can_get_current_affiliations():
-    yesterday = Date.yesterday()
-    tomorrow = Date.tomorrow()
-
+def test_it_can_get_current_affiliations(tomorrow, yesterday):
     address = Address(countries.get('gb'), 'City')
 
     affiliation1 = Affiliation('1', address=address, organisation='Org', starts=yesterday)
@@ -79,10 +82,7 @@ def test_it_can_get_current_affiliations():
     assert affiliations[1] == affiliation1
 
 
-def test_it_can_get_all_affiliations_including_non_current():
-    yesterday = Date.yesterday()
-    tomorrow = Date.tomorrow()
-
+def test_it_can_get_all_affiliations_including_non_current(tomorrow, yesterday):
     address = Address(countries.get('gb'), 'City')
 
     affiliation1 = Affiliation('1', address=address, organisation='Org', starts=yesterday)
@@ -133,9 +133,7 @@ def test_it_can_get_all_email_addresses_including_restricted():
     assert len(profile.get_email_addresses(include_restricted=True)) == 3
 
 
-def test_it_can_get_all_non_restricted_affiliations():
-    yesterday = Date.yesterday()
-
+def test_it_can_get_all_non_restricted_affiliations(yesterday):
     address = Address(countries.get('gb'), 'City')
 
     affiliation = Affiliation('1', address=address, organisation='Org', starts=yesterday)
@@ -154,9 +152,7 @@ def test_it_can_get_all_non_restricted_affiliations():
     assert len(affiliations) == 2
 
 
-def test_it_can_get_all_affiliations_including_restricted():
-    yesterday = Date.yesterday()
-
+def test_it_can_get_all_affiliations_including_restricted(yesterday):
     address = Address(countries.get('gb'), 'City')
 
     affiliation = Affiliation('1', address=address, organisation='Org', starts=yesterday)

@@ -1,3 +1,5 @@
+from hypothesis import given
+from hypothesis.strategies import integers, text
 import pytest
 
 from profiles.database import db
@@ -23,10 +25,11 @@ def test_it_contains_orcid_tokens():
         orcid_tokens.get('0000-0002-1825-0099')
 
 
-def test_it_clears_orcid_tokens():
+@given(text(), text(), integers(max_value=999999))
+def test_it_clears_orcid_tokens(orcid, token, expire):
     orcid_tokens = SQLAlchemyOrcidTokens(db)
-    orcid_tokens.add(OrcidToken('0000-0002-1825-0097', '...', expires_at(1234)))
+    orcid_tokens.add(OrcidToken(orcid, token, expires_at(expire)))
     orcid_tokens.clear()
 
     with pytest.raises(OrcidTokenNotFound):
-        orcid_tokens.get('0000-0002-1825-0097')
+        orcid_tokens.get(orcid)

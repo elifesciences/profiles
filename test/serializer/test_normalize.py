@@ -1,22 +1,27 @@
+from hypothesis import given
+from hypothesis.extra.fakefactory import fake_factory
+from hypothesis.strategies import integers, text
 from iso3166 import countries
 
-from profiles.models import Address, Affiliation, Date, EmailAddress, Name, Profile
+from profiles.models import Address, Affiliation, EmailAddress, Name, Profile
 from profiles.serializer.normalizer import normalize
 
 
-def test_it_normalizes_scalars():
-    assert normalize('foo') == 'foo'
-    assert normalize(1) == 1
+@given(text(), integers())
+def test_it_normalizes_scalars(string, num):
+    assert normalize(string) == string
+    assert normalize(num) == num
 
 
-def test_it_normalizes_profiles():
-    profile = Profile('12345678', Name('Foo Bar', 'Bar, Foo'))
+@given(text(), text(), text())
+def test_it_normalizes_profiles(id_, preferred, index):
+    profile = Profile(id_, Name(preferred, index))
 
     assert normalize(profile) == {
-        'id': '12345678',
+        'id': id_,
         'name': {
-            'preferred': 'Foo Bar',
-            'index': 'Bar, Foo',
+            'preferred': preferred,
+            'index': index
         },
         'emailAddresses': [],
         'affiliations': []
@@ -38,19 +43,21 @@ def test_it_normalizes_profile_with_orcid():
     }
 
 
-def test_it_normalizes_profile_with_single_email_address():
-    profile = Profile('12345678', Name('Foo Bar', 'Bar, Foo'), '0000-0002-1825-0097')
-    profile.add_email_address('1@example.com')
+@given(text(), text(), text(), text(), fake_factory('email'))
+def test_it_normalizes_profile_with_single_email_address(id_, preferred, index, orcid, email):
+    profile = Profile(id_, Name(preferred, index), orcid)
+    profile.add_email_address(email)
 
     normalized_profile = normalize(profile)
 
     assert len(normalized_profile['emailAddresses']) == 1
 
 
-def test_it_normalizes_profile_with_multiple_email_addresses():
-    profile = Profile('12345678', Name('Foo Bar', 'Bar, Foo'), '0000-0002-1825-0097')
-    profile.add_email_address('1@example.com')
-    profile.add_email_address('2example.com')
+@given(text(), text(), text(), text(), fake_factory('email'))
+def test_it_normalizes_profile_with_multiple_email_addresses(id_, preferred, index, orcid, email):
+    profile = Profile(id_, Name(preferred, index), orcid)
+    profile.add_email_address(email)
+    profile.add_email_address('2' + email)
 
     normalized_profile = normalize(profile)
 
@@ -71,11 +78,10 @@ def test_it_normalizes_profile_with_multiple_email_addresses_with_primary_addres
     assert normalized_profile['emailAddresses'][0] == primary_address
 
 
-def test_it_normalizes_profile_with_an_affiliation():
-    starts = Date.yesterday()
+def test_it_normalizes_profile_with_an_affiliation(yesterday):
     address = Address(countries.get('gb'), 'City', 'Region')
     affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
-                              starts=starts)
+                              starts=yesterday)
     profile = Profile('12345678', Name('Foo Bar', 'Bar, Foo'))
 
     profile.add_affiliation(affiliation)
@@ -114,14 +120,13 @@ def test_it_normalizes_profile_with_an_affiliation():
     }
 
 
-def test_it_normalizes_profile_with_affiliations():
-    starts = Date.yesterday()
+def test_it_normalizes_profile_with_affiliations(yesterday):
     address = Address(countries.get('gb'), 'City', 'Region')
     address2 = Address(countries.get('gb'), 'City2', 'Region2')
     affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
-                              starts=starts)
+                              starts=yesterday)
     affiliation2 = Affiliation('2', address=address2, organisation='Org2', department='Dep',
-                               starts=starts)
+                               starts=yesterday)
 
     profile = Profile('12345678', Name('Foo Bar', 'Bar, Foo'))
 
@@ -170,11 +175,10 @@ def test_it_normalizes_profile_with_affiliations():
     }
 
 
-def test_it_normalizes_affiliation():
-    starts = Date.yesterday()
+def test_it_normalizes_affiliation(yesterday):
     address = Address(countries.get('gb'), 'City', 'Region')
     affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
-                              starts=starts)
+                              starts=yesterday)
 
     assert normalize(affiliation) == {
         "name": [
@@ -200,7 +204,8 @@ def test_it_normalizes_affiliation():
     }
 
 
-def test_it_normalizes_email_address():
-    email_address = EmailAddress('1@example.com')
+@given(fake_factory('email'))
+def test_it_normalizes_email_address(email):
+    email_address = EmailAddress(email)
 
-    assert normalize(email_address) == '1@example.com'
+    assert normalize(email_address) == email
