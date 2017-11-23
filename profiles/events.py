@@ -4,7 +4,6 @@ from typing import Callable, List, Tuple
 from blinker import Signal
 from elife_bus_sdk.events import ProfileEvent
 from elife_bus_sdk.publishers import EventPublisher
-from flask import Flask
 
 from profiles.database import db
 from profiles.exceptions import UpdateEventFailure
@@ -15,7 +14,8 @@ LOGGER = logging.getLogger(__name__)
 
 
 def send_update_events(publisher: EventPublisher) -> Callable[..., None]:
-    def event_handler(sender: Signal.ANY, changes: List[Tuple[db.Model, str]]) -> None:  # pylint:disable=unused-argument
+    # pylint:disable=unused-argument
+    def event_handler(sender: Signal.ANY, changes: List[Tuple[db.Model, str]]) -> None:
         ids = []
 
         LOGGER.info('Processing event(s)')
