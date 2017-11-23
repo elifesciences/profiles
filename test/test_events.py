@@ -5,65 +5,66 @@ from profiles.events import send_update_events
 from profiles.models import (
     Address,
     Affiliation,
-    Date,
-    EmailAddress
+    Date
 )
 
 
-def test_it_will_send_event_for_profile_insert(app, mock_publisher, profile):
+def test_it_has_a_valid_signal_handler_registered_on_app():
+    registered_handler_names = [recv.__name__ for id_, recv in models_committed.receivers.items()
+                                if recv.__name__]
+    assert 'event_handler' in registered_handler_names
+
+
+def test_it_will_send_event_for_profile_insert(mock_publisher, profile):
     event_publisher = send_update_events(publisher=mock_publisher)
-    event_publisher(app, [(profile, 'insert')])
+    event_publisher({}, [(profile, 'insert')])
 
     assert mock_publisher.publish.called
     assert mock_publisher.publish.call_args[0] == ({'id': '12345678', 'type': 'profile'}, )
 
 
-def test_it_will_send_event_for_profile_deleted(app, mock_publisher, profile):
+def test_it_will_send_event_for_profile_deleted(mock_publisher, profile):
     event_publisher = send_update_events(publisher=mock_publisher)
-    event_publisher(app, [(profile, 'delete')])
+    event_publisher({}, [(profile, 'delete')])
 
     assert mock_publisher.publish.called
     assert mock_publisher.publish.call_args[0] == ({'id': '12345678', 'type': 'profile'}, )
 
 
-def test_it_will_send_event_for_affiliation_insert(app, mock_publisher, profile):
+def test_it_will_send_event_for_affiliation_insert(mock_publisher, profile, session):
+    event_publisher = send_update_events(publisher=mock_publisher)
+    models_committed.connect(receiver=event_publisher)
+
     affiliation = Affiliation('1', Address(countries.get('gb'), 'City'), 'Organisation', Date(2017))
 
     profile.add_affiliation(affiliation)
+    session.add(profile)
+    session.commit()
 
+    assert mock_publisher.publish.call_count == 1
+    assert mock_publisher.publish.call_args[0][0] == {'id': '12345678', 'type': 'profile'}
+
+
+def test_it_will_send_event_if_email_address_is_updated(mock_publisher, profile, session):
     event_publisher = send_update_events(publisher=mock_publisher)
-    event_publisher(app, [(affiliation, 'insert')])
+    models_committed.connect(receiver=event_publisher)
 
-    assert mock_publisher.publish.called
-    assert mock_publisher.publish.call_args[0] == ({'id': '12345678', 'type': 'profile'}, )
-
-
-def test_it_will_send_event_if_email_address_is_updated(app, session, mock_publisher, profile):
     profile.add_email_address('2@example.com')
     session.add(profile)
     session.commit()
 
-    email_address = EmailAddress.query.filter_by(email='2@example.com').one()
+    assert mock_publisher.publish.call_count == 1
+    assert mock_publisher.publish.call_args[0][0] == {'id': '12345678', 'type': 'profile'}
 
+
+def test_it_only_sends_one_event_if_multiple_changes_are_detected(mock_publisher, profile, session):
     event_publisher = send_update_events(publisher=mock_publisher)
-    event_publisher(app, [(email_address, 'update')])
+    models_committed.connect(receiver=event_publisher)
 
-    assert mock_publisher.publish.called
-    assert mock_publisher.publish.call_args[0] == ({'id': '12345678', 'type': 'profile'},)
-
-
-def test_it_only_sends_one_event_if_multiple_changes_are_detected(app, mock_publisher, profile):
     affiliation = Affiliation('1', Address(countries.get('gb'), 'City'), 'Organisation', Date(2017))
-
     profile.add_affiliation(affiliation)
-
-    event_publisher = send_update_events(publisher=mock_publisher)
-    event_publisher(app, [(affiliation, 'insert'), (profile, 'update')])
+    session.add(profile)
+    session.commit()
 
     assert mock_publisher.publish.call_count == 1
-    assert mock_publisher.publish.call_args[0] == ({'id': '12345678', 'type': 'profile'},)
-
-
-def test_it_has_a_valid_signal_handler_registered_on_app():
-    registered_handler_names = [recv.__name__ for id_, recv in models_committed.receivers.items()]
-    assert 'event_handler' in registered_handler_names
+    assert mock_publisher.publish.call_args[0][0] == {'id': '12345678', 'type': 'profile'}

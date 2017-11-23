@@ -47,6 +47,6 @@ def create_app(config: Config, clients: Clients) -> Flask:
     app.register_error_handler(ClientError, errors.client_error_handler)
     app.register_error_handler(OAuth2Error, errors.oauth2_error_handler)
 
-    models_committed.connect(send_update_events(publisher=publisher), app, weak=False)
+    models_committed.connect(send_update_events(publisher=publisher), weak=False)
 
     return app
