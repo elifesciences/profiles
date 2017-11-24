@@ -1,4 +1,5 @@
 import json
+from unittest.mock import patch
 
 from flask.testing import FlaskClient
 from iso3166 import countries
@@ -169,7 +170,9 @@ def test_get_profile(test_client: FlaskClient) -> None:
     profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
 
     db.session.add(profile)
-    db.session.commit()
+
+    with patch('profiles.orcid.post'):
+        db.session.commit()
 
     response = test_client.get('/profiles/a1b2c3d4')
 
@@ -189,7 +192,9 @@ def test_get_profile_revalidation(test_client: FlaskClient) -> None:
     profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
 
     db.session.add(profile)
-    db.session.commit()
+
+    with patch('profiles.orcid.post'):
+        db.session.commit()
 
     response = test_client.get('/profiles/a1b2c3d4')
 
@@ -219,7 +224,9 @@ def test_get_profile_response_contains_email_addresses(test_client: FlaskClient)
     profile.add_email_address('2@example.com')
 
     db.session.add(profile)
-    db.session.commit()
+
+    with patch('profiles.orcid.post'):
+        db.session.commit()
 
     response = test_client.get('/profiles/a1b2c3d4')
     data = json.loads(response.data.decode('UTF-8'))
@@ -236,7 +243,9 @@ def test_does_not_contain_restricted_email_addresses(test_client: FlaskClient) -
     profile.add_email_address('2@example.com', restricted=True)
 
     db.session.add(profile)
-    db.session.commit()
+
+    with patch('profiles.orcid.post'):
+        db.session.commit()
 
     response = test_client.get('/profiles/a1b2c3d4')
     data = json.loads(response.data.decode('UTF-8'))
@@ -247,7 +256,8 @@ def test_does_not_contain_restricted_email_addresses(test_client: FlaskClient) -
     assert data['emailAddresses'] == ['1@example.com']
 
 
-def test_get_profile_response_contains_affiliations(test_client: FlaskClient, yesterday) -> None:
+def test_get_profile_response_contains_affiliations(test_client: FlaskClient,
+                                                    yesterday) -> None:
     address = Address(country=countries.get('gb'), city='City', region='Region')
     affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
                               starts=yesterday)
@@ -257,7 +267,8 @@ def test_get_profile_response_contains_affiliations(test_client: FlaskClient, ye
     db.session.add(profile)
     profile.add_affiliation(affiliation)
 
-    db.session.commit()
+    with patch('profiles.orcid.post'):
+        db.session.commit()
 
     response = test_client.get('/profiles/a1b2c3d4')
     data = json.loads(response.data.decode('UTF-8'))
@@ -274,7 +285,8 @@ def test_get_profile_response_contains_affiliations(test_client: FlaskClient, ye
     ]
 
 
-def test_it_does_not_return_restricted_affiliations(test_client: FlaskClient, yesterday) -> None:
+def test_it_does_not_return_restricted_affiliations(test_client: FlaskClient,
+                                                    yesterday) -> None:
     address = Address(country=countries.get('gb'), city='City', region='Region')
     affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
                               starts=yesterday)
@@ -289,7 +301,8 @@ def test_it_does_not_return_restricted_affiliations(test_client: FlaskClient, ye
     profile.add_affiliation(affiliation)
     profile.add_affiliation(affiliation2)
 
-    db.session.commit()
+    with patch('profiles.orcid.post'):
+        db.session.commit()
 
     response = test_client.get('/profiles/a1b2c3d4')
     data = json.loads(response.data.decode('UTF-8'))

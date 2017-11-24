@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from flask.testing import FlaskClient
 import pytest
@@ -19,7 +19,9 @@ def test_it_updates_and_returns_204_if_a_profile_is_found(test_client: FlaskClie
 
     db.session.add(profile)
     db.session.add(orcid_token)
-    db.session.commit()
+
+    with patch('profiles.orcid.post'):
+        db.session.commit()
 
     with requests_mock.Mocker() as mocker:
         mocker.get('http://www.example.com/api/v2.0/0000-0002-1825-0097/record',
@@ -53,7 +55,9 @@ def test_it_returns_403_if_an_access_token_is_rejected(profile: Profile,
                                                        test_client: FlaskClient) -> None:
     db.session.add(profile)
     db.session.add(orcid_token)
-    db.session.commit()
+
+    with patch('profiles.orcid.post'):
+        db.session.commit()
 
     with requests_mock.Mocker() as mocker:
         mocker.get('http://www.example.com/api/v2.0/0001-0002-1825-0097/record', exc=Forbidden)
@@ -68,7 +72,9 @@ def test_it_still_updates_if_public_data_token_has_to_be_used(profile: Profile,
                                                               public_token_resp_data: dict,
                                                               test_client: FlaskClient) -> None:
     db.session.add(profile)
-    db.session.commit()
+
+    with patch('profiles.orcid.post'):
+        db.session.commit()
 
     response_data = public_token_resp_data
 
@@ -93,7 +99,9 @@ def test_it_removes_token_if_403_and_public_is_false(profile: Profile,
                                                      orcid_tokens: SQLAlchemyOrcidTokens) -> None:
     db.session.add(profile)
     db.session.add(orcid_token)
-    db.session.commit()
+
+    with patch('profiles.orcid.post'):
+        db.session.commit()
 
     err_response = MagicMock(status_code=403)
 
