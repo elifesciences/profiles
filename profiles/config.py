@@ -29,23 +29,23 @@ class DevConfig(Config):
 
 class CiConfig(DevConfig):
     TESTING = True
-    SERVER_NAME = 'ci--profiles.elifescience.org'
+    SERVER_NAME = 'ci--profiles.elifesciences.org'
     name = 'ci'
 
 
 class ProdConfig(Config):
     name = 'prod'
-    SERVER_NAME = 'prod--profiles.elifescience.org'
+    SERVER_NAME = 'prod--profiles.elifesciences.org'
 
 
 class ContinuumTestConfig(ProdConfig):
     name = 'continuumtest'
-    SERVER_NAME = 'continuumtest--profiles.elifescience.org'
+    SERVER_NAME = 'continuumtest--profiles.elifesciences.org'
 
 
 class End2EndConfig(ProdConfig):
     name = 'end2end'
-    SERVER_NAME = 'end2end--profiles.elifescience.org'
+    SERVER_NAME = 'end2end--profiles.elifesciences.org'
 
 
 def all_config_classes_by_name():
