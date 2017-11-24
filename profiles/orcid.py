@@ -7,8 +7,8 @@ from requests import RequestException, Response, post, request
 API_VERSION = 'v2.0'
 LOGGER = logging.getLogger(__name__)
 
-PRIVATE_SCOPE = '/webhook'
-PUBLIC_SCOPE = '/read-public'
+WEBHOOK_SCOPE = '/webhook'
+READ_PUBLIC_SCOPE = '/read-public'
 
 VISIBILITY_PUBLIC = 'PUBLIC'
 VISIBILITY_LIMITED = 'LIMITED'
@@ -26,9 +26,9 @@ class OrcidClient(object):
         LOGGER.debug('Requesting ORCID access token')
 
         if public_token:
-            scope = PUBLIC_SCOPE
+            scope = READ_PUBLIC_SCOPE
         else:
-            scope = PRIVATE_SCOPE
+            scope = WEBHOOK_SCOPE
 
         data = {
             'client_id': self.client_id,

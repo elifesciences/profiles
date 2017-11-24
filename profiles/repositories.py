@@ -74,9 +74,8 @@ class SQLAlchemyOrcidTokens(OrcidTokens):
         try:
             orcid_token = self.db.session.query(OrcidToken).filter_by(orcid=orcid).one()
             self.db.session.delete(orcid_token)
-        except NoResultFound as exception:
-            raise OrcidTokenNotFound('ORCID token for the ORCID {} not found'.format(orcid)) \
-                from exception
+        except NoResultFound:
+            pass
 
 
 class SQLAlchemyProfiles(Profiles):
