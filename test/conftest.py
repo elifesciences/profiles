@@ -12,7 +12,7 @@ from pytest import fixture
 from sqlalchemy.orm import scoped_session
 
 from profiles.clients import Client, Clients
-from profiles.config import CiConfig
+from profiles.config import DevConfig
 from profiles.factory import create_app
 from profiles.models import Date, Name, OrcidToken, Profile, db
 from profiles.orcid import OrcidClient
@@ -35,7 +35,7 @@ hyp_settings.load_profile('default')
 @fixture(scope='session')
 def app(request: FixtureRequest) -> Flask:
     app = create_app(
-        CiConfig(
+        DevConfig(
             orcid={
                 'api_uri': 'http://www.example.com/api',
                 'authorize_uri': 'http://www.example.com/oauth/authorize',
