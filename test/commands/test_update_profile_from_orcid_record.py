@@ -1,7 +1,20 @@
+from hypothesis import given
+from hypothesis.searchstrategy import SearchStrategy
+from hypothesis.strategies import sampled_from
 from iso3166 import countries
 
 from profiles.commands import extract_email_addresses, update_profile_from_orcid_record
 from profiles.models import Address, Affiliation, Date, Name, Profile
+
+
+def given_names() -> SearchStrategy:
+    return sampled_from(['Francisco', 'Verónica', 'Татьяна', '璞玉', 'Francisco Javier', 'jian',
+                         'MARIA ISABEL'])
+
+
+def family_name() -> SearchStrategy:
+    return sampled_from(['Baños', 'López López', 'Яковлева', '田', 'Cuevas-de-la-Rosa', 'yilang',
+                         'GONZALEZ SANCHEZ'])
 
 
 def test_it_extracts_email_addresses():
@@ -40,16 +53,52 @@ def test_it_can_extract_email_addresses_ignoring_unverified():
     assert extract_email_addresses(orcid_record, only_verified=True) == expected_without
 
 
-def test_it_updates_the_name():
+@given(given_names(), family_name())
+def test_it_updates_the_name(given_names: str, family_name: str):
     profile = Profile('12345678', Name('Old Name'))
     orcid_record = {'person': {
-        'name': {'family-name': {'value': 'Family Name'}, 'given-names': {'value': 'Given Names'}}}
+        'name': {'family-name': {'value': family_name}, 'given-names': {'value': given_names}}}
     }
 
     update_profile_from_orcid_record(profile, orcid_record)
 
-    assert profile.name.preferred == 'Given Names Family Name'
-    assert profile.name.index == 'Family Name, Given Names'
+    assert profile.name.preferred == '{} {}'.format(given_names, family_name)
+    assert profile.name.index == '{}, {}'.format(family_name, given_names)
+
+
+def test_it_does_not_updates_the_name_if_its_missing():
+    profile = Profile('12345678', Name('Old Name'))
+    orcid_record = {'person': {'name': {}}}
+
+    update_profile_from_orcid_record(profile, orcid_record)
+
+    assert profile.name == Name('Old Name')
+
+
+@given(family_name())
+def test_it_updates_the_name_if_there_is_no_given_name(family_name: str):
+    profile = Profile('12345678', Name('Old Name'))
+    orcid_record = {'person': {
+        'name': {'family-name': {'value': family_name}}}
+    }
+
+    update_profile_from_orcid_record(profile, orcid_record)
+
+    assert profile.name.preferred == family_name
+    assert profile.name.index == family_name
+
+
+@given(given_names())
+def test_it_updates_the_name_if_there_is_no_family_name(given_names: str):
+    profile = Profile('12345678', Name('Old Name'))
+    orcid_record = {'person': {
+        'name': {'given-names': {'value': given_names}}}
+    }
+
+    update_profile_from_orcid_record(profile, orcid_record)
+
+    assert profile.name.preferred == given_names
+    assert profile.name.index == given_names
 
 
 def test_it_adds_affiliations():
