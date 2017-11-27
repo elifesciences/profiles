@@ -52,6 +52,39 @@ def test_it_updates_the_name():
     assert profile.name.index == 'Family Name, Given Names'
 
 
+def test_it_does_not_updates_the_name_if_its_missing():
+    profile = Profile('12345678', Name('Old Name'))
+    orcid_record = {'person': {'name': {}}}
+
+    update_profile_from_orcid_record(profile, orcid_record)
+
+    assert profile.name == Name('Old Name')
+
+
+def test_it_updates_the_name_if_there_is_no_given_name():
+    profile = Profile('12345678', Name('Old Name'))
+    orcid_record = {'person': {
+        'name': {'family-name': {'value': 'Family Name'}}}
+    }
+
+    update_profile_from_orcid_record(profile, orcid_record)
+
+    assert profile.name.preferred == 'Family Name'
+    assert profile.name.index == 'Family Name'
+
+
+def test_it_updates_the_name_if_there_is_no_family_name():
+    profile = Profile('12345678', Name('Old Name'))
+    orcid_record = {'person': {
+        'name': {'given-names': {'value': 'Given Names'}}}
+    }
+
+    update_profile_from_orcid_record(profile, orcid_record)
+
+    assert profile.name.preferred == 'Given Names'
+    assert profile.name.index == 'Given Names'
+
+
 def test_it_adds_affiliations():
     profile = Profile('12345678', Name('Name'))
     orcid_record = {'activities-summary': {
