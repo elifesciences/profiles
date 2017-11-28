@@ -44,9 +44,3 @@ def test_it_raises_http_errors(orcid_client: OrcidClient):
         mocker.get('http://www.example.com/api/v2.0/0000-0002-1825-0097/record', status_code=404)
 
         orcid_client.get_record('0000-0002-1825-0097', '1/fFAGRNJru1FTz70BzhT3Zg')
-
-
-def test_it_can_get_public_data_token(orcid_client: OrcidClient,):
-    token = orcid_client.get_access_token(public_token=True)
-
-    assert token == 'server_read_public_access_token'

@@ -1,5 +1,11 @@
 import logging
-from typing import Any, Callable, List, Tuple
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Tuple
+)
 
 from elife_bus_sdk.events import ProfileEvent
 from elife_bus_sdk.publishers import EventPublisher
@@ -18,7 +24,7 @@ OPERATION_INSERT = 'insert'
 OPERATION_UPDATE = 'update'
 
 
-def maintain_orcid_webhook(orcid_client: OrcidClient) -> Callable[..., None]:
+def maintain_orcid_webhook(orcid: Dict[str, str], orcid_client: OrcidClient) -> Callable[..., None]:
     # pylint:disable=unused-argument
     def webhook_maintainer(sender: Any, changes: List[Tuple[db.Model, str]]) -> None:
         profiles = [x for x in changes if isinstance(x[0], Profile) and x[0].orcid]
@@ -26,7 +32,7 @@ def maintain_orcid_webhook(orcid_client: OrcidClient) -> Callable[..., None]:
         if not profiles:
             return
 
-        access_token = orcid_client.get_access_token()
+        access_token = orcid.get('webhook_access_token')
 
         for profile, operation in profiles:
             uri = url_for('webhook._update', orcid=profile.orcid, _external=True)

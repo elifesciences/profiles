@@ -68,31 +68,6 @@ def test_it_returns_403_if_an_access_token_is_rejected(profile: Profile,
     assert response.headers.get('Content-Type') == 'application/problem+json'
 
 
-def test_it_still_updates_if_public_data_token_has_to_be_used(profile: Profile,
-                                                              public_token_resp_data: dict,
-                                                              test_client: FlaskClient) -> None:
-    db.session.add(profile)
-
-    with patch('profiles.orcid.request'):
-        db.session.commit()
-
-    response_data = public_token_resp_data
-
-    with requests_mock.Mocker() as mocker:
-        mocker.post('http://www.example.com/oauth/token', json=response_data)
-
-        mocker.get('http://www.example.com/api/v2.0/0001-0002-1825-0097/record',
-                   json={'person': {
-                       'name': {'family-name': {'value': 'Family Name'},
-                                'given-names': {'value': 'Given Names'}}
-                   }})
-
-        response = test_client.post('/orcid-webhook/0001-0002-1825-0097')
-
-    assert response.status_code == 204
-    assert profile.name.preferred == 'Given Names Family Name'
-
-
 def test_it_removes_token_if_403_and_public_is_false(profile: Profile,
                                                      test_client: FlaskClient,
                                                      orcid_token: OrcidToken,

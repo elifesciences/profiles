@@ -25,9 +25,7 @@ def create_app(config: Config, clients: Clients) -> Flask:
     Migrate(app, db)
 
     orcid_client = OrcidClient(api_uri=config.orcid['api_uri'], token_uri=config.orcid['token_uri'],
-                               client_id=config.orcid['client_id'], client_secret=['client_secret'],
-                               read_public_access_token=config.orcid['read_public_access_token'],
-                               webhook_access_token=config.orcid['webhook_access_token'])
+                               client_id=config.orcid['client_id'], client_secret=['client_secret'])
     orcid_tokens = SQLAlchemyOrcidTokens(db)
     profiles = SQLAlchemyProfiles(db)
 
@@ -41,7 +39,8 @@ def create_app(config: Config, clients: Clients) -> Flask:
     app.register_blueprint(oauth2.create_blueprint(config.orcid, clients, profiles, orcid_client,
                                                    orcid_tokens), url_prefix='/oauth2')
     app.register_blueprint(ping.create_blueprint())
-    app.register_blueprint(webhook.create_blueprint(profiles, orcid_client, orcid_tokens))
+    app.register_blueprint(webhook.create_blueprint(profiles, config.orcid,
+                                                    orcid_client, orcid_tokens))
 
     from werkzeug.exceptions import default_exceptions
     for code in default_exceptions:
@@ -51,7 +50,7 @@ def create_app(config: Config, clients: Clients) -> Flask:
     app.register_error_handler(ClientError, errors.client_error_handler)
     app.register_error_handler(OAuth2Error, errors.oauth2_error_handler)
 
-    models_committed.connect(maintain_orcid_webhook(orcid_client), weak=False)
+    models_committed.connect(maintain_orcid_webhook(config.orcid, orcid_client), weak=False)
     models_committed.connect(send_update_events(publisher=publisher), weak=False)
 
     return app

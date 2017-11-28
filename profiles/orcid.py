@@ -7,30 +7,18 @@ from requests import RequestException, Response, request
 API_VERSION = 'v2.0'
 LOGGER = logging.getLogger(__name__)
 
-WEBHOOK_SCOPE = '/webhook'
-READ_PUBLIC_SCOPE = '/read-public'
-
 VISIBILITY_PUBLIC = 'PUBLIC'
 VISIBILITY_LIMITED = 'LIMITED'
 VISIBILITY_PRIVATE = 'PRIVATE'
 
 
 class OrcidClient(object):
-    # pylint:disable=too-many-arguments
-    def __init__(self, api_uri: str, token_uri: str, client_id: str, client_secret: str,
-                 read_public_access_token: str, webhook_access_token: str) -> None:
+    def __init__(self, api_uri: str, token_uri: str, client_id: str,
+                 client_secret: str) -> None:
         self.api_uri = api_uri
         self.token_uri = token_uri
         self.client_id = client_id
         self.client_secret = client_secret
-        self.read_public_access_token = read_public_access_token
-        self.webhook_access_token = webhook_access_token
-
-    def get_access_token(self, public_token: bool = False) -> str:
-        if public_token:
-            return self.read_public_access_token
-
-        return self.webhook_access_token
 
     def get_record(self, orcid: str, access_token: str) -> dict:
         LOGGER.debug('Requesting ORCID record for %s', format(orcid))

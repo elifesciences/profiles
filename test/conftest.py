@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Dict
 from unittest.mock import MagicMock
 
 from _pytest.fixtures import FixtureRequest
@@ -124,7 +125,6 @@ def mock_publisher() -> MagicMock:
 @fixture
 def mock_orcid_client() -> MagicMock:
     client = MagicMock()
-    client.get_access_token = MagicMock()
     client.remove_webhook = MagicMock()
     client.set_webhook = MagicMock()
     return client
@@ -133,8 +133,20 @@ def mock_orcid_client() -> MagicMock:
 @fixture
 def orcid_client() -> OrcidClient:
     return OrcidClient('http://www.example.com/api', 'http://www.example.com/oauth/token',
-                       'server_client_id', 'server_client_secret',
-                       'server_read_public_access_token', 'webhook_access_token')
+                       'server_client_id', 'server_client_secret')
+
+
+@fixture
+def orcid_config() -> Dict[str, str]:
+    return {
+        'api_uri': 'http://www.example.com/api',
+        'authorize_uri': 'http://www.example.com/oauth/authorize',
+        'token_uri': 'http://www.example.com/oauth/token',
+        'client_id': 'server_client_id',
+        'client_secret': 'server_client_secret',
+        'read_public_access_token': 'server_read_public_access_token',
+        'webhook_access_token': 'server_webhook_access_token'
+    }
 
 
 @fixture

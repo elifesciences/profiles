@@ -1,3 +1,5 @@
+from typing import Dict
+
 from flask import Blueprint
 from requests import RequestException
 from werkzeug.exceptions import NotFound
@@ -9,8 +11,8 @@ from profiles.orcid import OrcidClient
 from profiles.repositories import OrcidTokens, Profiles
 
 
-def create_blueprint(profiles: Profiles, orcid_client: OrcidClient,
-                     orcid_tokens: OrcidTokens) -> Blueprint:
+def create_blueprint(profiles: Profiles, orcid_config: Dict[str, str],
+                     orcid_client: OrcidClient, orcid_tokens: OrcidTokens) -> Blueprint:
     blueprint = Blueprint('webhook', __name__)
 
     @blueprint.route('/orcid-webhook/<orcid>', methods=['POST'])
@@ -25,7 +27,7 @@ def create_blueprint(profiles: Profiles, orcid_client: OrcidClient,
         try:
             access_token = orcid_tokens.get(profile.orcid).access_token
         except OrcidTokenNotFound:
-            access_token = orcid_client.get_access_token(public_token=True)
+            access_token = orcid_config.get('read_public_access_token')
             is_token_public_flag = True
 
         try:
