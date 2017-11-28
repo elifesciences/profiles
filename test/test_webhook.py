@@ -20,7 +20,7 @@ def test_it_updates_and_returns_204_if_a_profile_is_found(test_client: FlaskClie
     db.session.add(profile)
     db.session.add(orcid_token)
 
-    with patch('profiles.orcid.post'):
+    with patch('profiles.orcid.request'):
         db.session.commit()
 
     with requests_mock.Mocker() as mocker:
@@ -56,7 +56,7 @@ def test_it_returns_403_if_an_access_token_is_rejected(profile: Profile,
     db.session.add(profile)
     db.session.add(orcid_token)
 
-    with patch('profiles.orcid.post'):
+    with patch('profiles.orcid.request'):
         db.session.commit()
 
     with requests_mock.Mocker() as mocker:
@@ -73,7 +73,7 @@ def test_it_still_updates_if_public_data_token_has_to_be_used(profile: Profile,
                                                               test_client: FlaskClient) -> None:
     db.session.add(profile)
 
-    with patch('profiles.orcid.post'):
+    with patch('profiles.orcid.request'):
         db.session.commit()
 
     response_data = public_token_resp_data
@@ -100,7 +100,7 @@ def test_it_removes_token_if_403_and_public_is_false(profile: Profile,
     db.session.add(profile)
     db.session.add(orcid_token)
 
-    with patch('profiles.orcid.post'):
+    with patch('profiles.orcid.request'):
         db.session.commit()
 
     err_response = MagicMock(status_code=403)

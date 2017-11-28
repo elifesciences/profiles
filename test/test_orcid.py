@@ -1,6 +1,5 @@
 import pytest
 from requests import HTTPError
-from requests.exceptions import RequestException
 import requests_mock
 
 from profiles.orcid import OrcidClient
@@ -47,21 +46,7 @@ def test_it_raises_http_errors(orcid_client: OrcidClient):
         orcid_client.get_record('0000-0002-1825-0097', '1/fFAGRNJru1FTz70BzhT3Zg')
 
 
-def test_it_can_get_public_data_token(orcid_client: OrcidClient,
-                                      public_token_resp_data: dict):
-    response_data = public_token_resp_data
+def test_it_can_get_public_data_token(orcid_client: OrcidClient,):
+    token = orcid_client.get_access_token(public_token=True)
 
-    with requests_mock.Mocker() as mocker:
-        mocker.post('http://www.example.com/oauth/token', json=response_data)
-
-        token = orcid_client.get_access_token(public_token=True)
-
-    assert token == "4bed1e13-7792-4129-9f07-aaf7b88ba88f"
-
-
-def test_it_raises_exception_if_public_data_token_request_fails(orcid_client: OrcidClient):
-    with requests_mock.Mocker() as mocker:
-        mocker.post('http://www.example.com/oauth/token', exc=RequestException)
-
-        with pytest.raises(RequestException):
-            orcid_client.get_access_token(public_token=True)
+    assert token == 'server_read_public_access_token'

@@ -3,7 +3,7 @@ from typing import Any, Callable, List, Tuple
 
 from elife_bus_sdk.events import ProfileEvent
 from elife_bus_sdk.publishers import EventPublisher
-from flask import Flask, url_for
+from flask import url_for
 from requests import RequestException
 
 from profiles.database import db
@@ -20,7 +20,7 @@ OPERATION_UPDATE = 'update'
 
 def maintain_orcid_webhook(orcid_client: OrcidClient) -> Callable[..., None]:
     # pylint:disable=unused-argument
-    def webhook_maintainer(sender: Flask, changes: List[Tuple[db.Model, str]]) -> None:
+    def webhook_maintainer(sender: Any, changes: List[Tuple[db.Model, str]]) -> None:
         profiles = [x for x in changes if isinstance(x[0], Profile) and x[0].orcid]
 
         if not profiles:

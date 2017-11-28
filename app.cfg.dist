@@ -12,6 +12,8 @@ authorize_uri = https://sandbox.orcid.org/oauth/authorize
 token_uri = https://sandbox.orcid.org/oauth/token
 client_id = client_id
 client_secret = client_secret
+read_public_access_token = token
+webhook_access_token = token
 
 [bus]
 region = us-east-1

@@ -47,7 +47,7 @@ def test_it_will_send_event_for_affiliation_insert(mock_publisher: MagicMock,
     profile.add_affiliation(affiliation)
     session.add(profile)
 
-    with patch('profiles.orcid.post'):
+    with patch('profiles.orcid.request'):
         session.commit()
 
     assert mock_publisher.publish.call_count == 1
@@ -63,7 +63,7 @@ def test_it_will_send_event_if_email_address_is_updated(mock_publisher: MagicMoc
     profile.add_email_address('2@example.com')
     session.add(profile)
 
-    with patch('profiles.orcid.post'):
+    with patch('profiles.orcid.request'):
         session.commit()
 
     assert mock_publisher.publish.call_count == 1
@@ -80,7 +80,7 @@ def test_it_only_sends_one_event_if_multiple_changes_are_detected(mock_publisher
     profile.add_affiliation(affiliation)
     session.add(profile)
 
-    with patch('profiles.orcid.post'):
+    with patch('profiles.orcid.request'):
         session.commit()
 
     assert mock_publisher.publish.call_count == 1

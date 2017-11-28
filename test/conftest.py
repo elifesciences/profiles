@@ -42,6 +42,8 @@ def app(request: FixtureRequest) -> Flask:
                 'token_uri': 'http://www.example.com/oauth/token',
                 'client_id': 'server_client_id',
                 'client_secret': 'server_client_secret',
+                'read_public_access_token': 'server_read_public_access_token',
+                'webhook_access_token': 'server_webhook_access_token'
             },
             db=TEST_DATABASE_URI,
             logging={},
@@ -120,9 +122,19 @@ def mock_publisher() -> MagicMock:
 
 
 @fixture
+def mock_orcid_client() -> MagicMock:
+    client = MagicMock()
+    client.get_access_token = MagicMock()
+    client.remove_webhook = MagicMock()
+    client.set_webhook = MagicMock()
+    return client
+
+
+@fixture
 def orcid_client() -> OrcidClient:
     return OrcidClient('http://www.example.com/api', 'http://www.example.com/oauth/token',
-                       'server_client_id', 'server_client_secret')
+                       'server_client_id', 'server_client_secret',
+                       'server_read_public_access_token', 'webhook_access_token')
 
 
 @fixture

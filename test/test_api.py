@@ -171,7 +171,7 @@ def test_get_profile(test_client: FlaskClient) -> None:
 
     db.session.add(profile)
 
-    with patch('profiles.orcid.post'):
+    with patch('profiles.orcid.request'):
         db.session.commit()
 
     response = test_client.get('/profiles/a1b2c3d4')
@@ -193,7 +193,7 @@ def test_get_profile_revalidation(test_client: FlaskClient) -> None:
 
     db.session.add(profile)
 
-    with patch('profiles.orcid.post'):
+    with patch('profiles.orcid.request'):
         db.session.commit()
 
     response = test_client.get('/profiles/a1b2c3d4')
@@ -225,7 +225,7 @@ def test_get_profile_response_contains_email_addresses(test_client: FlaskClient)
 
     db.session.add(profile)
 
-    with patch('profiles.orcid.post'):
+    with patch('profiles.orcid.request'):
         db.session.commit()
 
     response = test_client.get('/profiles/a1b2c3d4')
@@ -244,7 +244,7 @@ def test_does_not_contain_restricted_email_addresses(test_client: FlaskClient) -
 
     db.session.add(profile)
 
-    with patch('profiles.orcid.post'):
+    with patch('profiles.orcid.request'):
         db.session.commit()
 
     response = test_client.get('/profiles/a1b2c3d4')
@@ -267,7 +267,7 @@ def test_get_profile_response_contains_affiliations(test_client: FlaskClient,
     db.session.add(profile)
     profile.add_affiliation(affiliation)
 
-    with patch('profiles.orcid.post'):
+    with patch('profiles.orcid.request'):
         db.session.commit()
 
     response = test_client.get('/profiles/a1b2c3d4')
@@ -301,7 +301,7 @@ def test_it_does_not_return_restricted_affiliations(test_client: FlaskClient,
     profile.add_affiliation(affiliation)
     profile.add_affiliation(affiliation2)
 
-    with patch('profiles.orcid.post'):
+    with patch('profiles.orcid.request'):
         db.session.commit()
 
     response = test_client.get('/profiles/a1b2c3d4')

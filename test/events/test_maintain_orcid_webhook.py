@@ -1,124 +1,100 @@
-from urllib.parse import urlencode
+from unittest.mock import MagicMock, patch
 
-from flask import Flask
 from flask_sqlalchemy import models_committed
-from requests import PreparedRequest
-import requests_mock
+from sqlalchemy.orm import scoped_session
 
 from profiles.events import maintain_orcid_webhook
-from profiles.models import OrcidToken, Profile
-from profiles.orcid import OrcidClient
+from profiles.models import Name, OrcidToken, Profile
 
 
-def test_it_sets_a_webhook_when_a_profile_is_inserted(app: Flask, profile: Profile,
-                                                      orcid_client: OrcidClient):
-    webhook_maintainer = maintain_orcid_webhook(orcid_client)
+def test_it_sets_a_webhook_when_a_profile_is_inserted(profile: Profile,
+                                                      mock_orcid_client: MagicMock,
+                                                      session: scoped_session):
+    webhook_maintainer = maintain_orcid_webhook(mock_orcid_client)
+    models_committed.connect(receiver=webhook_maintainer)
 
-    with requests_mock.Mocker() as mocker:
-        def token_text(request: PreparedRequest):
-            return urlencode({
-                'client_id': 'server_client_id',
-                'client_secret': 'server_client_secret',
-                'scope': '/webhook',
-                'grant_type': 'client_credentials',
-            }, doseq=True) == request.body
+    session.add(profile)
 
-        mocker.post('http://www.example.com/oauth/token', additional_matcher=token_text,
-                    json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg'})
+    with patch('profiles.orcid.request'):
+        session.commit()
 
-        mocker.put('http://www.example.com/api/v2.0/0001-0002-1825-0097/webhook/'
-                   'http%3A%2F%2Flocalhost%2Forcid-webhook%2F0001-0002-1825-0097',
-                   request_headers={'Authorization': 'Bearer 1/fFAGRNJru1FTz70BzhT3Zg'})
-
-        webhook_maintainer(app, [(profile, 'insert')])
-
-    assert mocker.call_count == 2
+    assert mock_orcid_client.get_access_token.call_count == 1
+    assert mock_orcid_client.set_webhook.call_count == 1
+    assert mock_orcid_client.set_webhook.call_args[0][0] == '0001-0002-1825-0097'
+    assert mock_orcid_client.set_webhook.call_args[0][1] == 'http://localhost/orcid-webhook/' \
+                                                            '0001-0002-1825-0097'
 
 
-def test_it_sets_a_webhook_when_a_profile_is_updated(app: Flask, profile: Profile,
-                                                     orcid_client: OrcidClient):
-    webhook_maintainer = maintain_orcid_webhook(orcid_client)
+def test_it_sets_a_webhook_when_a_profile_is_updated(profile: Profile,
+                                                     mock_orcid_client: MagicMock,
+                                                     session: scoped_session):
+    session.add(profile)
+    with patch('profiles.orcid.request'):
+        session.commit()
 
-    with requests_mock.Mocker() as mocker:
-        def token_text(request: PreparedRequest):
-            return urlencode({
-                'client_id': 'server_client_id',
-                'client_secret': 'server_client_secret',
-                'scope': '/webhook',
-                'grant_type': 'client_credentials',
-            }, doseq=True) == request.body
+    webhook_maintainer = maintain_orcid_webhook(mock_orcid_client)
+    models_committed.connect(receiver=webhook_maintainer)
 
-        mocker.post('http://www.example.com/oauth/token', additional_matcher=token_text,
-                    json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg'})
+    profile.add_email_address('1@example.com')
+    session.add(profile)
+    with patch('profiles.orcid.request'):
+        session.commit()
 
-        mocker.put('http://www.example.com/api/v2.0/0001-0002-1825-0097/webhook/'
-                   'http%3A%2F%2Flocalhost%2Forcid-webhook%2F0001-0002-1825-0097',
-                   request_headers={'Authorization': 'Bearer 1/fFAGRNJru1FTz70BzhT3Zg'})
-
-        webhook_maintainer(app, [(profile, 'update')])
-
-    assert mocker.call_count == 2
+    assert mock_orcid_client.get_access_token.call_count == 1
+    assert mock_orcid_client.set_webhook.call_count == 1
+    assert mock_orcid_client.set_webhook.call_args[0][0] == '0001-0002-1825-0097'
+    assert mock_orcid_client.set_webhook.call_args[0][1] == 'http://localhost/orcid-webhook/' \
+                                                            '0001-0002-1825-0097'
 
 
-def test_it_will_remove_the_webhook_when_a_profile_is_deleted(app: Flask, profile: Profile,
-                                                              orcid_client: OrcidClient):
-    webhook_maintainer = maintain_orcid_webhook(orcid_client)
+def test_it_will_remove_the_webhook_when_a_profile_is_deleted(profile: Profile,
+                                                              mock_orcid_client: MagicMock,
+                                                              session: scoped_session):
+    session.add(profile)
+    with patch('profiles.orcid.request'):
+        session.commit()
 
-    with requests_mock.Mocker() as mocker:
-        def token_text(request: PreparedRequest):
-            return urlencode({
-                'client_id': 'server_client_id',
-                'client_secret': 'server_client_secret',
-                'scope': '/webhook',
-                'grant_type': 'client_credentials',
-            }, doseq=True) == request.body
+    webhook_maintainer = maintain_orcid_webhook(mock_orcid_client)
+    models_committed.connect(receiver=webhook_maintainer)
 
-        mocker.post('http://www.example.com/oauth/token', additional_matcher=token_text,
-                    json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg'})
+    session.delete(profile)
+    with patch('profiles.orcid.request'):
+        session.commit()
 
-        mocker.delete('http://www.example.com/api/v2.0/0001-0002-1825-0097/webhook/'
-                      'http%3A%2F%2Flocalhost%2Forcid-webhook%2F0001-0002-1825-0097',
-                      request_headers={'Authorization': 'Bearer 1/fFAGRNJru1FTz70BzhT3Zg'})
-
-        webhook_maintainer(app, [(profile, 'delete')])
-
-    assert mocker.call_count == 2
+    assert mock_orcid_client.get_access_token.call_count == 1
+    assert mock_orcid_client.remove_webhook.call_count == 1
 
 
-def test_it_only_requests_a_token_once(app: Flask, profile: Profile,
-                                       orcid_client: OrcidClient):
-    webhook_maintainer = maintain_orcid_webhook(orcid_client)
+def test_it_only_requests_a_token_once(profile: Profile,
+                                       mock_orcid_client: MagicMock,
+                                       session: scoped_session):
+    profile2 = Profile('12345679', Name('foo'), '0000-0002-1825-0099')
 
-    with requests_mock.Mocker() as mocker:
-        def token_text(request: PreparedRequest):
-            return urlencode({
-                'client_id': 'server_client_id',
-                'client_secret': 'server_client_secret',
-                'scope': '/webhook',
-                'grant_type': 'client_credentials',
-            }, doseq=True) == request.body
+    webhook_maintainer = maintain_orcid_webhook(mock_orcid_client)
+    models_committed.connect(receiver=webhook_maintainer)
 
-        mocker.post('http://www.example.com/oauth/token', additional_matcher=token_text,
-                    json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg'})
+    session.add(profile)
+    session.add(profile2)
 
-        mocker.put('http://www.example.com/api/v2.0/0001-0002-1825-0097/webhook/'
-                   'http%3A%2F%2Flocalhost%2Forcid-webhook%2F0001-0002-1825-0097',
-                   request_headers={'Authorization': 'Bearer 1/fFAGRNJru1FTz70BzhT3Zg'})
+    with patch('profiles.orcid.request'):
+        session.commit()
 
-        mocker.delete('http://www.example.com/api/v2.0/0001-0002-1825-0097/webhook/'
-                      'http%3A%2F%2Flocalhost%2Forcid-webhook%2F0001-0002-1825-0097',
-                      request_headers={'Authorization': 'Bearer 1/fFAGRNJru1FTz70BzhT3Zg'})
-
-        webhook_maintainer(app, [(profile, 'insert'), (profile, 'delete')])
-
-    assert mocker.call_count == 3
+    assert mock_orcid_client.get_access_token.call_count == 1
+    assert mock_orcid_client.set_webhook.call_count == 2
 
 
-def test_it_ignores_other_models_being_committed(app: Flask, orcid_token: OrcidToken,
-                                                 orcid_client: OrcidClient):
-    webhook_maintainer = maintain_orcid_webhook(orcid_client)
+def test_it_ignores_other_models_being_committed(orcid_token: OrcidToken,
+                                                 mock_orcid_client: MagicMock,
+                                                 session: scoped_session):
+    webhook_maintainer = maintain_orcid_webhook(mock_orcid_client)
+    models_committed.connect(receiver=webhook_maintainer)
 
-    webhook_maintainer(app, [(orcid_token, 'delete')])
+    session.add(orcid_token)
+    session.commit()
+
+    assert mock_orcid_client.get_access_token.call_count == 0
+    assert mock_orcid_client.set_webhook.call_count == 0
+    assert mock_orcid_client.remove_webhook.call_count == 0
 
 
 def test_it_has_a_valid_signal_handler_registered_on_app():

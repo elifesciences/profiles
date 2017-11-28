@@ -25,7 +25,9 @@ def create_app(config: Config, clients: Clients) -> Flask:
     Migrate(app, db)
 
     orcid_client = OrcidClient(api_uri=config.orcid['api_uri'], token_uri=config.orcid['token_uri'],
-                               client_id=config.orcid['client_id'], client_secret=['client_secret'])
+                               client_id=config.orcid['client_id'], client_secret=['client_secret'],
+                               read_public_access_token=config.orcid['read_public_access_token'],
+                               webhook_access_token=config.orcid['webhook_access_token'])
     orcid_tokens = SQLAlchemyOrcidTokens(db)
     profiles = SQLAlchemyProfiles(db)
 
