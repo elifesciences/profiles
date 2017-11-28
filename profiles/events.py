@@ -1,11 +1,5 @@
 import logging
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    List,
-    Tuple,
-)
+from typing import Any, Callable, Dict, List, Tuple
 
 from elife_bus_sdk.events import ProfileEvent
 from elife_bus_sdk.publishers import EventPublisher

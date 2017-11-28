@@ -38,8 +38,8 @@ def create_app(config: Config, clients: Clients) -> Flask:
     app.register_blueprint(oauth2.create_blueprint(config.orcid, clients, profiles, orcid_client,
                                                    orcid_tokens), url_prefix='/oauth2')
     app.register_blueprint(ping.create_blueprint())
-    app.register_blueprint(webhook.create_blueprint(profiles, config.orcid,
-                                                    orcid_client, orcid_tokens))
+    app.register_blueprint(webhook.create_blueprint(profiles, config.orcid, orcid_client,
+                                                    orcid_tokens))
 
     from werkzeug.exceptions import default_exceptions
     for code in default_exceptions:
