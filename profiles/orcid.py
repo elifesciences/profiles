@@ -13,12 +13,8 @@ VISIBILITY_PRIVATE = 'PRIVATE'
 
 
 class OrcidClient(object):
-    def __init__(self, api_uri: str, token_uri: str, client_id: str,
-                 client_secret: str) -> None:
+    def __init__(self, api_uri: str) -> None:
         self.api_uri = api_uri
-        self.token_uri = token_uri
-        self.client_id = client_id
-        self.client_secret = client_secret
 
     def get_record(self, orcid: str, access_token: str) -> dict:
         LOGGER.debug('Requesting ORCID record for %s', format(orcid))

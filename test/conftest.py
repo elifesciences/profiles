@@ -132,8 +132,7 @@ def mock_orcid_client() -> MagicMock:
 
 @fixture
 def orcid_client() -> OrcidClient:
-    return OrcidClient('http://www.example.com/api', 'http://www.example.com/oauth/token',
-                       'server_client_id', 'server_client_secret')
+    return OrcidClient('http://www.example.com/api')
 
 
 @fixture
