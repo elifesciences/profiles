@@ -50,8 +50,7 @@ def test_it_has_to_be_a_post(test_client: FlaskClient) -> None:
     assert response.headers.get('Content-Type') == 'application/problem+json'
 
 
-def test_it_returns_403_if_an_access_token_is_rejected(profile: Profile,
-                                                       orcid_token: OrcidToken,
+def test_it_returns_403_if_an_access_token_is_rejected(profile: Profile, orcid_token: OrcidToken,
                                                        test_client: FlaskClient) -> None:
     db.session.add(profile)
     db.session.add(orcid_token)
@@ -68,8 +67,7 @@ def test_it_returns_403_if_an_access_token_is_rejected(profile: Profile,
     assert response.headers.get('Content-Type') == 'application/problem+json'
 
 
-def test_it_removes_token_if_403_and_public_is_false(profile: Profile,
-                                                     test_client: FlaskClient,
+def test_it_removes_token_if_403_and_public_is_false(profile: Profile, test_client: FlaskClient,
                                                      orcid_token: OrcidToken,
                                                      orcid_tokens: SQLAlchemyOrcidTokens) -> None:
     db.session.add(profile)

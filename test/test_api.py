@@ -256,8 +256,7 @@ def test_does_not_contain_restricted_email_addresses(test_client: FlaskClient) -
     assert data['emailAddresses'] == ['1@example.com']
 
 
-def test_get_profile_response_contains_affiliations(test_client: FlaskClient,
-                                                    yesterday) -> None:
+def test_get_profile_response_contains_affiliations(test_client: FlaskClient, yesterday) -> None:
     address = Address(country=countries.get('gb'), city='City', region='Region')
     affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
                               starts=yesterday)
@@ -285,8 +284,7 @@ def test_get_profile_response_contains_affiliations(test_client: FlaskClient,
     ]
 
 
-def test_it_does_not_return_restricted_affiliations(test_client: FlaskClient,
-                                                    yesterday) -> None:
+def test_it_does_not_return_restricted_affiliations(test_client: FlaskClient, yesterday) -> None:
     address = Address(country=countries.get('gb'), city='City', region='Region')
     affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
                               starts=yesterday)

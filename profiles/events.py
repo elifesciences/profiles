@@ -4,7 +4,7 @@ from typing import (
     Callable,
     Dict,
     List,
-    Tuple
+    Tuple,
 )
 
 from elife_bus_sdk.events import ProfileEvent

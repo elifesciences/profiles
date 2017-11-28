@@ -9,7 +9,7 @@ from profiles.models import (
     Address,
     Affiliation,
     Date,
-    Profile
+    Profile,
 )
 
 
@@ -36,8 +36,7 @@ def test_it_will_send_event_for_profile_deleted(mock_publisher: MagicMock,
     assert mock_publisher.publish.call_args[0] == ({'id': '12345678', 'type': 'profile'}, )
 
 
-def test_it_will_send_event_for_affiliation_insert(mock_publisher: MagicMock,
-                                                   profile: Profile,
+def test_it_will_send_event_for_affiliation_insert(mock_publisher: MagicMock, profile: Profile,
                                                    session: scoped_session) -> None:
     event_publisher = send_update_events(publisher=mock_publisher)
     models_committed.connect(receiver=event_publisher)
@@ -54,8 +53,7 @@ def test_it_will_send_event_for_affiliation_insert(mock_publisher: MagicMock,
     assert mock_publisher.publish.call_args[0][0] == {'id': '12345678', 'type': 'profile'}
 
 
-def test_it_will_send_event_if_email_address_is_updated(mock_publisher: MagicMock,
-                                                        profile: Profile,
+def test_it_will_send_event_if_email_address_is_updated(mock_publisher: MagicMock, profile: Profile,
                                                         session: scoped_session):
     event_publisher = send_update_events(publisher=mock_publisher)
     models_committed.connect(receiver=event_publisher)
