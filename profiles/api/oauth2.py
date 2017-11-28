@@ -187,7 +187,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
     def _update_profile(profile: Profile, orcid_record: dict) -> None:
         try:
             update_profile_from_orcid_record(profile, orcid_record)
-        except (LookupError, TypeError, ValueError) as exception:
+        except (AttributeError, LookupError, TypeError, ValueError) as exception:
             # We appear to be misunderstanding the ORCID data structure, but let's not block the
             # authentication flow.
             LOGGER.exception(exception)
