@@ -52,7 +52,9 @@ def app(request: FixtureRequest) -> Flask:
                 'region': 'us-east-1',
                 'subscriber': '1234567890',
                 'name': 'bus-profiles'
-            }
+            },
+            server_name='localhost',
+            scheme='http',
         ),
         clients=Clients(
             Client(name='client', client_id='client_id', client_secret='client_secret',

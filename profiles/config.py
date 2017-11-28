@@ -14,38 +14,35 @@ class Config(ABC):
     TESTING = False
 
     def __init__(self, orcid: Dict[str, str], db: str, logging: Dict[str, str],
-                 bus: Dict[str, str], **_kwargs) -> None:
+                 bus: Dict[str, str], server_name: str, scheme: str, **_kwargs) -> None:
         self.orcid = orcid
         self.SQLALCHEMY_DATABASE_URI = db  # pylint: disable=invalid-name
         self.logging = logging
         self.bus = bus
+        self.SERVER_NAME = server_name
+        self.PREFERRED_URL_SCHEME = scheme
 
 
 class DevConfig(Config):
     DEBUG = True
-    SERVER_NAME = 'localhost'
     name = 'dev'
 
 
 class CiConfig(DevConfig):
     TESTING = True
-    SERVER_NAME = 'ci--profiles.elifesciences.org'
     name = 'ci'
 
 
 class ProdConfig(Config):
     name = 'prod'
-    SERVER_NAME = 'prod--profiles.elifesciences.org'
 
 
 class ContinuumTestConfig(ProdConfig):
     name = 'continuumtest'
-    SERVER_NAME = 'continuumtest--profiles.elifesciences.org'
 
 
 class End2EndConfig(ProdConfig):
     name = 'end2end'
-    SERVER_NAME = 'end2end--profiles.elifesciences.org'
 
 
 def all_config_classes_by_name():

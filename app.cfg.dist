@@ -1,6 +1,8 @@
 [profiles]
 environment = dev
 db = postgresql://username:password@hostname/profiles
+server_name = localhost
+scheme = http
 
 [logging]
 path = var/logs
