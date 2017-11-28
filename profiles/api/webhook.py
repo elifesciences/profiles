@@ -17,8 +17,6 @@ def create_blueprint(profiles: Profiles, orcid_config: Dict[str, str],
 
     @blueprint.route('/orcid-webhook/<orcid>', methods=['POST'])
     def _update(orcid: str) -> Response:
-        is_token_public_flag = False
-
         try:
             profile = profiles.get_by_orcid(orcid)
         except ProfileNotFound as exception:
@@ -28,12 +26,12 @@ def create_blueprint(profiles: Profiles, orcid_config: Dict[str, str],
             access_token = orcid_tokens.get(profile.orcid).access_token
         except OrcidTokenNotFound:
             access_token = orcid_config.get('read_public_access_token')
-            is_token_public_flag = True
 
         try:
             orcid_record = orcid_client.get_record(orcid, access_token)
         except RequestException as exception:
-            if exception.response.status_code == 403 and not is_token_public_flag:
+            if exception.response.status_code == 403 and not access_token == \
+                    orcid_config.get('read_public_access_token'):
                 orcid_tokens.remove(profile.orcid)
 
             raise exception
