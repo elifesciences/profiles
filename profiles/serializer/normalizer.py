@@ -3,6 +3,9 @@ from typing import Any
 
 from profiles.models import Affiliation, EmailAddress, Name, Profile
 
+ACCESS_PUBLIC = 'public'
+ACCESS_RESTRICTED = 'restricted'
+
 
 @singledispatch
 def normalize(value: Any) -> Any:
@@ -26,25 +29,31 @@ def normalize_profile(profile: Profile) -> dict:
 @normalize.register(Affiliation)
 def normalize_affiliation(affiliation: Affiliation) -> dict:
     return {
-        "name": [affiliation.department, affiliation.organisation],
-        "address": {
-            "formatted": [
-                affiliation.address.city,
-                affiliation.address.region,
-                affiliation.address.country.name,
-            ],
-            "components": {
-                "locality": [affiliation.address.city],
-                "area": [affiliation.address.region],
-                "country": affiliation.address.country.name
+        'access': ACCESS_RESTRICTED if affiliation.restricted else ACCESS_PUBLIC,
+        'value': {
+            "name": [affiliation.department, affiliation.organisation],
+            "address": {
+                "formatted": [
+                    affiliation.address.city,
+                    affiliation.address.region,
+                    affiliation.address.country.name,
+                ],
+                "components": {
+                    "locality": [affiliation.address.city],
+                    "area": [affiliation.address.region],
+                    "country": affiliation.address.country.name
+                }
             }
-        }
+        },
     }
 
 
 @normalize.register(EmailAddress)
 def normalize_email_address(email_address: EmailAddress):
-    return email_address.email
+    return {
+        'access': ACCESS_RESTRICTED if email_address.restricted else ACCESS_PUBLIC,
+        'value': email_address.email,
+    }
 
 
 @normalize_snippet.register(Profile)

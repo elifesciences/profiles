@@ -1,6 +1,6 @@
 from hypothesis import given
 from hypothesis.extra.fakefactory import fake_factory
-from hypothesis.strategies import integers, text
+from hypothesis.strategies import booleans, integers, text
 from iso3166 import countries
 
 from profiles.models import Address, Affiliation, EmailAddress, Name, Profile
@@ -75,7 +75,7 @@ def test_it_normalizes_profile_with_multiple_email_addresses_with_primary_addres
     normalized_profile = normalize(profile)
 
     assert len(normalized_profile['emailAddresses']) == 3
-    assert normalized_profile['emailAddresses'][0] == primary_address
+    assert normalized_profile['emailAddresses'][0]['value'] == primary_address
 
 
 def test_it_normalizes_profile_with_an_affiliation(yesterday):
@@ -95,26 +95,29 @@ def test_it_normalizes_profile_with_an_affiliation(yesterday):
         'emailAddresses': [],
         'affiliations': [
             {
-                "name": [
-                    "Dep",
-                    "Org"
-                ],
-                "address": {
-                    "formatted": [
-                        "City",
-                        "Region",
-                        "United Kingdom of Great Britain and Northern Ireland"
+                'access': 'public',
+                'value': {
+                    "name": [
+                        "Dep",
+                        "Org"
                     ],
-                    "components": {
-                        "locality": [
-                            "City"
+                    "address": {
+                        "formatted": [
+                            "City",
+                            "Region",
+                            "United Kingdom of Great Britain and Northern Ireland"
                         ],
-                        "area": [
-                            "Region"
-                        ],
-                        "country": "United Kingdom of Great Britain and Northern Ireland"
+                        "components": {
+                            "locality": [
+                                "City"
+                            ],
+                            "area": [
+                                "Region"
+                            ],
+                            "country": "United Kingdom of Great Britain and Northern Ireland"
+                        }
                     }
-                }
+                },
             }
         ]
     }
@@ -142,70 +145,83 @@ def test_it_normalizes_profile_with_affiliations(yesterday):
         'emailAddresses': [],
         'affiliations': [
             {
-                "name": ["Dep", "Org2"],
-                "address": {
-                    "formatted": [
-                        "City2",
-                        "Region2",
-                        "United Kingdom of Great Britain and Northern Ireland"
-                    ],
-                    "components": {
-                        "locality": ["City2"],
-                        "area": ["Region2"],
-                        "country": "United Kingdom of Great Britain and Northern Ireland"
+                'access': 'public',
+                'value': {
+                    "name": ["Dep", "Org2"],
+                    "address": {
+                        "formatted": [
+                            "City2",
+                            "Region2",
+                            "United Kingdom of Great Britain and Northern Ireland"
+                        ],
+                        "components": {
+                            "locality": ["City2"],
+                            "area": ["Region2"],
+                            "country": "United Kingdom of Great Britain and Northern Ireland"
+                        }
                     }
-                }
+                },
             },
             {
-                "name": ["Dep", "Org"],
-                "address": {
-                    "formatted": [
-                        "City",
-                        "Region",
-                        "United Kingdom of Great Britain and Northern Ireland"
-                    ],
-                    "components": {
-                        "locality": ["City"],
-                        "area": ["Region"],
-                        "country": "United Kingdom of Great Britain and Northern Ireland"
+                'access': 'public',
+                'value': {
+                    "name": ["Dep", "Org"],
+                    "address": {
+                        "formatted": [
+                            "City",
+                            "Region",
+                            "United Kingdom of Great Britain and Northern Ireland"
+                        ],
+                        "components": {
+                            "locality": ["City"],
+                            "area": ["Region"],
+                            "country": "United Kingdom of Great Britain and Northern Ireland"
+                        }
                     }
-                }
+                },
             }
         ]
     }
 
 
-def test_it_normalizes_affiliation(yesterday):
+@given(booleans())
+def test_it_normalizes_affiliation(yesterday, restricted):
     address = Address(countries.get('gb'), 'City', 'Region')
     affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
-                              starts=yesterday)
+                              starts=yesterday, restricted=restricted)
 
     assert normalize(affiliation) == {
-        "name": [
-            "Dep",
-            "Org"
-        ],
-        "address": {
-            "formatted": [
-                "City",
-                "Region",
-                "United Kingdom of Great Britain and Northern Ireland"
+        'access': 'restricted' if restricted else 'public',
+        'value': {
+            "name": [
+                "Dep",
+                "Org"
             ],
-            "components": {
-                "locality": [
-                    "City"
+            "address": {
+                "formatted": [
+                    "City",
+                    "Region",
+                    "United Kingdom of Great Britain and Northern Ireland"
                 ],
-                "area": [
-                    "Region"
-                ],
-                "country": "United Kingdom of Great Britain and Northern Ireland"
+                "components": {
+                    "locality": [
+                        "City"
+                    ],
+                    "area": [
+                        "Region"
+                    ],
+                    "country": "United Kingdom of Great Britain and Northern Ireland"
+                }
             }
-        }
+        },
     }
 
 
-@given(fake_factory('email'))
-def test_it_normalizes_email_address(email):
-    email_address = EmailAddress(email)
+@given(fake_factory('email'), booleans())
+def test_it_normalizes_email_address(email, restricted):
+    email_address = EmailAddress(email, restricted)
 
-    assert normalize(email_address) == email
+    assert normalize(email_address) == {
+        'access': 'restricted' if restricted else 'public',
+        'value': email,
+    }
