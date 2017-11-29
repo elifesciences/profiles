@@ -216,7 +216,7 @@ def test_profile_not_found(test_client: FlaskClient) -> None:
 def test_get_profile_response_contains_email_addresses(test_client: FlaskClient) -> None:
     profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
     profile.add_email_address('1@example.com')
-    profile.add_email_address('2@example.com', restricted=True)
+    profile.add_email_address('2@example.com')
 
     db.session.add(profile)
     db.session.commit()
@@ -230,16 +230,56 @@ def test_get_profile_response_contains_email_addresses(test_client: FlaskClient)
     assert len(data['emailAddresses']) == 2
 
 
+def test_does_not_contain_restricted_email_addresses(test_client: FlaskClient) -> None:
+    profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
+    profile.add_email_address('1@example.com')
+    profile.add_email_address('2@example.com', restricted=True)
+
+    db.session.add(profile)
+    db.session.commit()
+
+    response = test_client.get('/profiles/a1b2c3d4')
+    data = json.loads(response.data.decode('UTF-8'))
+
+    assert response.status_code == 200
+    assert response.headers.get('Content-Type') == 'application/vnd.elife.profile+json;version=1'
+    # assert validate_json(data, schema_name='profile.v1') is True
+    assert [e['value'] for e in data['emailAddresses']] == ['1@example.com']
+
+
 def test_get_profile_response_contains_affiliations(test_client: FlaskClient, yesterday) -> None:
     address = Address(country=countries.get('gb'), city='City', region='Region')
     affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
                               starts=yesterday)
+
+    profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
+
+    db.session.add(profile)
+    profile.add_affiliation(affiliation)
+
+    db.session.commit()
+
+    response = test_client.get('/profiles/a1b2c3d4')
+    data = json.loads(response.data.decode('UTF-8'))
+
+    assert response.status_code == 200
+    assert response.headers.get('Content-Type') == 'application/vnd.elife.profile+json;version=1'
+    # assert validate_json(data, schema_name='profile.v1') is True
+    assert len(data['affiliations']) == 1
+
+
+def test_it_does_not_return_restricted_affiliations(test_client: FlaskClient, yesterday) -> None:
+    address = Address(country=countries.get('gb'), city='City', region='Region')
+    affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
+                              starts=yesterday)
+
     affiliation2 = Affiliation('2', address=address, organisation='Org2', department='Dep2',
                                starts=yesterday, restricted=True)
 
     profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
 
     db.session.add(profile)
+
     profile.add_affiliation(affiliation)
     profile.add_affiliation(affiliation2)
 
@@ -251,4 +291,4 @@ def test_get_profile_response_contains_affiliations(test_client: FlaskClient, ye
     assert response.status_code == 200
     assert response.headers.get('Content-Type') == 'application/vnd.elife.profile+json;version=1'
     # assert validate_json(data, schema_name='profile.v1') is True
-    assert len(data['affiliations']) == 2
+    assert [e['value']['name'] for e in data['affiliations']] == [['Dep', 'Org']]

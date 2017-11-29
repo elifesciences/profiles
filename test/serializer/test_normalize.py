@@ -43,20 +43,14 @@ def test_it_normalizes_profile_with_orcid():
     }
 
 
-@given(text(), text(), text(), text(), fake_factory('email'), booleans())
-def test_it_normalizes_profile_with_single_email_address(id_, preferred, index, orcid, email,
-                                                         restricted):
+@given(text(), text(), text(), text(), fake_factory('email'))
+def test_it_normalizes_profile_with_single_email_address(id_, preferred, index, orcid, email):
     profile = Profile(id_, Name(preferred, index), orcid)
-    profile.add_email_address(email, restricted=restricted)
+    profile.add_email_address(email)
 
     normalized_profile = normalize(profile)
 
-    assert normalized_profile['emailAddresses'] == [
-        {
-            'access': 'restricted' if restricted else 'public',
-            'value': email,
-        }
-    ]
+    assert len(normalized_profile['emailAddresses']) == 1
 
 
 @given(text(), text(), text(), text(), fake_factory('email'))
@@ -135,7 +129,7 @@ def test_it_normalizes_profile_with_affiliations(yesterday):
     affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
                               starts=yesterday)
     affiliation2 = Affiliation('2', address=address2, organisation='Org2', department='Dep',
-                               starts=yesterday, restricted=True)
+                               starts=yesterday)
 
     profile = Profile('12345678', Name('Foo Bar', 'Bar, Foo'))
 
@@ -151,7 +145,7 @@ def test_it_normalizes_profile_with_affiliations(yesterday):
         'emailAddresses': [],
         'affiliations': [
             {
-                'access': 'restricted',
+                'access': 'public',
                 'value': {
                     "name": ["Dep", "Org2"],
                     "address": {
@@ -190,13 +184,14 @@ def test_it_normalizes_profile_with_affiliations(yesterday):
     }
 
 
-def test_it_normalizes_affiliation(yesterday):
+@given(booleans())
+def test_it_normalizes_affiliation(yesterday, restricted):
     address = Address(countries.get('gb'), 'City', 'Region')
     affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
-                              starts=yesterday)
+                              starts=yesterday, restricted=restricted)
 
     assert normalize(affiliation) == {
-        'access': 'public',
+        'access': 'restricted' if restricted else 'public',
         'value': {
             "name": [
                 "Dep",
@@ -222,11 +217,11 @@ def test_it_normalizes_affiliation(yesterday):
     }
 
 
-@given(fake_factory('email'))
-def test_it_normalizes_email_address(email):
-    email_address = EmailAddress(email)
+@given(fake_factory('email'), booleans())
+def test_it_normalizes_email_address(email, restricted):
+    email_address = EmailAddress(email, restricted)
 
     assert normalize(email_address) == {
-        'access': 'public',
+        'access': 'restricted' if restricted else 'public',
         'value': email,
     }

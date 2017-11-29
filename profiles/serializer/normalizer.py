@@ -20,8 +20,8 @@ def normalize_snippet(value: Any) -> Any:
 @normalize.register(Profile)
 def normalize_profile(profile: Profile) -> dict:
     data = normalize_profile_snippet(profile)
-    data['emailAddresses'] = [normalize(email) for email in profile.get_email_addresses(True)]
-    data['affiliations'] = [normalize(aff) for aff in profile.get_affiliations(True, True)]
+    data['emailAddresses'] = [normalize(email) for email in profile.get_email_addresses()]
+    data['affiliations'] = [normalize(aff) for aff in profile.get_affiliations()]
 
     return data
 
