@@ -76,11 +76,9 @@ def test_it_removes_token_if_403_and_public_is_false(profile: Profile, test_clie
     with patch('profiles.orcid.request'):
         db.session.commit()
 
-    err_response = MagicMock(status_code=403)
-
     with requests_mock.Mocker() as mocker:
         mocker.get('http://www.example.com/api/v2.1/0001-0002-1825-0097/record',
-                   exc=RequestException(response=err_response))
+                   exc=RequestException(response=MagicMock(status_code=403)))
 
         test_client.post('/orcid-webhook/0001-0002-1825-0097')
 
