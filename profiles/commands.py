@@ -23,17 +23,16 @@ def extract_email_addresses(orcid_record: dict, only_verified: bool = True) -> L
 
 
 def _update_name_from_orcid_record(profile: Profile, orcid_record: dict) -> None:
-    if 'name' in orcid_record.get('person', {}):
-        given_name = jmespath.search('person.name."given-names".value', orcid_record)
-        family_name = jmespath.search('person.name."family-name".value', orcid_record)
+    given_name = jmespath.search('person.name."given-names".value', orcid_record)
+    family_name = jmespath.search('person.name."family-name".value', orcid_record)
 
-        if given_name and family_name:
-            profile.name = Name('{} {}'.format(given_name, family_name),
-                                '{}, {}'.format(family_name, given_name))
-        elif given_name:
-            profile.name = Name(given_name, given_name)
-        elif family_name:
-            profile.name = Name(family_name, family_name)
+    if given_name and family_name:
+        profile.name = Name('{} {}'.format(given_name, family_name),
+                            '{}, {}'.format(family_name, given_name))
+    elif given_name:
+        profile.name = Name(given_name, given_name)
+    elif family_name:
+        profile.name = Name(family_name, family_name)
 
 
 def _update_affiliations_from_orcid_record(profile: Profile, orcid_record: dict) -> None:
