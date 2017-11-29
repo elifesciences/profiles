@@ -24,7 +24,7 @@ def test_it_updates_and_returns_204_if_a_profile_is_found(test_client: FlaskClie
         db.session.commit()
 
     with requests_mock.Mocker() as mocker:
-        mocker.get('http://www.example.com/api/v2.0/0000-0002-1825-0097/record',
+        mocker.get('http://www.example.com/api/v2.1/0000-0002-1825-0097/record',
                    json={'person': {
                        'name': {'family-name': {'value': 'Family Name'},
                                 'given-names': {'value': 'Given Names'}}
@@ -59,7 +59,7 @@ def test_it_returns_403_if_an_access_token_is_rejected(profile: Profile, orcid_t
         db.session.commit()
 
     with requests_mock.Mocker() as mocker:
-        mocker.get('http://www.example.com/api/v2.0/0001-0002-1825-0097/record', exc=Forbidden)
+        mocker.get('http://www.example.com/api/v2.1/0001-0002-1825-0097/record', exc=Forbidden)
 
         response = test_client.post('/orcid-webhook/0001-0002-1825-0097')
 
@@ -79,7 +79,7 @@ def test_it_removes_token_if_403_and_public_is_false(profile: Profile, test_clie
     err_response = MagicMock(status_code=403)
 
     with requests_mock.Mocker() as mocker:
-        mocker.get('http://www.example.com/api/v2.0/0001-0002-1825-0097/record',
+        mocker.get('http://www.example.com/api/v2.1/0001-0002-1825-0097/record',
                    exc=RequestException(response=err_response))
 
         test_client.post('/orcid-webhook/0001-0002-1825-0097')

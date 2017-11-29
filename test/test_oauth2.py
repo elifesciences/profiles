@@ -226,7 +226,7 @@ def test_it_exchanges(generate_random_string: MagicMock, test_client: FlaskClien
                     json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
                           'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
                           'name': 'Josiah Carberry'})
-        mocker.get('http://www.example.com/api/v2.0/0000-0002-1825-0097/record',
+        mocker.get('http://www.example.com/api/v2.1/0000-0002-1825-0097/record',
                    status_code=404)
 
         response = test_client.post('/oauth2/token',
@@ -250,7 +250,7 @@ def test_it_creates_a_profile_when_exchanging(test_client: FlaskClient) -> None:
                     json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
                           'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
                           'name': 'Josiah Carberry'})
-        mocker.get('http://www.example.com/api/v2.0/0000-0002-1825-0097/record', status_code=404)
+        mocker.get('http://www.example.com/api/v2.1/0000-0002-1825-0097/record', status_code=404)
 
         response = test_client.post('/oauth2/token',
                                     data={'client_id': 'client_id',
@@ -280,7 +280,7 @@ def test_it_finds_a_profile_by_email_address_when_exchanging(test_client: FlaskC
                     json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
                           'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
                           'name': 'Josiah Carberry'})
-        mocker.get('http://www.example.com/api/v2.0/0000-0002-1825-0097/record',
+        mocker.get('http://www.example.com/api/v2.1/0000-0002-1825-0097/record',
                    json={'person': {
                        'emails': {'email': [
                            {'email': 'foo@example.com', 'primary': True, 'verified': True},
@@ -303,7 +303,7 @@ def test_it_still_returns_200_when_failing_to_read_orcid_data(test_client: Flask
                     json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
                           'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
                           'name': 'Josiah Carberry'})
-        mocker.get('http://www.example.com/api/v2.0/0000-0002-1825-0097/record',
+        mocker.get('http://www.example.com/api/v2.1/0000-0002-1825-0097/record',
                    json={'person': {'name': 'this is unexpected'}})
 
         response = test_client.post('/oauth2/token',
@@ -326,7 +326,7 @@ def test_it_rejects_a_private_name_when_exchanging(test_client: FlaskClient) -> 
                     json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
                           'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
                           'name': ''})
-        mocker.get('http://www.example.com/api/v2.0/0000-0002-1825-0097/record', status_code=404)
+        mocker.get('http://www.example.com/api/v2.1/0000-0002-1825-0097/record', status_code=404)
 
         response = test_client.post('/oauth2/token',
                                     data={'client_id': 'client_id',
@@ -345,7 +345,7 @@ def test_it_records_the_access_token_when_exchanging(test_client: FlaskClient) -
                     json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
                           'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
                           'name': 'Josiah Carberry'})
-        mocker.get('http://www.example.com/api/v2.0/0000-0002-1825-0097/record', status_code=404)
+        mocker.get('http://www.example.com/api/v2.1/0000-0002-1825-0097/record', status_code=404)
 
         response = test_client.post('/oauth2/token',
                                     data={'client_id': 'client_id',
@@ -375,7 +375,7 @@ def test_it_updates_the_access_token_when_exchanging(test_client: FlaskClient) -
                     json={'access_token': '1/fFAGRNJru1FTz70BzhT3Zg', 'expires_in': 3920,
                           'foo': 'bar', 'token_type': 'Bearer', 'orcid': '0000-0002-1825-0097',
                           'name': 'Josiah Carberry'})
-        mocker.get('http://www.example.com/api/v2.0/0000-0002-1825-0097/record', status_code=404)
+        mocker.get('http://www.example.com/api/v2.1/0000-0002-1825-0097/record', status_code=404)
 
         test_client.post('/oauth2/token',
                          data={'client_id': 'client_id', 'client_secret': 'client_secret',
