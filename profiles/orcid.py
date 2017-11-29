@@ -4,7 +4,7 @@ import logging
 import requests
 from requests import RequestException, Response
 
-API_VERSION = 'v2.0'
+API_VERSION = 'v2.1'
 LOGGER = logging.getLogger(__name__)
 
 VISIBILITY_PUBLIC = 'PUBLIC'
