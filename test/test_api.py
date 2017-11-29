@@ -60,6 +60,21 @@ def test_list_of_profiles(test_client: FlaskClient) -> None:
         assert data['items'][number - 1]['id'] == str(number).zfill(2)
 
 
+def test_list_of_profiles_only_contains_snippets(test_client: FlaskClient) -> None:
+    profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
+    profile.add_email_address('foo@example.com')
+
+    db.session.add(profile)
+    db.session.commit()
+
+    response = test_client.get('/profiles')
+
+    data = json.loads(response.data.decode('UTF-8'))
+
+    assert validate_json(data, schema_name='profile-list.v1') is True
+    assert 'emailAddresses' not in data['items'][0]
+
+
 def test_list_of_profiles_in_ascending_order(test_client: FlaskClient) -> None:
     for number in range(1, 31):
         number = str(number).zfill(2)
