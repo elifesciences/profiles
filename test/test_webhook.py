@@ -1,10 +1,8 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from flask.testing import FlaskClient
 import pytest
-from requests import RequestException
 import requests_mock
-from werkzeug.exceptions import Forbidden
 
 from profiles.database import db
 from profiles.exceptions import OrcidTokenNotFound
@@ -50,7 +48,7 @@ def test_it_has_to_be_a_post(test_client: FlaskClient) -> None:
     assert response.headers.get('Content-Type') == 'application/problem+json'
 
 
-def test_it_returns_403_if_an_access_token_is_rejected(profile: Profile, orcid_token: OrcidToken,
+def test_it_returns_503_if_an_access_token_is_rejected(profile: Profile, orcid_token: OrcidToken,
                                                        test_client: FlaskClient) -> None:
     db.session.add(profile)
     db.session.add(orcid_token)
@@ -59,17 +57,17 @@ def test_it_returns_403_if_an_access_token_is_rejected(profile: Profile, orcid_t
         db.session.commit()
 
     with requests_mock.Mocker() as mocker:
-        mocker.get('http://www.example.com/api/v2.1/0001-0002-1825-0097/record', exc=Forbidden)
+        mocker.get('http://www.example.com/api/v2.1/0001-0002-1825-0097/record', status_code=403)
 
         response = test_client.post('/orcid-webhook/0001-0002-1825-0097')
 
-    assert response.status_code == 403
+    assert response.status_code == 503
     assert response.headers.get('Content-Type') == 'application/problem+json'
 
 
-def test_it_removes_token_if_403_and_public_is_false(profile: Profile, test_client: FlaskClient,
-                                                     orcid_token: OrcidToken,
-                                                     orcid_tokens: SQLAlchemyOrcidTokens) -> None:
+def test_it_removes_token_if_it_was_rejected(profile: Profile, test_client: FlaskClient,
+                                             orcid_token: OrcidToken,
+                                             orcid_tokens: SQLAlchemyOrcidTokens) -> None:
     db.session.add(profile)
     db.session.add(orcid_token)
 
@@ -77,10 +75,26 @@ def test_it_removes_token_if_403_and_public_is_false(profile: Profile, test_clie
         db.session.commit()
 
     with requests_mock.Mocker() as mocker:
-        mocker.get('http://www.example.com/api/v2.1/0001-0002-1825-0097/record',
-                   exc=RequestException(response=MagicMock(status_code=403)))
+        mocker.get('http://www.example.com/api/v2.1/0001-0002-1825-0097/record', status_code=403)
 
         test_client.post('/orcid-webhook/0001-0002-1825-0097')
 
     with pytest.raises(OrcidTokenNotFound):
         orcid_tokens.get('0001-0002-1825-0097')
+
+
+def test_it_returns_500_on_an_orcid_error(profile: Profile, orcid_token: OrcidToken,
+                                          test_client: FlaskClient) -> None:
+    db.session.add(profile)
+    db.session.add(orcid_token)
+
+    with patch('profiles.orcid.request'):
+        db.session.commit()
+
+    with requests_mock.Mocker() as mocker:
+        mocker.get('http://www.example.com/api/v2.1/0001-0002-1825-0097/record', status_code=404)
+
+        response = test_client.post('/orcid-webhook/0001-0002-1825-0097')
+
+    assert response.status_code == 500
+    assert response.headers.get('Content-Type') == 'application/problem+json'

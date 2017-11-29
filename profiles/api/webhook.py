@@ -2,7 +2,7 @@ from typing import Dict
 
 from flask import Blueprint
 from requests import RequestException
-from werkzeug.exceptions import NotFound
+from werkzeug.exceptions import InternalServerError, NotFound, ServiceUnavailable
 from werkzeug.wrappers import Response
 
 from profiles.commands import update_profile_from_orcid_record
@@ -34,7 +34,10 @@ def create_blueprint(profiles: Profiles, orcid_config: Dict[str, str],
                     orcid_config.get('read_public_access_token'):
                 orcid_tokens.remove(profile.orcid)
 
-            raise exception
+                # Let ORCID retry, it will use the public access token
+                raise ServiceUnavailable from exception
+
+            raise InternalServerError from exception
 
         update_profile_from_orcid_record(profile, orcid_record)
 
