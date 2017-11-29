@@ -2,6 +2,7 @@ from hypothesis import given
 from hypothesis.searchstrategy import SearchStrategy
 from hypothesis.strategies import sampled_from
 from iso3166 import countries
+import pytest
 
 from profiles.commands import extract_email_addresses, update_profile_from_orcid_record
 from profiles.models import Address, Affiliation, Date, Name, Profile
@@ -66,9 +67,14 @@ def test_it_updates_the_name(given_names: str, family_name: str):
     assert profile.name.index == '{}, {}'.format(family_name, given_names)
 
 
-def test_it_does_not_updates_the_name_if_its_missing():
+@pytest.mark.parametrize('name', [
+    ({}),
+    ({'family-name': None, 'given-names': None}),
+    ({'family-name': {'value': ''}, 'given-names': {'value': ''}}),
+])
+def test_it_does_not_updates_the_name_if_its_missing(name):
     profile = Profile('12345678', Name('Old Name'))
-    orcid_record = {'person': {'name': {}}}
+    orcid_record = {'person': {'name': name}}
 
     update_profile_from_orcid_record(profile, orcid_record)
 

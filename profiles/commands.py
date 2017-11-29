@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from iso3166 import countries
+import jmespath
 
 from profiles.models import Address, Affiliation, Date, Name, Profile
 from profiles.orcid import VISIBILITY_PUBLIC
@@ -13,7 +14,7 @@ def update_profile_from_orcid_record(profile: Profile, orcid_record: dict) -> No
 
 
 def extract_email_addresses(orcid_record: dict, only_verified: bool = True) -> List[dict]:
-    orcid_emails = orcid_record.get('person', {}).get('emails', {}).get('email', {})
+    orcid_emails = jmespath.search('person.emails.email[*]', orcid_record) or []
 
     if only_verified:
         orcid_emails = list(filter(lambda x: x['verified'], orcid_emails))
@@ -22,22 +23,21 @@ def extract_email_addresses(orcid_record: dict, only_verified: bool = True) -> L
 
 
 def _update_name_from_orcid_record(profile: Profile, orcid_record: dict) -> None:
-    if 'name' in orcid_record.get('person', {}):
-        given_name = orcid_record['person']['name'].get('given-names', {}).get('value')
-        family_name = orcid_record['person']['name'].get('family-name', {}).get('value')
+    given_name = jmespath.search('person.name."given-names".value', orcid_record)
+    family_name = jmespath.search('person.name."family-name".value', orcid_record)
 
-        if given_name and family_name:
-            profile.name = Name('{} {}'.format(given_name, family_name),
-                                '{}, {}'.format(family_name, given_name))
-        elif given_name:
-            profile.name = Name(given_name, given_name)
-        elif family_name:
-            profile.name = Name(family_name, family_name)
+    if given_name and family_name:
+        profile.name = Name('{} {}'.format(given_name, family_name),
+                            '{}, {}'.format(family_name, given_name))
+    elif given_name:
+        profile.name = Name(given_name, given_name)
+    elif family_name:
+        profile.name = Name(family_name, family_name)
 
 
 def _update_affiliations_from_orcid_record(profile: Profile, orcid_record: dict) -> None:
-    orcid_affiliations = orcid_record.get('activities-summary', {}).get('employments', {}).get(
-        'employment-summary', {})
+    orcid_affiliations = jmespath.search('"activities-summary".employments."employment-summary"[*]',
+                                         orcid_record) or []
 
     found_affiliation_ids = set()
     for index, orcid_affiliation in enumerate(orcid_affiliations):
