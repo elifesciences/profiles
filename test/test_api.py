@@ -226,7 +226,7 @@ def test_get_profile_response_contains_email_addresses(test_client: FlaskClient)
 
     assert response.status_code == 200
     assert response.headers.get('Content-Type') == 'application/vnd.elife.profile+json;version=1'
-    # assert validate_json(data, schema_name='profile.v1') is True
+    assert validate_json(data, schema_name='profile.v1') is True
     assert len(data['emailAddresses']) == 2
 
 
@@ -243,7 +243,7 @@ def test_does_not_contain_restricted_email_addresses(test_client: FlaskClient) -
 
     assert response.status_code == 200
     assert response.headers.get('Content-Type') == 'application/vnd.elife.profile+json;version=1'
-    # assert validate_json(data, schema_name='profile.v1') is True
+    assert validate_json(data, schema_name='profile.v1') is True
     assert [e['value'] for e in data['emailAddresses']] == ['1@example.com']
 
 
@@ -264,7 +264,7 @@ def test_get_profile_response_contains_affiliations(test_client: FlaskClient, ye
 
     assert response.status_code == 200
     assert response.headers.get('Content-Type') == 'application/vnd.elife.profile+json;version=1'
-    # assert validate_json(data, schema_name='profile.v1') is True
+    assert validate_json(data, schema_name='profile.v1') is True
     assert len(data['affiliations']) == 1
 
 
@@ -290,5 +290,5 @@ def test_it_does_not_return_restricted_affiliations(test_client: FlaskClient, ye
 
     assert response.status_code == 200
     assert response.headers.get('Content-Type') == 'application/vnd.elife.profile+json;version=1'
-    # assert validate_json(data, schema_name='profile.v1') is True
+    assert validate_json(data, schema_name='profile.v1') is True
     assert [e['value']['name'] for e in data['affiliations']] == [['Dep', 'Org']]
