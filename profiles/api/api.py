@@ -6,7 +6,7 @@ from werkzeug.wrappers import Response
 
 from profiles.exceptions import ProfileNotFound
 from profiles.repositories import Profiles
-from profiles.serializer.normalizer import normalize
+from profiles.serializer.normalizer import normalize, normalize_snippet
 from profiles.utilities import cache
 
 ORDER_ASC = 'asc'
@@ -47,7 +47,7 @@ def create_blueprint(profiles: Profiles) -> Blueprint:
             raise NotFound('No page %s' % page)
 
         response = make_response(json.dumps({'total': total, 'items': profile_list},
-                                            default=normalize))
+                                            default=normalize_snippet))
 
         response.headers['Content-Type'] = 'application/vnd.elife.profile-list+json;version=1'
         response.headers['Vary'] = 'Accept'
