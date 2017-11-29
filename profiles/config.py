@@ -13,10 +13,11 @@ class Config(ABC):
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     TESTING = False
 
+    # pylint: disable=invalid-name,too-many-arguments
     def __init__(self, orcid: Dict[str, str], db: str, logging: Dict[str, str],
                  bus: Dict[str, str], server_name: str, scheme: str, **_kwargs) -> None:
         self.orcid = orcid
-        self.SQLALCHEMY_DATABASE_URI = db  # pylint: disable=invalid-name
+        self.SQLALCHEMY_DATABASE_URI = db
         self.logging = logging
         self.bus = bus
         self.SERVER_NAME = server_name
