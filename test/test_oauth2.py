@@ -283,7 +283,10 @@ def test_it_finds_a_profile_by_email_address_when_exchanging(test_client: FlaskC
         mocker.get('http://www.example.com/api/v2.1/0000-0002-1825-0097/record',
                    json={'person': {
                        'emails': {'email': [
-                           {'email': 'foo@example.com', 'primary': True, 'verified': True},
+                           {'email': 'foo@example.com', 'primary': True, 'verified': True,
+                            'visibility': 'PUBLIC'},
+                           {'email': 'baz@example.com', 'primary': False, 'verified': True,
+                            'visibility': 'PUBLIC'},
                        ]},
                    }})
 
@@ -294,6 +297,9 @@ def test_it_finds_a_profile_by_email_address_when_exchanging(test_client: FlaskC
                                           'grant_type': 'authorization_code', 'code': '1234'})
 
     assert Profile.query.count() == 1
+    assert str(original_profile.name) == 'Josiah Carberry'
+    assert [e.email for e in original_profile.email_addresses] == ['foo@example.com',
+                                                                   'baz@example.com']
     assert response.status_code == 200
 
 
