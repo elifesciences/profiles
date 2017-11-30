@@ -1,3 +1,4 @@
+import hashlib
 import logging
 import os
 from typing import Dict
@@ -165,7 +166,8 @@ def orcid_tokens() -> SQLAlchemyOrcidTokens:
 
 @fixture()
 def url_safe_serializer() -> URLSafeSerializer:
-    return URLSafeSerializer('webhook_key')
+    return URLSafeSerializer('webhook_key', signer_kwargs={'key_derivation': 'hmac',
+                                                           'digest_method': hashlib.sha512})
 
 
 @fixture()

@@ -1,3 +1,5 @@
+import hashlib
+
 from elife_bus_sdk import get_publisher
 from flask import Flask
 from flask_migrate import Migrate
@@ -29,7 +31,9 @@ def create_app(config: Config, clients: Clients) -> Flask:
     orcid_tokens = SQLAlchemyOrcidTokens(db)
     profiles = SQLAlchemyProfiles(db)
 
-    uri_signer = URLSafeSerializer(config.orcid['webhook_key'])
+    uri_signer = URLSafeSerializer(config.orcid['webhook_key'],
+                                   signer_kwargs={'key_derivation': 'hmac',
+                                                  'digest_method': hashlib.sha512})
 
     publisher = get_publisher(pub_name='profiles', config={'region': config.bus['region'],
                                                            'subscriber': config.bus['subscriber'],
