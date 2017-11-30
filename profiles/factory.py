@@ -7,7 +7,7 @@ from flask_sqlalchemy import models_committed
 from itsdangerous import URLSafeSerializer
 
 from profiles.api import api, errors, oauth2, ping, webhook
-from profiles.cli import ClearCommand
+from profiles.cli import ClearCommand, SetOrcidWebhooksCommand
 from profiles.clients import Clients
 from profiles.config import Config
 from profiles.events import maintain_orcid_webhook, send_update_events
@@ -39,7 +39,10 @@ def create_app(config: Config, clients: Clients) -> Flask:
                                                            'subscriber': config.bus['subscriber'],
                                                            'name': config.bus['name'],
                                                            'env': config.name})
-    app.commands = [ClearCommand(orcid_tokens, profiles)]
+    app.commands = [
+        ClearCommand(orcid_tokens, profiles),
+        SetOrcidWebhooksCommand(profiles, config.orcid, orcid_client, uri_signer)
+    ]
 
     app.register_blueprint(api.create_blueprint(profiles))
     app.register_blueprint(oauth2.create_blueprint(config.orcid, clients, profiles, orcid_client,
