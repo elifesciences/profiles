@@ -1,3 +1,4 @@
+import logging
 from abc import ABC
 from typing import Dict
 
@@ -8,6 +9,8 @@ from itsdangerous import URLSafeSerializer
 from profiles.orcid import OrcidClient
 from profiles.repositories import Profiles
 from profiles.types import CanBeCleared
+
+LOGGER = logging.getLogger(__name__)
 
 
 class Command(ABC, BaseCommand):
@@ -52,7 +55,11 @@ class SetOrcidWebhooksCommand(Command):
     def run(self) -> None:
         access_token = self.orcid.get('webhook_access_token')
 
-        for profile in self.profiles.list():
+        profiles = self.profiles.list()
+
+        total = len(profiles)
+        for index, profile in enumerate(profiles):
+            LOGGER.debug('%s of %s: %s', index + 1, total, profile)
             uri = url_for('webhook._update', payload=self.uri_signer.dumps(profile.orcid),
                           _external=True)
             self.orcid_client.set_webhook(profile.orcid, uri, access_token)
