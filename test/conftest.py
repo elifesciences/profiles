@@ -1,5 +1,7 @@
+import hashlib
 import logging
 import os
+from typing import Dict
 from unittest.mock import MagicMock
 
 from _pytest.fixtures import FixtureRequest
@@ -8,18 +10,17 @@ from flask.testing import FlaskClient
 from flask_sqlalchemy import SQLAlchemy
 from hypothesis import settings as hyp_settings
 from hypothesis.configuration import set_hypothesis_home_dir
+from itsdangerous import URLSafeSerializer
 from pytest import fixture
 from sqlalchemy.orm import scoped_session
 
 from profiles.clients import Client, Clients
-from profiles.config import CiConfig
+from profiles.config import DevConfig
 from profiles.factory import create_app
-from profiles.models import (
-    Date,
-    Name,
-    Profile,
-    db,
-)
+from profiles.models import Date, Name, OrcidToken, Profile, db
+from profiles.orcid import OrcidClient
+from profiles.repositories import SQLAlchemyOrcidTokens
+from profiles.utilities import expires_at
 
 BUILD_PATH = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/build/'
 
@@ -37,13 +38,16 @@ hyp_settings.load_profile('default')
 @fixture(scope='session')
 def app(request: FixtureRequest) -> Flask:
     app = create_app(
-        CiConfig(
+        DevConfig(
             orcid={
                 'api_uri': 'http://www.example.com/api',
-                'authorize_uri': 'http://www.example.com/server/authorize',
-                'token_uri': 'http://www.example.com/server/token',
+                'authorize_uri': 'http://www.example.com/oauth/authorize',
+                'token_uri': 'http://www.example.com/oauth/token',
                 'client_id': 'server_client_id',
                 'client_secret': 'server_client_secret',
+                'read_public_access_token': 'server_read_public_access_token',
+                'webhook_access_token': 'server_webhook_access_token',
+                'webhook_key': 'webhook_key',
             },
             db=TEST_DATABASE_URI,
             logging={},
@@ -51,7 +55,9 @@ def app(request: FixtureRequest) -> Flask:
                 'region': 'us-east-1',
                 'subscriber': '1234567890',
                 'name': 'bus-profiles'
-            }
+            },
+            server_name='localhost',
+            scheme='http',
         ),
         clients=Clients(
             Client(name='client', client_id='client_id', client_secret='client_secret',
@@ -122,10 +128,68 @@ def mock_publisher() -> MagicMock:
 
 
 @fixture
+def mock_orcid_client() -> MagicMock:
+    client = MagicMock()
+    client.remove_webhook = MagicMock()
+    client.set_webhook = MagicMock()
+    return client
+
+
+@fixture
+def orcid_client() -> OrcidClient:
+    return OrcidClient('http://www.example.com/api')
+
+
+@fixture
+def orcid_config() -> Dict[str, str]:
+    return {
+        'api_uri': 'http://www.example.com/api',
+        'authorize_uri': 'http://www.example.com/oauth/authorize',
+        'token_uri': 'http://www.example.com/oauth/token',
+        'client_id': 'server_client_id',
+        'client_secret': 'server_client_secret',
+        'read_public_access_token': 'server_read_public_access_token',
+        'webhook_access_token': 'server_webhook_access_token',
+        'webhook_key': 'webhook_key',
+    }
+
+
+@fixture
+def orcid_token() -> OrcidToken:
+    return OrcidToken('0000-0002-1825-0097', '1/fFAGRNJru1FTz70BzhT3Zg', expires_at(1234))
+
+
+@fixture
+def orcid_tokens() -> SQLAlchemyOrcidTokens:
+    return SQLAlchemyOrcidTokens(db)
+
+
+@fixture()
+def url_safe_serializer() -> URLSafeSerializer:
+    return URLSafeSerializer('webhook_key', signer_kwargs={'key_derivation': 'hmac',
+                                                           'digest_method': hashlib.sha512})
+
+
+@fixture()
+def webhook_payload(url_safe_serializer: URLSafeSerializer) -> str:
+    return url_safe_serializer.dumps('0000-0002-1825-0097')
+
+
+@fixture
 def profile() -> Profile:
-    return Profile('12345678', Name('foo'), '0001-0002-1825-0097')
+    return Profile('12345678', Name('foo'), '0000-0002-1825-0097')
 
 
 @fixture
 def yesterday():
     return Date.yesterday()
+
+
+@fixture
+def public_token_resp_data():
+    return {"access_token": "4bed1e13-7792-4129-9f07-aaf7b88ba88f",
+            "token_type": "bearer",
+            "refresh_token": "2d76d8d0-6fd6-426b-a017-61e0ceda0ad2",
+            "expires_in": 631138518,
+            "scope": "/read-public",
+            "orcid": None}

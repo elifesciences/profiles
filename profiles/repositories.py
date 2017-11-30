@@ -22,6 +22,10 @@ class OrcidTokens(CanBeCleared):
     def get(self, orcid: str) -> OrcidToken:
         raise NotImplementedError
 
+    @abstractmethod
+    def remove(self, orcid: str) -> None:
+        raise NotImplementedError
+
 
 class Profiles(CanBeCleared, collections.Sized):
     @abstractmethod
@@ -65,6 +69,13 @@ class SQLAlchemyOrcidTokens(OrcidTokens):
 
     def clear(self) -> None:
         self.db.session.query(OrcidToken).delete()
+
+    def remove(self, orcid: str) -> None:
+        try:
+            orcid_token = self.db.session.query(OrcidToken).filter_by(orcid=orcid).one()
+            self.db.session.delete(orcid_token)
+        except NoResultFound:
+            pass
 
 
 class SQLAlchemyProfiles(Profiles):

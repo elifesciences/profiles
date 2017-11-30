@@ -1,10 +1,16 @@
 import json
+from unittest.mock import patch
 
 from flask.testing import FlaskClient
 from iso3166 import countries
 
 from profiles.models import Address, Affiliation, Name, Profile, db
 from profiles.utilities import validate_json
+
+
+def _commit():
+    with patch('profiles.orcid.request'):
+        db.session.commit()
 
 
 def test_empty_list_of_profiles(test_client: FlaskClient) -> None:
@@ -43,7 +49,7 @@ def test_list_of_profiles(test_client: FlaskClient) -> None:
     for number in range(1, 31):
         number = str(number).zfill(2)
         db.session.add(Profile(str(number), Name('Profile %s' % number)))
-    db.session.commit()
+    _commit()
 
     response = test_client.get('/profiles')
 
@@ -65,7 +71,7 @@ def test_list_of_profiles_only_contains_snippets(test_client: FlaskClient) -> No
     profile.add_email_address('foo@example.com')
 
     db.session.add(profile)
-    db.session.commit()
+    _commit()
 
     response = test_client.get('/profiles')
 
@@ -79,7 +85,7 @@ def test_list_of_profiles_in_ascending_order(test_client: FlaskClient) -> None:
     for number in range(1, 31):
         number = str(number).zfill(2)
         db.session.add(Profile(str(number), Name('Profile %s' % number)))
-    db.session.commit()
+    _commit()
 
     response = test_client.get('/profiles?order=asc')
 
@@ -100,7 +106,7 @@ def test_list_of_profiles_in_pages(test_client: FlaskClient) -> None:
     for number in range(1, 11):
         number = str(number).zfill(2)
         db.session.add(Profile(str(number), Name('Profile %s' % number)))
-    db.session.commit()
+    _commit()
 
     response = test_client.get('/profiles?page=1&per-page=5')
 
@@ -184,7 +190,7 @@ def test_get_profile(test_client: FlaskClient) -> None:
     profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
 
     db.session.add(profile)
-    db.session.commit()
+    _commit()
 
     response = test_client.get('/profiles/a1b2c3d4')
 
@@ -204,7 +210,7 @@ def test_get_profile_revalidation(test_client: FlaskClient) -> None:
     profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
 
     db.session.add(profile)
-    db.session.commit()
+    _commit()
 
     response = test_client.get('/profiles/a1b2c3d4')
 
@@ -234,7 +240,7 @@ def test_get_profile_response_contains_email_addresses(test_client: FlaskClient)
     profile.add_email_address('2@example.com')
 
     db.session.add(profile)
-    db.session.commit()
+    _commit()
 
     response = test_client.get('/profiles/a1b2c3d4')
     data = json.loads(response.data.decode('UTF-8'))
@@ -251,7 +257,7 @@ def test_does_not_contain_restricted_email_addresses(test_client: FlaskClient) -
     profile.add_email_address('2@example.com', restricted=True)
 
     db.session.add(profile)
-    db.session.commit()
+    _commit()
 
     response = test_client.get('/profiles/a1b2c3d4')
     data = json.loads(response.data.decode('UTF-8'))
@@ -272,7 +278,7 @@ def test_get_profile_response_contains_affiliations(test_client: FlaskClient, ye
     db.session.add(profile)
     profile.add_affiliation(affiliation)
 
-    db.session.commit()
+    _commit()
 
     response = test_client.get('/profiles/a1b2c3d4')
     data = json.loads(response.data.decode('UTF-8'))
@@ -298,7 +304,7 @@ def test_it_does_not_return_restricted_affiliations(test_client: FlaskClient, ye
     profile.add_affiliation(affiliation)
     profile.add_affiliation(affiliation2)
 
-    db.session.commit()
+    _commit()
 
     response = test_client.get('/profiles/a1b2c3d4')
     data = json.loads(response.data.decode('UTF-8'))

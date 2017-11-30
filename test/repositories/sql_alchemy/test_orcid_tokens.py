@@ -33,3 +33,17 @@ def test_it_clears_orcid_tokens(orcid, token, expire):
 
     with pytest.raises(OrcidTokenNotFound):
         orcid_tokens.get(orcid)
+
+
+def test_it_can_remove_a_single_orcid_token():
+    orcid = '0000-0002-1825-0097'
+    orcid_tokens = SQLAlchemyOrcidTokens(db)
+    orcid_token = OrcidToken(orcid, '1/fFAGRNJru1FTz70BzhT3Zg', expires_at(1234))
+    orcid_tokens.add(orcid_token)
+
+    assert orcid_tokens.get(orcid=orcid) == orcid_token
+
+    orcid_tokens.remove(orcid)
+
+    with pytest.raises(OrcidTokenNotFound):
+        orcid_tokens.get(orcid)
