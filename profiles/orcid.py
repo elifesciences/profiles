@@ -20,7 +20,7 @@ class OrcidClient(object):
         LOGGER.debug('Requesting ORCID record for %s', format(orcid))
 
         try:
-            response = self._get_request('{}/record'.format(orcid), access_token)
+            response = self._get_request('{}/{}/record'.format(API_VERSION, orcid), access_token)
         except RequestException as exception:
             LOGGER.warning('Failed to load ORCID record for %s (%s)', orcid, str(exception))
             raise exception
@@ -64,7 +64,7 @@ class OrcidClient(object):
         if headers is None:
             headers = {}
 
-        uri = '{}/{}/{}'.format(self.api_uri, API_VERSION, path)
+        uri = '{}/{}'.format(self.api_uri, path)
         headers['Authorization'] = 'Bearer ' + access_token
 
         response = request(method, uri, headers=headers)
