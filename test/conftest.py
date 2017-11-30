@@ -9,6 +9,7 @@ from flask.testing import FlaskClient
 from flask_sqlalchemy import SQLAlchemy
 from hypothesis import settings as hyp_settings
 from hypothesis.configuration import set_hypothesis_home_dir
+from itsdangerous import URLSafeSerializer
 from pytest import fixture
 from sqlalchemy.orm import scoped_session
 
@@ -44,7 +45,8 @@ def app(request: FixtureRequest) -> Flask:
                 'client_id': 'server_client_id',
                 'client_secret': 'server_client_secret',
                 'read_public_access_token': 'server_read_public_access_token',
-                'webhook_access_token': 'server_webhook_access_token'
+                'webhook_access_token': 'server_webhook_access_token',
+                'webhook_key': 'webhook_key',
             },
             db=TEST_DATABASE_URI,
             logging={},
@@ -146,13 +148,14 @@ def orcid_config() -> Dict[str, str]:
         'client_id': 'server_client_id',
         'client_secret': 'server_client_secret',
         'read_public_access_token': 'server_read_public_access_token',
-        'webhook_access_token': 'server_webhook_access_token'
+        'webhook_access_token': 'server_webhook_access_token',
+        'webhook_key': 'webhook_key',
     }
 
 
 @fixture
 def orcid_token() -> OrcidToken:
-    return OrcidToken('0001-0002-1825-0097', '1/fFAGRNJru1FTz70BzhT3Zg', expires_at(1234))
+    return OrcidToken('0000-0002-1825-0097', '1/fFAGRNJru1FTz70BzhT3Zg', expires_at(1234))
 
 
 @fixture
@@ -160,9 +163,19 @@ def orcid_tokens() -> SQLAlchemyOrcidTokens:
     return SQLAlchemyOrcidTokens(db)
 
 
+@fixture()
+def url_safe_serializer() -> URLSafeSerializer:
+    return URLSafeSerializer('webhook_key')
+
+
+@fixture()
+def webhook_payload(url_safe_serializer: URLSafeSerializer) -> str:
+    return url_safe_serializer.dumps('0000-0002-1825-0097')
+
+
 @fixture
 def profile() -> Profile:
-    return Profile('12345678', Name('foo'), '0001-0002-1825-0097')
+    return Profile('12345678', Name('foo'), '0000-0002-1825-0097')
 
 
 @fixture

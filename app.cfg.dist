@@ -16,6 +16,7 @@ client_id = client_id
 client_secret = client_secret
 read_public_access_token = token
 webhook_access_token = token
+webhook_key = some_string
 
 [bus]
 region = us-east-1

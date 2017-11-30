@@ -1,6 +1,7 @@
 from typing import Dict
 
 from flask import Blueprint
+from itsdangerous import BadSignature, URLSafeSerializer
 from requests import RequestException
 from werkzeug.exceptions import InternalServerError, NotFound, ServiceUnavailable
 from werkzeug.wrappers import Response
@@ -12,11 +13,17 @@ from profiles.repositories import OrcidTokens, Profiles
 
 
 def create_blueprint(profiles: Profiles, orcid_config: Dict[str, str],
-                     orcid_client: OrcidClient, orcid_tokens: OrcidTokens) -> Blueprint:
+                     orcid_client: OrcidClient, orcid_tokens: OrcidTokens,
+                     uri_signer: URLSafeSerializer) -> Blueprint:
     blueprint = Blueprint('webhook', __name__)
 
-    @blueprint.route('/orcid-webhook/<orcid>', methods=['POST'])
-    def _update(orcid: str) -> Response:
+    @blueprint.route('/orcid-webhook/<payload>', methods=['POST'])
+    def _update(payload: str) -> Response:
+        try:
+            orcid = uri_signer.loads(payload)
+        except BadSignature as exception:
+            raise NotFound from exception
+
         try:
             profile = profiles.get_by_orcid(orcid)
         except ProfileNotFound as exception:

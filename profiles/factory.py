@@ -2,6 +2,7 @@ from elife_bus_sdk import get_publisher
 from flask import Flask
 from flask_migrate import Migrate
 from flask_sqlalchemy import models_committed
+from itsdangerous import URLSafeSerializer
 
 from profiles.api import api, errors, oauth2, ping, webhook
 from profiles.cli import ClearCommand
@@ -28,6 +29,8 @@ def create_app(config: Config, clients: Clients) -> Flask:
     orcid_tokens = SQLAlchemyOrcidTokens(db)
     profiles = SQLAlchemyProfiles(db)
 
+    uri_signer = URLSafeSerializer(config.orcid['webhook_key'])
+
     publisher = get_publisher(pub_name='profiles', config={'region': config.bus['region'],
                                                            'subscriber': config.bus['subscriber'],
                                                            'name': config.bus['name'],
@@ -39,7 +42,7 @@ def create_app(config: Config, clients: Clients) -> Flask:
                                                    orcid_tokens), url_prefix='/oauth2')
     app.register_blueprint(ping.create_blueprint())
     app.register_blueprint(webhook.create_blueprint(profiles, config.orcid, orcid_client,
-                                                    orcid_tokens))
+                                                    orcid_tokens, uri_signer))
 
     from werkzeug.exceptions import default_exceptions
     for code in default_exceptions:
@@ -49,7 +52,8 @@ def create_app(config: Config, clients: Clients) -> Flask:
     app.register_error_handler(ClientError, errors.client_error_handler)
     app.register_error_handler(OAuth2Error, errors.oauth2_error_handler)
 
-    models_committed.connect(maintain_orcid_webhook(config.orcid, orcid_client), weak=False)
+    models_committed.connect(maintain_orcid_webhook(config.orcid, orcid_client, uri_signer),
+                             weak=False)
     models_committed.connect(send_update_events(publisher=publisher), weak=False)
 
     return app
