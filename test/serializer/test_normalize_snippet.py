@@ -19,7 +19,8 @@ def test_it_normalizes_profile_snippets(id_, preferred, index, orcid):
         'id': id_,
         'name': {
             'preferred': preferred,
-            'index': index
+            'index': index,
+            'shortened': preferred
         },
     }
 
@@ -30,6 +31,7 @@ def test_it_normalizes_profile_snippets(id_, preferred, index, orcid):
         'name': {
             'preferred': preferred,
             'index': index,
+            'shortened': preferred
         },
         'orcid': orcid,
     }

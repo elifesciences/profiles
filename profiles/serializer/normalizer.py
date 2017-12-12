@@ -74,4 +74,5 @@ def normalize_name(name: Name) -> dict:
     return {
         'preferred': name.preferred,
         'index': name.index,
+        'shortened': name.shortened
     }

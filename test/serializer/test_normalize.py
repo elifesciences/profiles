@@ -21,7 +21,8 @@ def test_it_normalizes_profiles(id_, preferred, index):
         'id': id_,
         'name': {
             'preferred': preferred,
-            'index': index
+            'index': index,
+            'shortened': preferred
         },
         'emailAddresses': [],
         'affiliations': []
@@ -36,6 +37,7 @@ def test_it_normalizes_profile_with_orcid():
         'name': {
             'preferred': 'Foo Bar',
             'index': 'Bar, Foo',
+            'shortened': 'Foo Bar'
         },
         'emailAddresses': [],
         'affiliations': [],
@@ -91,6 +93,7 @@ def test_it_normalizes_profile_with_an_affiliation(yesterday):
         'name': {
             'preferred': 'Foo Bar',
             'index': 'Bar, Foo',
+            'shortened': 'Foo Bar'
         },
         'emailAddresses': [],
         'affiliations': [
@@ -141,6 +144,7 @@ def test_it_normalizes_profile_with_affiliations(yesterday):
         'name': {
             'preferred': 'Foo Bar',
             'index': 'Bar, Foo',
+            'shortened': 'Foo Bar'
         },
         'emailAddresses': [],
         'affiliations': [
