@@ -5,6 +5,7 @@ import jmespath
 
 from profiles.models import Address, Affiliation, Date, Name, Profile
 from profiles.orcid import VISIBILITY_PUBLIC
+from profiles.utilities import shorten_name
 
 
 def update_profile_from_orcid_record(profile: Profile, orcid_record: dict) -> None:
@@ -28,11 +29,12 @@ def _update_name_from_orcid_record(profile: Profile, orcid_record: dict) -> None
 
     if given_name and family_name:
         profile.name = Name('{} {}'.format(given_name, family_name),
-                            '{}, {}'.format(family_name, given_name))
+                            '{}, {}'.format(family_name, given_name),
+                            shorten_name(given_name, family_name))
     elif given_name:
-        profile.name = Name(given_name, given_name)
+        profile.name = Name(given_name, given_name, given_name)
     elif family_name:
-        profile.name = Name(family_name, family_name)
+        profile.name = Name(family_name, family_name, family_name)
 
 
 def _update_affiliations_from_orcid_record(profile: Profile, orcid_record: dict) -> None:

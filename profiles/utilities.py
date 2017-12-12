@@ -62,6 +62,19 @@ def remove_none_values(items: dict) -> dict:
     return dict(filter(lambda item: item[1] is not None, items.items()))
 
 
+def shorten_name(given_names: str, family_name: str) -> str:
+    """Provide basic shortened name from full name values
+
+    >>> shorten_name('Francisco', 'Baños')
+    'F. Baños'
+
+    :param given_names: str
+    :param family_name: str
+    :return: str
+    """
+    return '{0}. {1}'.format(given_names.split()[0][0], family_name)
+
+
 def validate_json(data: dict, schema_name: str, schema_dir: str = ''):
     # option to provide a schema_dir allows dummy_schema to be found for tests,
     # this whole function will be removed and replaced with

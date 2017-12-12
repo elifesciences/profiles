@@ -91,12 +91,13 @@ class OrcidToken(db.Model):
 
 
 class Name(object):
-    def __init__(self, preferred: str, index: str = None) -> None:
+    def __init__(self, preferred: str, index: str = None, shortened: str = None) -> None:
         if index is None:
             index = guess_index_name(preferred)
 
         self.preferred = preferred
         self.index = index
+        self.shortened = shortened or preferred
 
     def __composite_values__(self) -> Iterable[str]:
         return self.preferred, self.index

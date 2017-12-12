@@ -6,6 +6,7 @@ import pytest
 
 from profiles.commands import extract_email_addresses, update_profile_from_orcid_record
 from profiles.models import Address, Affiliation, Date, Name, Profile
+from profiles.utilities import shorten_name
 
 
 def given_names() -> SearchStrategy:
@@ -105,6 +106,40 @@ def test_it_updates_the_name_if_there_is_no_family_name(given_names: str):
 
     assert profile.name.preferred == given_names
     assert profile.name.index == given_names
+
+
+@given(given_names(), family_name())
+def test_it_updates_the_name_with_short_name_value(given_names: str, family_name: str):
+    profile = Profile('12345678', Name('Old Name'))
+    orcid_record = {'person': {
+        'name': {'family-name': {'value': family_name}, 'given-names': {'value': given_names}}}
+    }
+
+    update_profile_from_orcid_record(profile, orcid_record)
+
+    assert profile.name.shortened == shorten_name(given_names, family_name)
+
+
+@given(given_names())
+def test_it_updates_the_short_name_with_fallback_if_no_family_name(given_names: str):
+    profile = Profile('12345678', Name('Old Name'))
+    orcid_record = {'person': {
+        'name': {'given-names': {'value': given_names}}}
+    }
+
+    update_profile_from_orcid_record(profile, orcid_record)
+    assert profile.name.shortened == given_names
+
+
+@given(family_name())
+def test_it_updates_the_short_name_with_fallback_if_no_given_names(family_name: str):
+    profile = Profile('12345678', Name('Old Name'))
+    orcid_record = {'person': {
+        'name': {'family-name': {'value': family_name}}}
+    }
+
+    update_profile_from_orcid_record(profile, orcid_record)
+    assert profile.name.shortened == family_name
 
 
 def test_it_adds_affiliations():
