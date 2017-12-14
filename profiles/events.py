@@ -57,7 +57,7 @@ def send_update_events(publisher: EventPublisher) -> Callable[..., None]:
             if isinstance(instance, Profile):
                 ids.append(instance.id)
             if isinstance(instance, (Affiliation, EmailAddress)):
-                ids.append(instance.profile.id)
+                ids.append(instance.profile_id)
 
         for profile_id in set(ids):
             try:
