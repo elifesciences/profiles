@@ -1,4 +1,5 @@
-from unittest.mock import MagicMock, patch
+from typing import Callable
+from unittest.mock import MagicMock
 
 from flask_sqlalchemy import models_committed
 from iso3166 import countries
@@ -36,7 +37,8 @@ def test_it_will_send_event_for_profile_deleted(mock_publisher: MagicMock,
 
 
 def test_it_will_send_event_for_affiliation_insert(mock_publisher: MagicMock, profile: Profile,
-                                                   session: scoped_session) -> None:
+                                                   session: scoped_session,
+                                                   commit: Callable[[], None]) -> None:
     event_publisher = send_update_events(publisher=mock_publisher)
     models_committed.connect(receiver=event_publisher)
 
@@ -45,65 +47,22 @@ def test_it_will_send_event_for_affiliation_insert(mock_publisher: MagicMock, pr
     profile.add_affiliation(affiliation)
     session.add(profile)
 
-    with patch('profiles.orcid.request'):
-        session.commit()
-
-    assert mock_publisher.publish.call_count == 1
-    assert mock_publisher.publish.call_args[0][0] == {'id': '12345678', 'type': 'profile'}
-
-
-def test_it_will_send_event_for_affiliation_deletion(mock_publisher: MagicMock, profile: Profile,
-                                                     session: scoped_session):
-    affiliation = Affiliation('1', Address(countries.get('gb'), 'City'), 'Organisation', Date(2017))
-
-    profile.add_affiliation(affiliation)
-    session.add(profile)
-
-    with patch('profiles.orcid.request'):
-        session.commit()
-
-    event_publisher = send_update_events(publisher=mock_publisher)
-    models_committed.connect(receiver=event_publisher)
-
-    profile.remove_affiliation(affiliation.id)
-
-    with patch('profiles.orcid.request'):
-        session.commit()
+    commit()
 
     assert mock_publisher.publish.call_count == 1
     assert mock_publisher.publish.call_args[0][0] == {'id': '12345678', 'type': 'profile'}
 
 
 def test_it_will_send_event_if_email_address_is_updated(mock_publisher: MagicMock, profile: Profile,
-                                                        session: scoped_session):
+                                                        session: scoped_session,
+                                                        commit: Callable[[], None]):
     event_publisher = send_update_events(publisher=mock_publisher)
     models_committed.connect(receiver=event_publisher)
 
     profile.add_email_address('2@example.com')
     session.add(profile)
 
-    with patch('profiles.orcid.request'):
-        session.commit()
-
-    assert mock_publisher.publish.call_count == 1
-    assert mock_publisher.publish.call_args[0][0] == {'id': '12345678', 'type': 'profile'}
-
-
-def test_it_will_send_event_if_email_address_is_deleted(mock_publisher: MagicMock, profile: Profile,
-                                                        session: scoped_session):
-    profile.add_email_address('2@example.com')
-    session.add(profile)
-
-    with patch('profiles.orcid.request'):
-        session.commit()
-
-    event_publisher = send_update_events(publisher=mock_publisher)
-    models_committed.connect(receiver=event_publisher)
-
-    profile.remove_email_address('2@example.com')
-
-    with patch('profiles.orcid.request'):
-        session.commit()
+    commit()
 
     assert mock_publisher.publish.call_count == 1
     assert mock_publisher.publish.call_args[0][0] == {'id': '12345678', 'type': 'profile'}
@@ -111,7 +70,9 @@ def test_it_will_send_event_if_email_address_is_deleted(mock_publisher: MagicMoc
 
 def test_it_only_sends_one_event_if_multiple_changes_are_detected(mock_publisher: MagicMock,
                                                                   profile: Profile,
-                                                                  session: scoped_session) -> None:
+                                                                  session: scoped_session,
+                                                                  commit: Callable[[], None]
+                                                                  ) -> None:
     event_publisher = send_update_events(publisher=mock_publisher)
     models_committed.connect(receiver=event_publisher)
 
@@ -119,8 +80,7 @@ def test_it_only_sends_one_event_if_multiple_changes_are_detected(mock_publisher
     profile.add_affiliation(affiliation)
     session.add(profile)
 
-    with patch('profiles.orcid.request'):
-        session.commit()
+    commit()
 
     assert mock_publisher.publish.call_count == 1
     assert mock_publisher.publish.call_args[0][0] == {'id': '12345678', 'type': 'profile'}
