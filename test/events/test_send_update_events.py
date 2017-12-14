@@ -1,3 +1,4 @@
+from typing import List
 from unittest.mock import MagicMock, patch
 
 from flask_sqlalchemy import models_committed
@@ -13,8 +14,7 @@ from profiles.models import (
 )
 
 
-def test_it_has_a_valid_signal_handler_registered_on_app():
-    registered_handler_names = [recv.__name__ for id_, recv in models_committed.receivers.items()]
+def test_it_has_a_valid_signal_handler_registered_on_app(registered_handler_names: List[str]):
     assert 'event_handler' in registered_handler_names
 
 

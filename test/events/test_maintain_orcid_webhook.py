@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 from unittest.mock import MagicMock, patch
 
 from flask_sqlalchemy import models_committed
@@ -90,6 +90,5 @@ def test_it_ignores_other_models_being_committed(orcid_token: OrcidToken,
     assert mock_orcid_client.remove_webhook.call_count == 0
 
 
-def test_it_has_a_valid_signal_handler_registered_on_app():
-    registered_handler_names = [recv.__name__ for id_, recv in models_committed.receivers.items()]
+def test_it_has_a_valid_signal_handler_registered_on_app(registered_handler_names: List[str]):
     assert 'webhook_maintainer' in registered_handler_names
