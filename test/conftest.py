@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 from _pytest.fixtures import FixtureRequest
 from flask import Flask
 from flask.testing import FlaskClient
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy, models_committed
 from hypothesis import settings as hyp_settings
 from hypothesis.configuration import set_hypothesis_home_dir
 from itsdangerous import URLSafeSerializer
@@ -162,6 +162,17 @@ def orcid_token() -> OrcidToken:
 @fixture
 def orcid_tokens() -> SQLAlchemyOrcidTokens:
     return SQLAlchemyOrcidTokens(db)
+
+
+@fixture
+def registered_handler_names():
+    handler_names = []
+    for id_, recv in models_committed.receivers.items():  # pylint:disable=unused-variable
+        try:
+            handler_names.append(recv.__name__)
+        except AttributeError:
+            pass
+    return handler_names
 
 
 @fixture()
