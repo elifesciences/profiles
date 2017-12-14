@@ -1,9 +1,8 @@
 from typing import Callable, Dict, List
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from flask_sqlalchemy import models_committed
 from itsdangerous import URLSafeSerializer
-import pytest
 from sqlalchemy.orm import scoped_session
 
 from profiles.events import maintain_orcid_webhook

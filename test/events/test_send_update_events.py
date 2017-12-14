@@ -1,9 +1,8 @@
 from typing import Callable, List
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from flask_sqlalchemy import models_committed
 from iso3166 import countries
-import pytest
 from sqlalchemy.orm import scoped_session
 
 from profiles.events import send_update_events
