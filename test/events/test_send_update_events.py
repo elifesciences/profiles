@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 
 from flask_sqlalchemy import models_committed
 from iso3166 import countries
+import pytest
 from sqlalchemy.orm import scoped_session
 
 from profiles.events import send_update_events
@@ -82,3 +83,43 @@ def test_it_only_sends_one_event_if_multiple_changes_are_detected(mock_publisher
 
     assert mock_publisher.publish.call_count == 1
     assert mock_publisher.publish.call_args[0][0] == {'id': '12345678', 'type': 'profile'}
+
+
+@patch('profiles.events.catch_exceptions')
+def test_exception_not_handled_if_catch_decorator_is_removed(mock_catch: MagicMock,
+                                                             mock_publisher: MagicMock,
+                                                             profile: Profile,
+                                                             session: scoped_session) -> None:
+    with pytest.raises(Exception):
+        mock_publisher.publish.side_effect = Exception('Some Exception')
+
+        event_publisher = send_update_events(publisher=mock_publisher)
+        models_committed.connect(receiver=event_publisher)
+
+        affiliation = Affiliation('1', Address(countries.get('gb'), 'City'),
+                                  'Organisation', Date(2017))
+
+        profile.add_affiliation(affiliation)
+        session.add(profile)
+
+        with patch('profiles.orcid.request'):
+            session.commit()
+
+
+def test_exception_is_handled_by_catch_exception_decorator(mock_publisher: MagicMock,
+                                                           profile: Profile,
+                                                           session: scoped_session) -> None:
+    mock_publisher.publish.side_effect = Exception('Some Exception')
+
+    event_publisher = send_update_events(publisher=mock_publisher)
+    models_committed.connect(receiver=event_publisher)
+
+    affiliation = Affiliation('1', Address(countries.get('gb'), 'City'), 'Organisation', Date(2017))
+
+    profile.add_affiliation(affiliation)
+    session.add(profile)
+
+    with patch('profiles.orcid.request'):
+        session.commit()
+
+    assert mock_publisher.publish.call_count == 1
