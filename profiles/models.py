@@ -147,7 +147,7 @@ class Affiliation(db.Model):
     _region = db.Column(db.Text(), name='region')
     _country = db.Column(ISO3166Country, name='country', nullable=False)
     _starts = composite(Date, '_starts_year', '_starts_month', '_starts_day')
-    _starts_year = db.Column(db.Integer(), name='starts_year', nullable=False)
+    _starts_year = db.Column(db.Integer(), name='starts_year')
     _starts_month = db.Column(db.Integer(), name='starts_month')
     _starts_day = db.Column(db.Integer(), name='starts_day')
     _ends = composite(Date, '_ends_year', '_ends_month', '_ends_day')
