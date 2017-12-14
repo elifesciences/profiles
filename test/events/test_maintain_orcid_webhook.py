@@ -94,29 +94,6 @@ def test_it_ignores_other_models_being_committed(orcid_token: OrcidToken,
     assert mock_orcid_client.remove_webhook.call_count == 0
 
 
-@patch('profiles.events.catch_exceptions')
-def test_exception_not_handled_if_catch_decorator_is_removed(profile: Profile,
-                                                             orcid_config: Dict[str, str],
-                                                             mock_orcid_client: MagicMock,
-                                                             session: scoped_session,
-                                                             url_safe_serializer: URLSafeSerializer,
-                                                             commit: Callable[[], None]):
-    with pytest.raises(Exception):
-        mock_orcid_client.remove_webhook.side_effect = Exception('Some Exception')
-
-        session.add(profile)
-        commit()
-
-        webhook_maintainer = maintain_orcid_webhook(orcid_config, mock_orcid_client,
-                                                    url_safe_serializer)
-        models_committed.connect(receiver=webhook_maintainer)
-
-        session.delete(profile)
-        commit()
-
-        assert mock_orcid_client.remove_webhook.call_count == 1
-
-
 def test_exception_is_handled_by_catch_exception_decorator(profile: Profile,
                                                            orcid_config: Dict[str, str],
                                                            mock_orcid_client: MagicMock,
