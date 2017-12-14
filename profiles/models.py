@@ -146,7 +146,7 @@ class Affiliation(db.Model):
     _city = db.Column(db.Text(), name='city', nullable=False)
     _region = db.Column(db.Text(), name='region')
     _country = db.Column(ISO3166Country, name='country', nullable=False)
-    starts = composite(Date, '_starts_year', '_starts_month', '_starts_day')
+    _starts = composite(Date, '_starts_year', '_starts_month', '_starts_day')
     _starts_year = db.Column(db.Integer(), name='starts_year', nullable=False)
     _starts_month = db.Column(db.Integer(), name='starts_month')
     _starts_day = db.Column(db.Integer(), name='starts_day')
@@ -160,15 +160,22 @@ class Affiliation(db.Model):
     position = db.Column(db.Integer())
 
     # pylint: disable=too-many-arguments
-    def __init__(self, affiliation_id: str, address: Address, organisation: str, starts: Date,
-                 department: str = None, ends: Date = None, restricted: bool = False) -> None:
+    def __init__(self, affiliation_id: str, address: Address, organisation: str,
+                 starts: Date = None, department: str = None, ends: Date = None,
+                 restricted: bool = False) -> None:
         self.id = affiliation_id
         self.department = department
         self.organisation = organisation
         self.address = address
-        self.starts = starts
+        self._starts = starts
         self._ends = ends
         self.restricted = restricted
+
+    @property
+    def starts(self) -> Optional[Date]:
+        # SQLAlchemy appears not to allow nullable composites columns.
+        if self._starts and self._starts.year:
+            return self._starts
 
     @property
     def ends(self) -> Optional[Date]:
@@ -176,14 +183,17 @@ class Affiliation(db.Model):
         if self._ends and self._ends.year:
             return self._ends
 
+    def set_starts(self, starts: Optional[Date]) -> None:
+        self._starts = starts
+
     def set_ends(self, ends: Optional[Date]) -> None:
         self._ends = ends
 
     def is_current(self) -> bool:
-        starts = pendulum.instance(self.starts.lowest_possible())
+        starts = pendulum.instance(self.starts.lowest_possible()) if self.starts else None
         ends = pendulum.instance(self.ends.highest_possible()) if self.ends else None
 
-        return starts.is_past() and (not ends or ends.is_future())
+        return (not starts or starts.is_past()) and (not ends or ends.is_future())
 
     def __repr__(self) -> str:
         return '<Affiliation %r>' % self.id
@@ -217,7 +227,7 @@ class Profile(db.Model):
                 existing_affiliation.department = affiliation.department
                 existing_affiliation.organisation = affiliation.organisation
                 existing_affiliation.address = affiliation.address
-                existing_affiliation.starts = affiliation.starts
+                existing_affiliation.set_starts(affiliation.starts)
                 existing_affiliation.set_ends(affiliation.ends)
                 existing_affiliation.restricted = affiliation.restricted
                 if position != existing_affiliation.position:
