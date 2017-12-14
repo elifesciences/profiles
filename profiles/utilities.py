@@ -22,7 +22,7 @@ def catch_exceptions(logger: Logger) -> Callable[..., Any]:
         def wrapper(*args, **kwargs) -> Any:
             try:
                 return func(*args, **kwargs)
-            except BaseException as exception:
+            except Exception as exception:  # pylint: disable=broad-except
                 logger.exception(exception)
 
         return wrapper
