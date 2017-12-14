@@ -60,6 +60,13 @@ def test_it_may_be_restricted():
     assert has_not.restricted is False
 
 
+def test_it_can_detect_if_current_without_start_date():
+    address = Address(countries.get('gb'), 'City')
+    affiliation = Affiliation('1', address=address, organisation='Org')
+
+    assert affiliation.is_current() is True
+
+
 def test_it_can_detect_if_current_without_ends_date(yesterday):
     address = Address(countries.get('gb'), 'City')
     affiliation = Affiliation('1', address=address, organisation='Org', starts=yesterday)
@@ -86,5 +93,12 @@ def test_it_can_detect_if_not_current_with_past_starts_date_and_past_ends_date(y
     address = Address(countries.get('gb'), 'City')
     affiliation = Affiliation('1', address=address, organisation='Org',
                               starts=yesterday, ends=yesterday)
+
+    assert affiliation.is_current() is False
+
+
+def test_it_can_detect_if_not_current_with_no_starts_date_and_past_ends_date(yesterday):
+    address = Address(countries.get('gb'), 'City')
+    affiliation = Affiliation('1', address=address, organisation='Org', ends=yesterday)
 
     assert affiliation.is_current() is False

@@ -1,4 +1,4 @@
-from typing import List
+from typing import Callable, List
 from unittest.mock import MagicMock, patch
 
 from flask_sqlalchemy import models_committed
@@ -37,7 +37,8 @@ def test_it_will_send_event_for_profile_deleted(mock_publisher: MagicMock,
 
 
 def test_it_will_send_event_for_affiliation_insert(mock_publisher: MagicMock, profile: Profile,
-                                                   session: scoped_session) -> None:
+                                                   session: scoped_session,
+                                                   commit: Callable[[], None]) -> None:
     event_publisher = send_update_events(publisher=mock_publisher)
     models_committed.connect(receiver=event_publisher)
 
@@ -46,23 +47,22 @@ def test_it_will_send_event_for_affiliation_insert(mock_publisher: MagicMock, pr
     profile.add_affiliation(affiliation)
     session.add(profile)
 
-    with patch('profiles.orcid.request'):
-        session.commit()
+    commit()
 
     assert mock_publisher.publish.call_count == 1
     assert mock_publisher.publish.call_args[0][0] == {'id': '12345678', 'type': 'profile'}
 
 
 def test_it_will_send_event_if_email_address_is_updated(mock_publisher: MagicMock, profile: Profile,
-                                                        session: scoped_session):
+                                                        session: scoped_session,
+                                                        commit: Callable[[], None]):
     event_publisher = send_update_events(publisher=mock_publisher)
     models_committed.connect(receiver=event_publisher)
 
     profile.add_email_address('2@example.com')
     session.add(profile)
 
-    with patch('profiles.orcid.request'):
-        session.commit()
+    commit()
 
     assert mock_publisher.publish.call_count == 1
     assert mock_publisher.publish.call_args[0][0] == {'id': '12345678', 'type': 'profile'}
@@ -70,7 +70,9 @@ def test_it_will_send_event_if_email_address_is_updated(mock_publisher: MagicMoc
 
 def test_it_only_sends_one_event_if_multiple_changes_are_detected(mock_publisher: MagicMock,
                                                                   profile: Profile,
-                                                                  session: scoped_session) -> None:
+                                                                  session: scoped_session,
+                                                                  commit: Callable[[], None]
+                                                                  ) -> None:
     event_publisher = send_update_events(publisher=mock_publisher)
     models_committed.connect(receiver=event_publisher)
 
@@ -78,8 +80,7 @@ def test_it_only_sends_one_event_if_multiple_changes_are_detected(mock_publisher
     profile.add_affiliation(affiliation)
     session.add(profile)
 
-    with patch('profiles.orcid.request'):
-        session.commit()
+    commit()
 
     assert mock_publisher.publish.call_count == 1
     assert mock_publisher.publish.call_args[0][0] == {'id': '12345678', 'type': 'profile'}
@@ -89,7 +90,8 @@ def test_it_only_sends_one_event_if_multiple_changes_are_detected(mock_publisher
 def test_exception_not_handled_if_catch_decorator_is_removed(mock_catch: MagicMock,
                                                              mock_publisher: MagicMock,
                                                              profile: Profile,
-                                                             session: scoped_session) -> None:
+                                                             session: scoped_session,
+                                                             commit: Callable[[], None]) -> None:
     with pytest.raises(Exception):
         mock_publisher.publish.side_effect = Exception('Some Exception')
 
@@ -102,13 +104,13 @@ def test_exception_not_handled_if_catch_decorator_is_removed(mock_catch: MagicMo
         profile.add_affiliation(affiliation)
         session.add(profile)
 
-        with patch('profiles.orcid.request'):
-            session.commit()
+        commit()
 
 
 def test_exception_is_handled_by_catch_exception_decorator(mock_publisher: MagicMock,
                                                            profile: Profile,
-                                                           session: scoped_session) -> None:
+                                                           session: scoped_session,
+                                                           commit: Callable[[], None]) -> None:
     mock_publisher.publish.side_effect = Exception('Some Exception')
 
     event_publisher = send_update_events(publisher=mock_publisher)
@@ -119,7 +121,6 @@ def test_exception_is_handled_by_catch_exception_decorator(mock_publisher: Magic
     profile.add_affiliation(affiliation)
     session.add(profile)
 
-    with patch('profiles.orcid.request'):
-        session.commit()
+    commit()
 
     assert mock_publisher.publish.call_count == 1

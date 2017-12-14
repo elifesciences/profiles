@@ -1,8 +1,8 @@
 import hashlib
 import logging
 import os
-from typing import Dict
-from unittest.mock import MagicMock
+from typing import Callable, Dict
+from unittest.mock import MagicMock, patch
 
 from _pytest.fixtures import FixtureRequest
 from flask import Flask
@@ -12,7 +12,7 @@ from hypothesis import settings as hyp_settings
 from hypothesis.configuration import set_hypothesis_home_dir
 from itsdangerous import URLSafeSerializer
 from pytest import fixture
-from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import Session, scoped_session
 
 from profiles.clients import Client, Clients
 from profiles.config import DevConfig
@@ -204,3 +204,12 @@ def public_token_resp_data():
             "expires_in": 631138518,
             "scope": "/read-public",
             "orcid": None}
+
+
+@fixture
+def commit(session: Session) -> Callable[[], None]:
+    def wrapped() -> None:
+        with patch('profiles.orcid.request'):
+            session.commit()
+
+    return wrapped

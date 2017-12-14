@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from typing import Callable
 
 from flask.testing import FlaskClient
 import pytest
@@ -12,15 +12,15 @@ from profiles.utilities import expires_at
 
 
 def test_it_updates_and_returns_204_if_a_profile_is_found(test_client: FlaskClient,
-                                                          webhook_payload: str) -> None:
+                                                          webhook_payload: str,
+                                                          commit: Callable[[], None]) -> None:
     profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
     orcid_token = OrcidToken('0000-0002-1825-0097', 'access-token', expires_at(1234))
 
     db.session.add(profile)
     db.session.add(orcid_token)
 
-    with patch('profiles.orcid.request'):
-        db.session.commit()
+    commit()
 
     with requests_mock.Mocker() as mocker:
         mocker.get('http://www.example.com/api/v2.1/0000-0002-1825-0097/record',
@@ -59,12 +59,12 @@ def test_it_has_to_be_a_post(test_client: FlaskClient) -> None:
 
 def test_it_returns_503_if_an_access_token_is_rejected(profile: Profile, orcid_token: OrcidToken,
                                                        test_client: FlaskClient,
-                                                       webhook_payload: str) -> None:
+                                                       webhook_payload: str,
+                                                       commit: Callable[[], None]) -> None:
     db.session.add(profile)
     db.session.add(orcid_token)
 
-    with patch('profiles.orcid.request'):
-        db.session.commit()
+    commit()
 
     with requests_mock.Mocker() as mocker:
         mocker.get('http://www.example.com/api/v2.1/0000-0002-1825-0097/record', status_code=403)
@@ -75,15 +75,16 @@ def test_it_returns_503_if_an_access_token_is_rejected(profile: Profile, orcid_t
     assert response.headers.get('Content-Type') == 'application/problem+json'
 
 
+# pylint: disable=too-many-arguments
 def test_it_removes_token_if_it_was_rejected(profile: Profile, test_client: FlaskClient,
                                              orcid_token: OrcidToken,
                                              orcid_tokens: SQLAlchemyOrcidTokens,
-                                             webhook_payload: str) -> None:
+                                             webhook_payload: str,
+                                             commit: Callable[[], None]) -> None:
     db.session.add(profile)
     db.session.add(orcid_token)
 
-    with patch('profiles.orcid.request'):
-        db.session.commit()
+    commit()
 
     with requests_mock.Mocker() as mocker:
         mocker.get('http://www.example.com/api/v2.1/0000-0002-1825-0097/record', status_code=403)
@@ -95,12 +96,12 @@ def test_it_removes_token_if_it_was_rejected(profile: Profile, test_client: Flas
 
 
 def test_it_returns_500_on_an_orcid_error(profile: Profile, orcid_token: OrcidToken,
-                                          test_client: FlaskClient, webhook_payload: str) -> None:
+                                          test_client: FlaskClient, webhook_payload: str,
+                                          commit: Callable[[], None]) -> None:
     db.session.add(profile)
     db.session.add(orcid_token)
 
-    with patch('profiles.orcid.request'):
-        db.session.commit()
+    commit()
 
     with requests_mock.Mocker() as mocker:
         mocker.get('http://www.example.com/api/v2.1/0000-0002-1825-0097/record', status_code=404)
