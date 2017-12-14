@@ -151,12 +151,16 @@ def test_it_adds_affiliations_with_a_partial_start_dates():
              'organization': {'name': 'Organisation 2',
                               'address': {'city': 'City 2', 'region': 'Region 2', 'country': 'US'}},
              'visibility': 'LIMIT'},
+            {'put-code': 3, 'start-date': None,
+             'organization': {'name': 'Organisation 2',
+                              'address': {'city': 'City 2', 'region': 'Region 2', 'country': 'US'}},
+             'visibility': 'LIMIT'},
         ]},
     }}
 
     update_profile_from_orcid_record(profile, orcid_record)
 
-    assert len(profile.affiliations) == 2
+    assert len(profile.affiliations) == 3
 
     assert profile.affiliations[0].id == '1'
     assert profile.affiliations[0].restricted is False
@@ -167,6 +171,11 @@ def test_it_adds_affiliations_with_a_partial_start_dates():
     assert profile.affiliations[1].restricted is True
     assert profile.affiliations[1].position == 1
     assert profile.affiliations[1].starts == Date(2015, 12)
+
+    assert profile.affiliations[2].id == '3'
+    assert profile.affiliations[2].restricted is True
+    assert profile.affiliations[2].position == 2
+    assert profile.affiliations[2].starts is None
 
 
 def test_it_adds_affiliations_with_a_partial_end_dates():

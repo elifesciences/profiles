@@ -53,7 +53,7 @@ def _update_affiliations_from_orcid_record(profile: Profile, orcid_record: dict)
                 region=address.get('region'),
                 country=countries.get(address['country']),
             ),
-            starts=_convert_orcid_date(orcid_affiliation['start-date']),
+            starts=_convert_orcid_date(orcid_affiliation.get('start-date') or {}),
             ends=_convert_orcid_date(orcid_affiliation.get('end-date') or {}),
             restricted=orcid_affiliation['visibility'] != VISIBILITY_PUBLIC,
         )
