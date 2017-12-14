@@ -4,7 +4,8 @@ import random
 import string
 from datetime import datetime
 from functools import wraps
-from typing import Callable
+from logging import Logger
+from typing import Any, Callable
 
 from elife_api_validator import SCHEMA_DIRECTORY
 from flask import request
@@ -13,6 +14,20 @@ import pendulum
 from werkzeug.wrappers import Response
 
 from profiles.exceptions import SchemaNotFound
+
+
+def catch_exceptions(logger: Logger) -> Callable[..., Any]:
+    def outer_wrapper(func: Callable[..., Any]) -> Callable[..., Any]:
+        @wraps(func)
+        def wrapper(*args, **kwargs) -> Any:
+            try:
+                return func(*args, **kwargs)
+            except BaseException as exception:
+                logger.exception(exception)
+
+        return wrapper
+
+    return outer_wrapper
 
 
 def cache(allow_revalidation: bool = True) -> Callable[..., Response]:

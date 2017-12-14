@@ -11,6 +11,7 @@ from profiles.database import db
 from profiles.exceptions import UpdateEventFailure
 from profiles.models import Affiliation, EmailAddress, Profile
 from profiles.orcid import OrcidClient
+from profiles.utilities import catch_exceptions
 
 LOGGER = logging.getLogger(__name__)
 
@@ -22,6 +23,7 @@ OPERATION_UPDATE = 'update'
 def maintain_orcid_webhook(orcid: Dict[str, str], orcid_client: OrcidClient,
                            uri_signer: URLSafeSerializer) -> Callable[..., None]:
     # pylint:disable=unused-argument
+    @catch_exceptions(LOGGER)
     def webhook_maintainer(sender: Any, changes: List[Tuple[db.Model, str]]) -> None:
         profiles = [x for x in changes if isinstance(x[0], Profile) and x[0].orcid]
 
@@ -47,6 +49,7 @@ def maintain_orcid_webhook(orcid: Dict[str, str], orcid_client: OrcidClient,
 
 def send_update_events(publisher: EventPublisher) -> Callable[..., None]:
     # pylint:disable=unused-argument
+    @catch_exceptions(LOGGER)
     def event_handler(sender: Any, changes: List[Tuple[db.Model, str]]) -> None:
         ids = []
 
