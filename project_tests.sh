@@ -3,6 +3,7 @@ set -e
 
 source venv/bin/activate
 
-pylint --reports=n manage.py profiles/ test/*.py
-flake8 manage.py profiles/ test/
+pip install proofreader==0.0.2
+
+python -m proofreader manage.py profiles/ test/
 python -m pytest --junitxml=build/pytest.xml
