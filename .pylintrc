@@ -7,3 +7,4 @@ ignored-classes = responses,scoped_session,SQLAlchemy
 good-names = db,id
 function-rgx = [a-z_][a-z0-9_]{2,60}$
 method-rgx = [a-z_][a-z0-9_]{2,60}$
+reports = n
