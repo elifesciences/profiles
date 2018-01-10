@@ -54,8 +54,8 @@ class CreateProfileCommand(Command):
 
     def get_options(self) -> List[Option]:
         return [
-            Option('-e', '--email', dest='email'),
-            Option('-n', '--name', dest='name'),
+            Option('-e', '--email', dest='email', type=str),
+            Option('-n', '--name', dest='name', type=str),
         ]
 
     # pylint: disable=method-hidden,arguments-differ
@@ -67,7 +67,7 @@ class CreateProfileCommand(Command):
             try:
                 profile = self.profiles.get_by_email_address(email)
             except ProfileNotFound:
-                profile = Profile(self.profiles.next_id(), Name(name.strip('"')))
+                profile = Profile(self.profiles.next_id(), Name(name))
                 self.profiles.add(profile)
                 profile.add_email_address(email=email, restricted=True)
 
