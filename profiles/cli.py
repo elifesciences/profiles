@@ -1,11 +1,13 @@
 import logging
 from abc import ABC
-from typing import Dict
+from typing import Dict, List
 
 from flask import url_for
-from flask_script import Command as BaseCommand
+from flask_script import Command as BaseCommand, Option
 from itsdangerous import URLSafeSerializer
 
+from profiles.exceptions import ProfileNotFound
+from profiles.models import Name, Profile
 from profiles.orcid import OrcidClient
 from profiles.repositories import Profiles
 from profiles.types import CanBeCleared
@@ -34,6 +36,44 @@ class ClearCommand(Command):
     def run(self) -> None:
         for each in self.repositories:
             each.clear()
+
+
+class CreateProfileCommand(Command):
+    """Allow manual creation of profiles from the commandline.
+
+    Example:
+
+    $ python manage.py create-profile --name "Test User" --email "test@test.com"
+
+    """
+    NAME = 'create-profile'
+
+    def __init__(self, profiles: Profiles):
+        super(CreateProfileCommand, self).__init__()
+        self.profiles = profiles
+
+    def get_options(self) -> List[Option]:
+        return [
+            Option('-e', '--email', dest='email', type=str),
+            Option('-n', '--name', dest='name', type=str),
+        ]
+
+    # pylint: disable=method-hidden,arguments-differ
+    def run(self, name, email) -> None:
+        # pylint is complaining about arguments differing from base class
+        # though this is the recommended way to define the option args in the
+        # run() definition...
+        if name and email:
+            try:
+                profile = self.profiles.get_by_email_address(email)
+            except ProfileNotFound:
+                profile = Profile(self.profiles.next_id(), Name(name))
+                self.profiles.add(profile)
+                profile.add_email_address(email=email, restricted=True)
+
+            return profile.id, email
+        else:
+            print('Error: Please provide valid strings for both `--name` and `--email`')
 
 
 class SetOrcidWebhooksCommand(Command):

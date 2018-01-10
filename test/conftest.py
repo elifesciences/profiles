@@ -19,7 +19,7 @@ from profiles.config import DevConfig
 from profiles.factory import create_app
 from profiles.models import Date, Name, OrcidToken, Profile, db
 from profiles.orcid import OrcidClient
-from profiles.repositories import SQLAlchemyOrcidTokens
+from profiles.repositories import SQLAlchemyOrcidTokens, SQLAlchemyProfiles
 from profiles.utilities import expires_at
 
 BUILD_PATH = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + '/build/'
@@ -162,6 +162,11 @@ def orcid_token() -> OrcidToken:
 @fixture
 def orcid_tokens() -> SQLAlchemyOrcidTokens:
     return SQLAlchemyOrcidTokens(db)
+
+
+@fixture
+def profiles() -> SQLAlchemyProfiles:
+    return SQLAlchemyProfiles(db)
 
 
 @fixture
