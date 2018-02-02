@@ -67,7 +67,7 @@ def send_update_events(publisher: EventPublisher) -> Callable[..., None]:
                 LOGGER.info('Sending event for Profile %s', profile_id)
 
                 # send message to bus indicating a profile change
-                publisher.publish(ProfileEvent(id=profile_id))
+                #publisher.publish(ProfileEvent(id=profile_id))
 
                 LOGGER.info('Event sent for profile id: %s', profile_id)
             except (AttributeError, RuntimeError):
