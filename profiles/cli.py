@@ -66,7 +66,6 @@ class CreateProfileCommand(Command):
         if name and email:
             try:
                 profile = self.profiles.get_by_email_address(email)
-                profile.name = Name(name)
             except ProfileNotFound:
                 profile = Profile(self.profiles.next_id(), Name(name))
                 self.profiles.add(profile)
