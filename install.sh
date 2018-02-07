@@ -16,6 +16,8 @@ if pip list | grep api-validator-python; then
 fi
 
 pip install --requirement requirements.txt
-python manage.py db upgrade
+if [ -z "$PROFILES_SKIP_DB" ]; then
+    python manage.py db upgrade
+fi
 
 echo "[✓] install.sh"

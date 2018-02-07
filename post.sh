@@ -1,0 +1,1 @@
+curl -v localhost/oauth2/token -d "{"client_id": "client_id", "client_secret": "client_secret", "redirect_uri": "http://www.example.com/client/redirect", "grant_type": "authorization_code", "code": "1234"}'

@@ -1,0 +1,7 @@
+build/
+*.dist
+docker-compose.yml
+.git
+Jenkinsfile
+var/
+venv/
