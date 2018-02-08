@@ -20,12 +20,13 @@ COPY --chown=elife:elife install.sh requirements.txt /srv/profiles/
 RUN PROFILES_SKIP_DB=1 /bin/bash install.sh
 
 ## yes this is how you copy directories
-#COPY --chown=elife:elife src/ /srv/profiles/src
-#...
-#
-#RUN mkdir -p var/logs
-#USER root
-#RUN chown www-data:www-data var/logs var/cache/html_purifier
-#
+COPY --chown=elife:elife manage.py /srv/profiles/
+COPY --chown=elife:elife migrations /srv/profiles
+COPY --chown=elife:elife profiles/ /srv/profiles/profiles
+
+RUN mkdir -p var/logs
+USER root
+RUN chown www-data:www-data var/logs
+
 USER www-data
-#CMD ["venv/bin/uwsgi", "/console", "queue:watch"]
+ENTRYPOINT ["venv/bin/python", "manage.py"]
