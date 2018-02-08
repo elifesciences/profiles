@@ -8,7 +8,7 @@ RUN useradd -ms /bin/bash -G www-data elife && \
     mkdir -p /var/www && \
     chown www-data:www-data /var/www
 
-RUN pip install virtualenv
+RUN pip install -U virtualenv
 RUN pip install -U setuptools
 # END base image
 
@@ -21,7 +21,7 @@ RUN PROFILES_SKIP_DB=1 /bin/bash install.sh
 
 ## yes this is how you copy directories
 COPY --chown=elife:elife manage.py /srv/profiles/
-COPY --chown=elife:elife migrations /srv/profiles
+COPY --chown=elife:elife migrations /srv/profiles/
 COPY --chown=elife:elife profiles/ /srv/profiles/profiles
 
 RUN mkdir -p var/logs
