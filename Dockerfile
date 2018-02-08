@@ -29,4 +29,4 @@ USER root
 RUN chown www-data:www-data var/logs
 
 USER www-data
-ENTRYPOINT ["venv/bin/python", "manage.py"]
+ENTRYPOINT ["venv/bin/python"]

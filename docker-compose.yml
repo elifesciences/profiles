@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+    wsgi:
+        build: 
+            context: .
+            dockerfile: Dockerfile.wsgi
+        image: elifesciences/profiles_wsgi
+        volumes:
+            - ./:/srv/profiles
+            - ./config/app.cfg:/srv/profiles/app.cfg
+            - ./config/clients.yaml.cfg:/srv/profiles/clients.yaml
+            - logs:/srv/profiles/var/logs
+        env_file:
+            - dev.env
+
+volumes:
+    logs:
