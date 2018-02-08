@@ -8,17 +8,14 @@ RUN useradd -ms /bin/bash -G www-data elife && \
     mkdir -p /var/www && \
     chown www-data:www-data /var/www
 
-RUN apt-get update && apt-get install -y virtualenv
+RUN pip install virtualenv
+RUN pip install -U setuptools
 # END base image
 
 USER elife
 ENV PROJECT_FOLDER=/srv/profiles
 RUN mkdir ${PROJECT_FOLDER}
 WORKDIR /srv/profiles
-# workaround for Alembic failing installation
-#RUN virtualenv --python=python3.5 venv \
-#    && venv/bin/pip install -U setuptools
-# end of workaround
 COPY --chown=elife:elife install.sh requirements.txt /srv/profiles/
 RUN PROFILES_SKIP_DB=1 /bin/bash install.sh
 
