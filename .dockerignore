@@ -1,8 +1,14 @@
-adr/
-build/
 *.dist
+*.sha1
+adr/
+.adr-dir
+build/
+config/
 docker-compose.yml
 .git
-Jenkinsfile
+.gitignore
+Jenkinsfile*
+LICENSE
+README.md
 var/
 venv/
