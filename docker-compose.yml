@@ -13,9 +13,11 @@ services:
         build: 
             context: .
             dockerfile: Dockerfile.wsgi
-        image: elifesciences/profiles_wsgi
+            args:
+                commit: "${IMAGE_TAG}"
+        image: elifesciences/profiles_wsgi:${IMAGE_TAG}
         volumes:
-            # TODO: this can't be done as it will overwrite the venv/
+            # TODO: this can't be done as-is, it would overwrite the venv/
             #- ./:/srv/profiles
             - ./config/app.cfg:/srv/profiles/app.cfg
             - ./config/clients.yaml:/srv/profiles/clients.yaml
