@@ -1,4 +1,5 @@
 ARG commit=latest
 FROM elifesciences/profiles:${commit}
 
-ENTRYPOINT ["venv/bin/uwsgi"]
+ENV LANG=en_US.UTF-8
+ENTRYPOINT ["venv/bin/uwsgi", "--ini=/srv/profiles/uwsgi.ini"]
