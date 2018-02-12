@@ -24,10 +24,10 @@ RUN PROFILES_SKIP_DB=1 /bin/bash install.sh
 COPY --chown=elife:elife manage.py /srv/profiles/
 COPY --chown=elife:elife migrations /srv/profiles/
 COPY --chown=elife:elife profiles/ /srv/profiles/profiles
+RUN mkdir /srv/profiles/var/
 
-RUN mkdir -p var/logs
 USER root
-RUN chown www-data:www-data var/logs
+RUN mkdir var/logs && chown www-data:www-data var/logs
 
 USER www-data
 ENTRYPOINT ["venv/bin/python"]
