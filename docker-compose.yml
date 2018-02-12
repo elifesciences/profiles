@@ -12,10 +12,9 @@ services:
     wsgi:
         build: 
             context: .
-            dockerfile: Dockerfile.wsgi
-            args:
-                commit: "${IMAGE_TAG}"
-        image: elifesciences/profiles_wsgi:${IMAGE_TAG}
+            dockerfile: Dockerfile
+        image: elifesciences/profiles:${IMAGE_TAG}
+        entrypoint: venv/bin/uwsgi --ini=/srv/profiles/uwsgi.ini
         volumes:
             # TODO: this can't be done as-is, it would overwrite the venv/
             #- ./:/srv/profiles

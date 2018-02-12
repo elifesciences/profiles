@@ -14,6 +14,7 @@ RUN pip install -U setuptools
 
 USER elife
 ENV PROJECT_FOLDER=/srv/profiles
+ENV LANG=en_US.UTF-8
 RUN mkdir ${PROJECT_FOLDER}
 WORKDIR /srv/profiles
 COPY --chown=elife:elife install.sh requirements.txt /srv/profiles/

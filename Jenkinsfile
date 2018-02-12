@@ -9,7 +9,6 @@ elifePipeline {
         {
             stage 'Build images', {
                 checkout scm
-                sh "docker build -t elifesciences/profiles_cli:${commit} ."
                 sh "IMAGE_TAG=${commit} docker-compose build"
             }
         },
