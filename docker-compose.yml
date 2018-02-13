@@ -24,6 +24,16 @@ services:
             - logs:/srv/profiles/var/logs
         env_file:
             - dev.env
+        depends_on:
+            - db
+    db:
+        image: postgres:9.4
+        volumes:
+        #    - db:/var/lib/postgresql/data
+            - ./config/application_user.sql:/docker-entrypoint-initdb.d/application_user.sql
+        env_file:
+            - dev.env
+
 
 volumes:
     logs:
