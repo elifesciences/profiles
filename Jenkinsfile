@@ -5,6 +5,16 @@ elifePipeline {
         commit = elifeGitRevision()
     }
 
+    elifeOnNode(
+        {
+            stage 'Build images', {
+                checkout scm
+                sh "IMAGE_TAG=${commit} docker-compose build"
+            }
+        },
+        'elife-libraries--ci'
+    )
+
     stage 'Project tests', {
         lock('profiles--ci') {
             builderDeployRevision 'profiles--ci', commit
