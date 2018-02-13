@@ -20,10 +20,9 @@ WORKDIR /srv/profiles
 COPY --chown=elife:elife install.sh requirements.txt /srv/profiles/
 RUN PROFILES_SKIP_DB=1 /bin/bash install.sh
 
-## yes this is how you copy directories
 COPY --chown=elife:elife manage.py /srv/profiles/
-COPY --chown=elife:elife migrations /srv/profiles/
-COPY --chown=elife:elife profiles/ /srv/profiles/profiles
+COPY --chown=elife:elife migrations/ /srv/profiles/migrations/
+COPY --chown=elife:elife profiles/ /srv/profiles/profiles/
 RUN mkdir /srv/profiles/var/
 
 USER root
