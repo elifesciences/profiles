@@ -29,8 +29,22 @@ services:
     db:
         image: postgres:9.4
         volumes:
-        #    - db:/var/lib/postgresql/data
             - ./config/application_user.sql:/docker-entrypoint-initdb.d/application_user.sql
+        env_file:
+            - dev.env
+    migrate:
+        build: 
+            context: .
+            dockerfile: Dockerfile
+        image: elifesciences/profiles:${IMAGE_TAG}
+        command: manage.py db upgrade
+        volumes:
+            - ./config/app.cfg:/srv/profiles/app.cfg
+            - ./config/clients.yaml:/srv/profiles/clients.yaml
+            - ./config/uwsgi.ini:/srv/profiles/uwsgi.ini
+            - logs:/srv/profiles/var/logs
+        depends_on:
+            - wsgi
         env_file:
             - dev.env
 
