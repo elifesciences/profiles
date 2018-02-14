@@ -14,7 +14,7 @@ services:
             context: .
             dockerfile: Dockerfile
         image: elifesciences/profiles:${IMAGE_TAG}
-        entrypoint: venv/bin/uwsgi --ini=/srv/profiles/uwsgi.ini
+        command: venv/bin/uwsgi --ini=/srv/profiles/uwsgi.ini
         volumes:
             # TODO: this can't be done as-is, it would overwrite the venv/
             #- ./:/srv/profiles
@@ -37,11 +37,10 @@ services:
             context: .
             dockerfile: Dockerfile
         image: elifesciences/profiles:${IMAGE_TAG}
-        command: manage.py db upgrade
+        command: venv/bin/python manage.py db upgrade
         volumes:
             - ./config/app.cfg:/srv/profiles/app.cfg
             - ./config/clients.yaml:/srv/profiles/clients.yaml
-            - ./config/uwsgi.ini:/srv/profiles/uwsgi.ini
             - logs:/srv/profiles/var/logs
         depends_on:
             - wsgi
