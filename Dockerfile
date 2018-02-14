@@ -11,6 +11,8 @@ RUN useradd -ms /bin/bash -G www-data elife && \
 
 RUN pip install -U virtualenv
 RUN pip install -U setuptools
+RUN apt-get update && apt-get install netcat-openbsd
+COPY --chown=elife:elife wait_for_port /srv/bin/
 # END base image
 
 USER elife
@@ -29,4 +31,4 @@ USER root
 RUN mkdir var/logs && chown www-data:www-data var/logs
 
 USER www-data
-ENTRYPOINT ["venv/bin/python"]
+CMD ["venv/bin/python"]
