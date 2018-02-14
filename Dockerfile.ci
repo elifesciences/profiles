@@ -5,3 +5,4 @@ USER elife
 COPY --chown=elife:elife test/ /srv/profiles/test/
 COPY --chown=elife:elife pytest.ini /srv/profiles/
 
+CMD ["/bin/bash"]
