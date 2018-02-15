@@ -13,7 +13,7 @@ elifePipeline {
             }
 
             stage 'Project tests', {
-                sh "docker-compose -f docker-compose.ci.yml run ci ./project_tests.sh"
+                sh "IMAGE_TAG=${commit} docker-compose -f docker-compose.ci.yml run ci ./project_tests.sh"
             }
         },
         'elife-libraries--ci'

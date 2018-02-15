@@ -48,6 +48,8 @@ services:
         build: 
             context: .
             dockerfile: Dockerfile.ci
+            args:
+                commit: "${IMAGE_TAG}"
         image: elifesciences/profiles_ci:${IMAGE_TAG}
         volumes:
             - ./build:/srv/profiles/build
