@@ -2,6 +2,7 @@ FROM python:3.5.5-jessie
 
 # TODO: move in a base image
 ENV LANG=en_US.UTF-8
+ENV PATH=/srv/bin:${PATH}
 RUN useradd -ms /bin/bash -G www-data elife && \
     chown elife:elife /srv && \
     mkdir /srv/bin && \
