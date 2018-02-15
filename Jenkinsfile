@@ -22,6 +22,8 @@ elifePipeline {
                 } finally {
                     // TODO: failure of the first step may prevent the second from running
                     sh "docker cp profiles_ci_project_tests:/srv/profiles/build ."
+                    step([$class: "JUnitResultArchiver", testResults: 'build/*.xml'])
+
                     sh "IMAGE_TAG=${commit} docker-compose -f docker-compose.ci.yml down"
                 }
             }
