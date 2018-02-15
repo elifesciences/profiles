@@ -18,7 +18,7 @@ elifePipeline {
                 sh "IMAGE_TAG=${commit} docker-compose -f docker-compose.ci.yml run --name profiles_ci_project_tests ci ./project_tests.sh"
                 try {
                     sh "IMAGE_TAG=${commit} docker-compose -f docker-compose.ci.yml up -d"
-                    sh "IMAGE_TAG=${commit} docker-compose -f docker-compose.ci.yml exec wsgi ./smoke_tests_wsgi.sh profiles--dev"
+                    sh "IMAGE_TAG=${commit} docker-compose -f docker-compose.ci.yml exec -T wsgi ./smoke_tests_wsgi.sh profiles--dev"
                 } finally {
                     // TODO: failure of the first step may prevent the second from running
                     sh "docker cp profiles_ci_project_tests:/srv/profiles/build ."
