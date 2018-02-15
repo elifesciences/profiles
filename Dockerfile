@@ -9,8 +9,10 @@ RUN useradd -ms /bin/bash -G www-data elife && \
     mkdir -p /var/www && \
     chown www-data:www-data /var/www
 
-RUN pip install -U virtualenv
-RUN pip install -U setuptools
+RUN pip install -U \
+    setuptools \
+    uwsgi-tools \
+    virtualenv
 RUN apt-get update && apt-get install netcat-openbsd
 COPY --chown=elife:elife wait_for_port /srv/bin/
 # END base image
@@ -25,6 +27,7 @@ RUN PROFILES_SKIP_DB=1 /bin/bash install.sh
 COPY --chown=elife:elife manage.py /srv/profiles/
 COPY --chown=elife:elife migrations/ /srv/profiles/migrations/
 COPY --chown=elife:elife profiles/ /srv/profiles/profiles/
+COPY --chown=elife:elife smoke_tests_wsgi.sh /srv/profiles/
 RUN mkdir /srv/profiles/var/
 
 USER root
