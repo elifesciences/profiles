@@ -58,6 +58,8 @@ services:
             - logs:/srv/profiles/var/logs
         env_file:
             - dev.env
+        environment:
+            - COVERALLS_REPO_TOKEN
 
 volumes:
     logs:
