@@ -13,18 +13,16 @@ elifePipeline {
             }
 
             stage 'Project tests', {
-                // TODO: this could have better error handling
-                sh "docker rm profiles_ci_project_tests || true"
-                sh "IMAGE_TAG=${commit} docker-compose -f docker-compose.ci.yml run --name profiles_ci_project_tests ci ./project_tests.sh"
                 try {
+                    // TODO: this could have better error handling
+                    sh "docker rm profiles_ci_project_tests || true"
+                    sh "IMAGE_TAG=${commit} docker-compose -f docker-compose.ci.yml run --name profiles_ci_project_tests ci ./project_tests.sh"
                     sh "IMAGE_TAG=${commit} docker-compose -f docker-compose.ci.yml up -d"
                     sh "docker wait profiles_migrate_1"
                     sh "IMAGE_TAG=${commit} docker-compose -f docker-compose.ci.yml exec -T wsgi ./smoke_tests_wsgi.sh profiles--dev"
                 } finally {
-                    // TODO: failure of the first step may prevent the second from running
                     sh "docker cp profiles_ci_project_tests:/srv/profiles/build ."
                     step([$class: "JUnitResultArchiver", testResults: 'build/*.xml'])
-
                     sh "IMAGE_TAG=${commit} docker-compose -f docker-compose.ci.yml down"
                 }
             }
