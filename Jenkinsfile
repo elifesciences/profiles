@@ -11,16 +11,14 @@ elifePipeline {
                 checkout scm
                 sh "IMAGE_TAG=${commit} docker-compose build"
             }
+
+            stage 'Project tests', {
+                sh "docker-compose -f docker-compose.ci.yml run ci ./project_tests.sh"
+            }
         },
         'elife-libraries--ci'
     )
 
-    stage 'Project tests', {
-        lock('profiles--ci') {
-            builderDeployRevision 'profiles--ci', commit
-            builderProjectTests 'profiles--ci', '/srv/profiles', ['/srv/profiles/build/pytest.xml']
-        }
-    }
 
     elifeMainlineOnly {
         stage 'End2end tests', {
