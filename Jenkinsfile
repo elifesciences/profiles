@@ -13,8 +13,10 @@ elifePipeline {
             }
 
             stage 'Project tests', {
+                // TODO: this could have better error handling
+                sh "docker rm profiles_ci_project_tests || true"
                 sh "IMAGE_TAG=${commit} docker-compose -f docker-compose.ci.yml run --name profiles_ci_project_tests ci ./project_tests.sh"
-                // TODO: need to be done in a finally clause
+                // TODO: needs to be done in a finally clause
                 sh "docker cp profiles_ci_project_tests:/srv/profiles/build ."
             }
         },
