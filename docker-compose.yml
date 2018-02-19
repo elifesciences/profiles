@@ -14,7 +14,7 @@ services:
             context: .
             dockerfile: Dockerfile
         image: elifesciences/profiles:${IMAGE_TAG}
-        command: venv/bin/uwsgi --ini=/srv/profiles/uwsgi.ini
+        command: venv/bin/newrelic-admin run-program venv/bin/uwsgi --ini=/srv/profiles/uwsgi.ini --enable-threads
         volumes:
             # TODO: this can't be done as-is, it would overwrite the venv/
             #- ./:/srv/profiles
