@@ -20,7 +20,7 @@ Running the tests
 -----------------
 
 ```
-docker-compose run ci venv/bin/pytest
+docker-compose run --rm ci venv/bin/pytest
 ```
 
 Running the site
