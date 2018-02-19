@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e
+
+port="${1:-80}"
+timeout="${2:-60}"
+host="${3:-localhost}"
+
+echo "Waiting for someone listening on port $port"
+timeout "$timeout" sh -c 'while ! nc -q0 -w1 -z '"$host"' '"$port"' </dev/null >/dev/null 2>&1; do sleep 1; done'
+echo "Connection was established on port $port"
