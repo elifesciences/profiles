@@ -20,15 +20,26 @@ Running the tests
 -----------------
 
 ```
-./project_tests.sh
+docker-compose run ci venv/bin/pytest
 ```
 
 Running the site
 ----------------
 
 ```
-source venv/bin/activate
-python manage.py runserver
+docker-compose up -d
+curl -v localhost:8080/ping  # 'pong'
 ```
 
-*Note in production [use a proper server](http://flask.pocoo.org/docs/0.12/deploying/uwsgi/).*
+Local virtual environment (for IDE usage)
+-----------------------------------------
+
+```
+PROFILES_SKIP_DB=1 ./install.sh
+```
+
+or the experimental:
+
+```
+docker cp profiles_ci_1:/srv/profiles/venv/ .
+```
