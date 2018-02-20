@@ -28,6 +28,8 @@ services:
             - dev.env
         depends_on:
             - db
+            - goaws
+            - orcid_dummy
     db:
         image: postgres:9.4
         volumes:
@@ -48,6 +50,14 @@ services:
             - db
         env_file:
             - dev.env
+    orcid_dummy:
+        image: elifesciences/orcid-dummy:${DEPENDENCIES_ORCID_DUMMY}
+    goaws:
+        image: elifesciences/goaws:1.0.1
+        ports:
+            - 4100:4100
+        volumes:
+            - ./config/goaws.yaml:/conf/goaws.yaml
     ci:
         build: 
             context: .
