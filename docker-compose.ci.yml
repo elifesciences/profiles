@@ -13,6 +13,8 @@ services:
         build: 
             context: .
             dockerfile: Dockerfile
+            args:
+                dependencies_orcid_dummy: "${DEPENDENCIES_ORCID_DUMMY}"
         image: elifesciences/profiles:${IMAGE_TAG}
         command: venv/bin/uwsgi --ini=/srv/profiles/uwsgi.ini
         volumes:
