@@ -1,5 +1,6 @@
 elifePipeline {
     def commit
+    DockerImage image
     stage 'Checkout', {
         checkout scm
         commit = elifeGitRevision()
@@ -24,6 +25,13 @@ elifePipeline {
                     sh "docker cp profiles_ci_project_tests:/srv/profiles/build ."
                     step([$class: "JUnitResultArchiver", testResults: 'build/*.xml'])
                     sh "IMAGE_TAG=${commit} docker-compose -f docker-compose.ci.yml down"
+                }
+            }
+
+            elifeMainlineOnly {
+                stage 'Push image', {
+                    image = DockerImage.elifesciences(this, "profiles", commit)
+                    image.push()
                 }
             }
         },
@@ -52,6 +60,12 @@ elifePipeline {
 
         stage 'Approval', {
             elifeGitMoveToBranch commit, 'approved'
+            elifeOnNode(
+                {
+                    image.tag('approved').push()
+                },
+                'elife-libraries--ci'
+            )
         }
     }
 }
