@@ -52,10 +52,6 @@ services:
                 commit: "${IMAGE_TAG}"
         image: elifesciences/profiles_ci:${IMAGE_TAG}
         volumes:
-            - ./config/app.cfg:/srv/profiles/app.cfg
-            - ./config/clients.yaml:/srv/profiles/clients.yaml
-            - ./config/uwsgi.ini:/srv/profiles/uwsgi.ini
-            - logs:/srv/profiles/var/logs
             - ./.git:/srv/profiles/.git
         env_file:
             - dev.env
