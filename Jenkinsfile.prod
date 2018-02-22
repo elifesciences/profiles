@@ -9,6 +9,13 @@ elifePipeline {
         lock ('profiles--prod') {
             elifeDeploySlackNotification 'profiles', 'prod'
             elifeGitMoveToBranch commit, 'master'
+            elifeOnNode(
+                {
+                    def image = DockerImage.elifesciences(this, "profiles", commit)
+                    image.tag('latest').push()
+                },
+                'elife-libraries--ci'
+            )
             builderDeployRevision 'profiles--prod', commit
             builderSmokeTests 'profiles--prod', '/srv/profiles'
         }
