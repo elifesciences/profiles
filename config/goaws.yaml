@@ -1,0 +1,7 @@
+Local:
+  Host: goaws
+  Port: 4100
+  LogMessages: true
+  LogFile: ./goaws_messages.log
+  Topics:
+    - Name: bus-profiles--dev

@@ -35,10 +35,9 @@ def create_app(config: Config, clients: Clients) -> Flask:
                                    signer_kwargs={'key_derivation': 'hmac',
                                                   'digest_method': hashlib.sha512})
 
-    publisher = get_publisher(pub_name='profiles', config={'region': config.bus['region'],
-                                                           'subscriber': config.bus['subscriber'],
-                                                           'name': config.bus['name'],
-                                                           'env': config.name})
+    config_bus = dict(config.bus)
+    config_bus['env'] = config.name
+    publisher = get_publisher(pub_name='profiles', config=config_bus)
     app.commands = [
         ClearCommand(orcid_tokens, profiles),
         CreateProfileCommand(profiles),
