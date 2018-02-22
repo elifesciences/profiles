@@ -36,3 +36,6 @@ RUN mkdir var/logs && chown www-data:www-data var/logs
 
 USER www-data
 CMD ["venv/bin/python"]
+
+ARG dependencies_orcid_dummy
+LABEL org.elifesciences.dependencies.orcid-dummy="${dependencies_orcid_dummy}"

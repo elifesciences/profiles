@@ -13,6 +13,8 @@ services:
         build: 
             context: .
             dockerfile: Dockerfile
+            args:
+                dependencies_orcid_dummy: "${DEPENDENCIES_ORCID_DUMMY}"
         image: elifesciences/profiles:${IMAGE_TAG}
         command: venv/bin/newrelic-admin run-program venv/bin/uwsgi --ini=/srv/profiles/uwsgi.ini
         volumes:
@@ -24,12 +26,22 @@ services:
             - dev.env
         depends_on:
             - db
+            - goaws
+            - orcid_dummy
     db:
         image: postgres:9.4
         volumes:
             - ./config/application_user.sql:/docker-entrypoint-initdb.d/application_user.sql
         env_file:
             - dev.env
+    orcid_dummy:
+        image: elifesciences/orcid-dummy:${DEPENDENCIES_ORCID_DUMMY}
+    goaws:
+        image: elifesciences/goaws:1.0.1
+        ports:
+            - 4100:4100
+        volumes:
+            - ./config/goaws.yaml:/conf/goaws.yaml
     migrate:
         build: 
             context: .
