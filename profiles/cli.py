@@ -20,6 +20,7 @@ class Command(ABC, BaseCommand):
         with app.app_context():
             return self.run(*args, **kwargs)
 
+
 class ReadConfiguration(Command):
     "Allows calling a method on the Config object to print its result"
     NAME = 'read-configuration'
