@@ -20,8 +20,8 @@ class Command(ABC, BaseCommand):
         with app.app_context():
             return self.run(*args, **kwargs)
 
-"Allows calling a method on the Config object to print its result"
 class ReadConfiguration(Command):
+    "Allows calling a method on the Config object to print its result"
     NAME = 'read-configuration'
 
     def __init__(self, config) -> None:
