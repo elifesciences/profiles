@@ -2,8 +2,9 @@
 set -ex
 
 host=${1:-profiles}
+db=${2:-db}
 
-wait_for_port 5432 15 db
+wait_for_port 5432 15 "${db}"
 uwsgi_curl 127.0.0.1:9000 "${host}/ping"
 uwsgi_curl 127.0.0.1:9000 "${host}/profiles"
 if [ "$ENVIRONMENT_NAME" = 'dev' ]; then
