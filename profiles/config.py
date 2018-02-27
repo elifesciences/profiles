@@ -23,6 +23,16 @@ class Config(ABC):
         self.SERVER_NAME = server_name
         self.PREFERRED_URL_SCHEME = scheme
 
+    def db_host(self):
+        m = re.match('.*@(.*)/.*', self.SQLALCHEMY_DATABASE_URI)
+        if m:
+            return m.group(1)
+        else:
+            raise RuntimeError
+
+    def web_host(self):
+        return self.SERVER_NAME
+
 
 class DevConfig(Config):
     DEBUG = True

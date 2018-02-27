@@ -20,6 +20,26 @@ class Command(ABC, BaseCommand):
         with app.app_context():
             return self.run(*args, **kwargs)
 
+"Allows calling a method on the Config object to print its result"
+class ReadConfiguration(Command):
+    NAME = 'read-configuration'
+
+    def __init__(self, config) -> None:
+        super(ReadConfiguration, self).__init__()
+        self.config = config
+
+    def get_options(self) -> List[Option]:
+        return [
+            Option('-s', '--method', dest='method', type=str),
+        ]
+
+    # pylint: disable=method-hidden
+    def run(self, method) -> None:
+        if method:
+            print(getattr(self.config, method)())
+        else:
+            print("Error: Please provide a valid --method to call")
+
 
 class ClearCommand(Command):
     NAME = 'clear'
@@ -28,10 +48,6 @@ class ClearCommand(Command):
         super(ClearCommand, self).__init__()
         self.repositories = repositories
 
-    # weird decoration made by the superclass that wraps this method
-    # not going to lose sleep over this for now,
-    # let's see whether we get more commands
-    # and we keep flask_script in the long term
     # pylint: disable=method-hidden
     def run(self) -> None:
         for each in self.repositories:
