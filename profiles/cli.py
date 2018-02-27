@@ -33,7 +33,7 @@ class ReadConfiguration(Command):
             Option('-s', '--method', dest='method', type=str),
         ]
 
-    # pylint: disable=method-hidden
+    # pylint: disable=method-hidden,arguments-differ
     def run(self, method) -> None:
         if method:
             print(getattr(self.config, method)())

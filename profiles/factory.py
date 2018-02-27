@@ -7,7 +7,12 @@ from flask_sqlalchemy import models_committed
 from itsdangerous import URLSafeSerializer
 
 from profiles.api import api, errors, oauth2, ping, webhook
-from profiles.cli import ClearCommand, CreateProfileCommand, ReadConfiguration, SetOrcidWebhooksCommand
+from profiles.cli import (
+    ClearCommand,
+    CreateProfileCommand,
+    ReadConfiguration,
+    SetOrcidWebhooksCommand
+)
 from profiles.clients import Clients
 from profiles.config import Config
 from profiles.events import maintain_orcid_webhook, send_update_events
