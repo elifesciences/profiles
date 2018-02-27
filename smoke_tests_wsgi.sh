@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -ex
 
-host=${1:-profiles}
+host=$(venv/bin/python manage.py read-configuration --method web_host)
+db=$(venv/bin/python manage.py read-configuration --method db_host)
 
-wait_for_port 5432 15 db
+wait_for_port 5432 15 "${db}"
 uwsgi_curl 127.0.0.1:9000 "${host}/ping"
 uwsgi_curl 127.0.0.1:9000 "${host}/profiles"
 if [ "$ENVIRONMENT_NAME" = 'dev' ]; then
