@@ -1,4 +1,4 @@
-FROM elifesciences/python:latest
+FROM elifesciences/python:889f7fa7844074ed4791084624ee19b40db258a0
 
 USER elife
 ENV PROJECT_FOLDER=/srv/profiles
