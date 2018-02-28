@@ -1,22 +1,4 @@
-FROM python:3.5.5-jessie
-
-# TODO: move in a base image
-ENV LANG=en_US.UTF-8
-ENV PATH=/srv/bin:${PATH}
-RUN useradd -ms /bin/bash -G www-data elife && \
-    chown elife:elife /srv && \
-    mkdir /srv/bin && \
-    chown elife:elife /srv/bin && \
-    mkdir -p /var/www && \
-    chown www-data:www-data /var/www
-
-RUN pip install -U \
-    setuptools \
-    uwsgi-tools \
-    virtualenv
-RUN apt-get update && apt-get install netcat-openbsd
-COPY --chown=elife:elife wait_for_port /srv/bin/
-# END base image
+FROM elifesciences/python:889f7fa7844074ed4791084624ee19b40db258a0
 
 USER elife
 ENV PROJECT_FOLDER=/srv/profiles
