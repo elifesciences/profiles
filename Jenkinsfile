@@ -19,9 +19,12 @@ elifePipeline {
                     withEnv(["COVERALLS_REPO_TOKEN=$coverallsToken"]) {
                         dockerComposeProjectTests('profiles', commit)
                     }
-                    sh "IMAGE_TAG=${commit} docker-compose -f docker-compose.ci.yml up -d"
-                    sh "docker wait profiles_migrate_1"
-                    sh "IMAGE_TAG=${commit} docker-compose -f docker-compose.ci.yml exec -T wsgi ./smoke_tests_wsgi.sh"
+                    dockerComposeSmokeTests('profiles', commit, [
+                        'waitFor': ['profiles_migrate_1'],
+                        'scripts': [
+                            'wsgi': './smoke_tests_wsgi.sh',
+                        ],
+                    ])
                 } finally {
                     sh "docker cp profiles_ci_project_tests:/srv/profiles/build ."
                     step([$class: "JUnitResultArchiver", testResults: 'build/*.xml'])
