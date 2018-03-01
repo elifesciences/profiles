@@ -17,7 +17,7 @@ elifePipeline {
                 try {
                     def coverallsToken = sh(script:'cat /etc/coveralls/tokens/profiles', returnStdout: true).trim()
                     withEnv(["COVERALLS_REPO_TOKEN=$coverallsToken"]) {
-                        dockerComposeProjectTests('profiles', commit)
+                        dockerComposeProjectTests('profiles', commit, ['/srv/profiles/build/*.xml'])
                     }
                     dockerComposeSmokeTests('profiles', commit, [
                         'waitFor': ['profiles_migrate_1'],
@@ -26,8 +26,6 @@ elifePipeline {
                         ],
                     ])
                 } finally {
-                    sh "docker cp profiles_ci_project_tests:/srv/profiles/build ."
-                    step([$class: "JUnitResultArchiver", testResults: 'build/*.xml'])
                     sh "IMAGE_TAG=${commit} docker-compose -f docker-compose.ci.yml down"
                 }
             }
