@@ -14,20 +14,16 @@ elifePipeline {
             }
 
             stage 'Project tests', {
-                try {
-                    def coverallsToken = sh(script:'cat /etc/coveralls/tokens/profiles', returnStdout: true).trim()
-                    withEnv(["COVERALLS_REPO_TOKEN=$coverallsToken"]) {
-                        dockerComposeProjectTests('profiles', commit, ['/srv/profiles/build/*.xml'])
-                    }
-                    dockerComposeSmokeTests('profiles', commit, [
-                        'waitFor': ['profiles_migrate_1'],
-                        'scripts': [
-                            'wsgi': './smoke_tests_wsgi.sh',
-                        ],
-                    ])
-                } finally {
-                    sh "IMAGE_TAG=${commit} docker-compose -f docker-compose.ci.yml down"
+                def coverallsToken = sh(script:'cat /etc/coveralls/tokens/profiles', returnStdout: true).trim()
+                withEnv(["COVERALLS_REPO_TOKEN=$coverallsToken"]) {
+                    dockerComposeProjectTests('profiles', commit, ['/srv/profiles/build/*.xml'])
                 }
+                dockerComposeSmokeTests('profiles', commit, [
+                    'waitFor': ['profiles_migrate_1'],
+                    'scripts': [
+                        'wsgi': './smoke_tests_wsgi.sh',
+                    ],
+                ])
             }
 
             elifeMainlineOnly {
