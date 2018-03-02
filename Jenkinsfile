@@ -10,22 +10,20 @@ elifePipeline {
         {
             stage 'Build images', {
                 checkout scm
-                sh "IMAGE_TAG=${commit} docker-compose -f docker-compose.ci.yml build"
+                dockerComposeBuild(commit)
             }
 
             stage 'Project tests', {
-                try {
-                    // TODO: this could have better error handling
-                    sh "docker rm profiles_ci_project_tests || true"
-                    sh "IMAGE_TAG=${commit} COVERALLS_REPO_TOKEN=\$(cat /etc/coveralls/tokens/profiles) docker-compose -f docker-compose.ci.yml run --name profiles_ci_project_tests ci ./project_tests.sh"
-                    sh "IMAGE_TAG=${commit} docker-compose -f docker-compose.ci.yml up -d"
-                    sh "docker wait profiles_migrate_1"
-                    sh "IMAGE_TAG=${commit} docker-compose -f docker-compose.ci.yml exec -T wsgi ./smoke_tests_wsgi.sh"
-                } finally {
-                    sh "docker cp profiles_ci_project_tests:/srv/profiles/build ."
-                    step([$class: "JUnitResultArchiver", testResults: 'build/*.xml'])
-                    sh "IMAGE_TAG=${commit} docker-compose -f docker-compose.ci.yml down"
+                def coverallsToken = sh(script:'cat /etc/coveralls/tokens/profiles', returnStdout: true).trim()
+                withEnv(["COVERALLS_REPO_TOKEN=$coverallsToken"]) {
+                    dockerComposeProjectTests('profiles', commit, ['/srv/profiles/build/*.xml'])
                 }
+                dockerComposeSmokeTests('profiles', commit, [
+                    'waitFor': ['profiles_migrate_1'],
+                    'scripts': [
+                        'wsgi': './smoke_tests_wsgi.sh',
+                    ],
+                ])
             }
 
             elifeMainlineOnly {
