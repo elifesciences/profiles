@@ -1,0 +1,80 @@
+version: '3'
+
+services:
+    web:
+        image: nginx:1.13.7
+        ports:
+            - "8080:80"
+        volumes:
+            - ./config/nginx-default.conf:/etc/nginx/conf.d/default.conf
+        depends_on:
+            - wsgi
+    wsgi:
+        build: 
+            context: .
+            dockerfile: Dockerfile
+        image: elifesciences/profiles:${IMAGE_TAG}
+        command: venv/bin/newrelic-admin run-program venv/bin/uwsgi --ini=/srv/profiles/uwsgi.ini --enable-threads
+        volumes:
+            - ./config/app.cfg:/srv/profiles/app.cfg
+            - ./config/clients.yaml:/srv/profiles/clients.yaml
+            - ./config/uwsgi.ini:/srv/profiles/uwsgi.ini
+            - logs:/srv/profiles/var/logs
+            - ./migrations:/srv/profiles/migrations
+            - ./profiles:/srv/profiles/profiles
+            - ./test:/srv/profiles/test
+            - ./manage.py:/srv/profiles/manage.py
+        env_file:
+            - dev.env
+        depends_on:
+            - db
+            - goaws
+            - orcid_dummy
+    db:
+        image: postgres:9.4
+        volumes:
+            - ./config/application_user.sql:/docker-entrypoint-initdb.d/application_user.sql
+        env_file:
+            - dev.env
+    migrate:
+        build: 
+            context: .
+            dockerfile: Dockerfile
+        image: elifesciences/profiles:${IMAGE_TAG}
+        command: bash -c "/srv/bin/wait_for_port 5432 60 db && venv/bin/python manage.py db upgrade"
+        volumes:
+            - ./config/app.cfg:/srv/profiles/app.cfg
+            - ./config/clients.yaml:/srv/profiles/clients.yaml
+            - logs:/srv/profiles/var/logs
+        depends_on:
+            - db
+        env_file:
+            - dev.env
+    orcid_dummy:
+        image: elifesciences/orcid-dummy:${DEPENDENCIES_ORCID_DUMMY}
+    goaws:
+        image: elifesciences/goaws:1.0.1
+        ports:
+            - 4100:4100
+        volumes:
+            - ./config/goaws.yaml:/conf/goaws.yaml
+    ci:
+        build: 
+            context: .
+            dockerfile: Dockerfile.ci
+            args:
+                commit: "${IMAGE_TAG}"
+        image: elifesciences/profiles_ci:${IMAGE_TAG}
+        volumes:
+            - ./migrations:/srv/profiles/migrations
+            - ./profiles:/srv/profiles/profiles
+            - ./test:/srv/profiles/test
+            - ./manage.py:/srv/profiles/manage.py
+        env_file:
+            - dev.env
+        environment:
+            - COVERALLS_REPO_TOKEN
+
+
+volumes:
+    logs:

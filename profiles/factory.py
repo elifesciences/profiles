@@ -7,7 +7,12 @@ from flask_sqlalchemy import models_committed
 from itsdangerous import URLSafeSerializer
 
 from profiles.api import api, errors, oauth2, ping, webhook
-from profiles.cli import ClearCommand, CreateProfileCommand, SetOrcidWebhooksCommand
+from profiles.cli import (
+    ClearCommand,
+    CreateProfileCommand,
+    ReadConfiguration,
+    SetOrcidWebhooksCommand
+)
 from profiles.clients import Clients
 from profiles.config import Config
 from profiles.events import maintain_orcid_webhook, send_update_events
@@ -35,13 +40,13 @@ def create_app(config: Config, clients: Clients) -> Flask:
                                    signer_kwargs={'key_derivation': 'hmac',
                                                   'digest_method': hashlib.sha512})
 
-    publisher = get_publisher(pub_name='profiles', config={'region': config.bus['region'],
-                                                           'subscriber': config.bus['subscriber'],
-                                                           'name': config.bus['name'],
-                                                           'env': config.name})
+    config_bus = dict(config.bus)
+    config_bus['env'] = config.name
+    publisher = get_publisher(pub_name='profiles', config=config_bus)
     app.commands = [
         ClearCommand(orcid_tokens, profiles),
         CreateProfileCommand(profiles),
+        ReadConfiguration(config),
         SetOrcidWebhooksCommand(profiles, config.orcid, orcid_client, uri_signer)
     ]
 

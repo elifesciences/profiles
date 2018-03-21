@@ -1,16 +1,41 @@
 elifePipeline {
     def commit
+    DockerImage image
     stage 'Checkout', {
         checkout scm
         commit = elifeGitRevision()
     }
 
-    stage 'Project tests', {
-        lock('profiles--ci') {
-            builderDeployRevision 'profiles--ci', commit
-            builderProjectTests 'profiles--ci', '/srv/profiles', ['/srv/profiles/build/pytest.xml']
-        }
-    }
+    elifeOnNode(
+        {
+            stage 'Build images', {
+                checkout scm
+                dockerComposeBuild(commit)
+            }
+
+            stage 'Project tests', {
+                def coverallsToken = sh(script:'cat /etc/coveralls/tokens/profiles', returnStdout: true).trim()
+                withEnv(["COVERALLS_REPO_TOKEN=$coverallsToken"]) {
+                    dockerComposeProjectTests('profiles', commit, ['/srv/profiles/build/*.xml'])
+                }
+                dockerComposeSmokeTests('profiles', commit, [
+                    'waitFor': ['profiles_migrate_1'],
+                    'scripts': [
+                        'wsgi': './smoke_tests_wsgi.sh',
+                    ],
+                ])
+            }
+
+            elifeMainlineOnly {
+                stage 'Push image', {
+                    image = DockerImage.elifesciences(this, "profiles", commit)
+                    image.push()
+                }
+            }
+        },
+        'elife-libraries--ci'
+    )
+
 
     elifeMainlineOnly {
         stage 'End2end tests', {
@@ -33,6 +58,12 @@ elifePipeline {
 
         stage 'Approval', {
             elifeGitMoveToBranch commit, 'approved'
+            elifeOnNode(
+                {
+                    image.tag('approved').push()
+                },
+                'elife-libraries--ci'
+            )
         }
     }
 }

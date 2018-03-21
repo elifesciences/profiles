@@ -1,0 +1,19 @@
+ARG commit=develop
+FROM elifesciences/profiles:${commit}
+ENV DEBUG=1
+
+USER elife
+COPY --chown=elife:elife requirements-debug.txt /srv/profiles/
+RUN venv/bin/pip install -r requirements-debug.txt
+COPY --chown=elife:elife test/ /srv/profiles/test/
+COPY --chown=elife:elife \
+    .coveragerc \
+    .flake8 \
+    project_tests.sh \
+    .pylintrc \
+    pytest.ini \
+    /srv/profiles/
+RUN mkdir build/ && chmod 777 build/
+
+USER www-data
+CMD ["/bin/bash"]

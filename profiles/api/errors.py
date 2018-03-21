@@ -33,7 +33,10 @@ def client_error_handler(exception: ClientError) -> Response:
 
 
 def http_error_handler(exception: HTTPException) -> Response:
-    LOGGER.exception(exception)
+    if exception.code < 500:
+        LOGGER.info(exception)
+    else:
+        LOGGER.exception(exception)
 
     return _handle_http_error(exception)
 
