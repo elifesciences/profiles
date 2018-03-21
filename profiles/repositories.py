@@ -94,9 +94,10 @@ class SQLAlchemyProfiles(Profiles):
         self._next_id_generator = next_id_generator
 
     def add(self, profile: Profile) -> Profile:
+        self.db.session.begin_nested()
         self.db.session.add(profile)
         try:
-            self.db.session.flush([profile])
+            self.db.session.commit()
         except IntegrityError as exception:
             self.db.session.rollback()
 
