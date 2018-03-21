@@ -103,10 +103,8 @@ class SQLAlchemyProfiles(Profiles):
 
             if profile.orcid:
                 LOGGER.info('Profile for ORCID %s appears to already exist', profile.orcid)
-                try:
-                    return self.get_by_orcid(profile.orcid)
-                except ProfileNotFound:
-                    LOGGER.error('Unable to fetch profile for ORCID %s', profile.orcid)
+
+                return self.get_by_orcid(profile.orcid)
 
             raise exception
 
