@@ -12,14 +12,29 @@ def test_it_contains_profiles():
     profile1 = Profile('12345678', Name('name1'), '0000-0002-1825-0097')
     profile2 = Profile('12345679', Name('name2'))
 
-    profiles.add(profile1)
-    profiles.add(profile2)
+    profile1 = profiles.add(profile1)
+    profile2 = profiles.add(profile2)
 
     assert profiles.get('12345678') == profile1
     assert profiles.get('12345679') == profile2
 
     with pytest.raises(ProfileNotFound):
         profiles.get('12345670')
+
+
+def test_it_avoids_orcid_conflicts():
+    profiles = SQLAlchemyProfiles(db)
+
+    profile1 = Profile('12345678', Name('name1'), '0000-0002-1825-0097')
+    profile2 = Profile('12345679', Name('name2'), '0000-0002-1825-0097')
+
+    profile1 = profiles.add(profile1)
+    profile2 = profiles.add(profile2)
+
+    assert profile1 == profile2
+
+    with pytest.raises(ProfileNotFound):
+        profiles.get('12345679')
 
 
 def test_it_gets_profiles_by_their_orcid():
