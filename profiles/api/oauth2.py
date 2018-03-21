@@ -161,9 +161,8 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
         if not token_data['name']:
             raise InvalidRequest('No name visible')
         profile = Profile(profiles.next_id(), Name(token_data['name']), token_data['orcid'])
-        profiles.add(profile)
 
-        return profile
+        return profiles.add(profile)
 
     def _find_and_update_access_token(token_data: dict) -> OrcidToken:
         try:

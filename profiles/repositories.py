@@ -1,16 +1,20 @@
 import collections
+import logging
 import string
 from abc import abstractmethod
 from typing import Callable, List
 
 from flask_sqlalchemy import SQLAlchemy
 from retrying import retry
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 
 from profiles.exceptions import OrcidTokenNotFound, ProfileNotFound
 from profiles.models import EmailAddress, ID_LENGTH, OrcidToken, Profile
 from profiles.types import CanBeCleared
 from profiles.utilities import generate_random_string
+
+LOGGER = logging.getLogger(__name__)
 
 
 class OrcidTokens(CanBeCleared):
@@ -29,7 +33,7 @@ class OrcidTokens(CanBeCleared):
 
 class Profiles(CanBeCleared, collections.Sized):
     @abstractmethod
-    def add(self, profile: Profile) -> None:
+    def add(self, profile: Profile) -> Profile:
         raise NotImplementedError
 
     @abstractmethod
@@ -89,8 +93,23 @@ class SQLAlchemyProfiles(Profiles):
         self.db = db
         self._next_id_generator = next_id_generator
 
-    def add(self, profile: Profile) -> None:
+    def add(self, profile: Profile) -> Profile:
         self.db.session.add(profile)
+        try:
+            self.db.session.flush([profile])
+        except IntegrityError as exception:
+            self.db.session.rollback()
+
+            if profile.orcid:
+                LOGGER.info('Profile for ORCID %s appears to already exist', profile.orcid)
+                try:
+                    return self.get_by_orcid(profile.orcid)
+                except NoResultFound:
+                    LOGGER.error('Unable to fetch profile for ORCID %s', profile.orcid)
+
+            raise exception
+
+        return profile
 
     def get(self, profile_id: str) -> Profile:
         try:
