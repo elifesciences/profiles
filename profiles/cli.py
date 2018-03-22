@@ -85,8 +85,8 @@ class CreateProfileCommand(Command):
                 profile = self.profiles.get_by_email_address(email)
             except ProfileNotFound:
                 profile = Profile(self.profiles.next_id(), Name(name))
-                profile = self.profiles.add(profile)
                 profile.add_email_address(email=email, restricted=True)
+                profile = self.profiles.add(profile)
 
             return profile.id, email
         else:
