@@ -98,19 +98,16 @@ class SQLAlchemyProfiles(Profiles):
         self.db.session.add(profile)
         try:
             self.db.session.commit()
-        except IntegrityError as exception:
+        except (FlushError, IntegrityError) as exception:
             self.db.session.rollback()
 
-            if profile.orcid:
+            message = exception.args[0]
+
+            if 'orcid' in message and profile.orcid:
                 LOGGER.info('Profile for ORCID %s appears to already exist', profile.orcid)
 
                 return self.get_by_orcid(profile.orcid)
-
-            raise exception
-        except FlushError as exception:
-            self.db.session.rollback()
-
-            if profile.email_addresses:
+            elif 'EmailAddress' in message and profile.email_addresses:
                 email_addresses = [x.email for x in profile.email_addresses]
 
                 LOGGER.info('Profile with email address %s appears to already exist',
