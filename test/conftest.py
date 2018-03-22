@@ -85,6 +85,7 @@ def database(app: Flask, request: FixtureRequest) -> SQLAlchemy:
     db.app = app
     db.create_all()
 
+    # Bypass pysqlite's broken transactions (see https://bit.ly/2DKiixa).
     # pylint:disable=unused-argument
     # pylint:disable=unused-variable
     @event.listens_for(db.engine, 'connect')
