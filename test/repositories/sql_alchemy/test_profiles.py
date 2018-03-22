@@ -37,6 +37,23 @@ def test_it_avoids_orcid_conflicts():
         profiles.get('12345679')
 
 
+def test_it_avoids_email_address_conflicts():
+    profiles = SQLAlchemyProfiles(db)
+
+    profile1 = Profile('12345678', Name('name1'))
+    profile1.add_email_address('foo@example.com')
+    profile2 = Profile('12345679', Name('name2'))
+    profile2.add_email_address('foo@example.com')
+
+    profile1 = profiles.add(profile1)
+    profile2 = profiles.add(profile2)
+
+    assert profile1 == profile2
+
+    with pytest.raises(ProfileNotFound):
+        profiles.get('12345679')
+
+
 def test_it_gets_profiles_by_their_orcid():
     profiles = SQLAlchemyProfiles(db)
 

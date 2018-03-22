@@ -7,7 +7,7 @@ from typing import Callable, List
 from flask_sqlalchemy import SQLAlchemy
 from retrying import retry
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.exc import FlushError, NoResultFound
 
 from profiles.exceptions import OrcidTokenNotFound, ProfileNotFound
 from profiles.models import EmailAddress, ID_LENGTH, OrcidToken, Profile
@@ -105,6 +105,18 @@ class SQLAlchemyProfiles(Profiles):
                 LOGGER.info('Profile for ORCID %s appears to already exist', profile.orcid)
 
                 return self.get_by_orcid(profile.orcid)
+
+            raise exception
+        except FlushError as exception:
+            self.db.session.rollback()
+
+            if profile.email_addresses:
+                email_addresses = [x.email for x in profile.email_addresses]
+
+                LOGGER.info('Profile with email address %s appears to already exist',
+                            email_addresses)
+
+                return self.get_by_email_address(*email_addresses)
 
             raise exception
 
