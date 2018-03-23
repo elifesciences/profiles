@@ -12,6 +12,8 @@ from hypothesis import settings as hyp_settings
 from hypothesis.configuration import set_hypothesis_home_dir
 from itsdangerous import URLSafeSerializer
 from pytest import fixture
+from sqlalchemy import event
+from sqlalchemy.engine import Connection
 from sqlalchemy.orm import Session, scoped_session
 
 from profiles.clients import Client, Clients
@@ -82,6 +84,18 @@ def database(app: Flask, request: FixtureRequest) -> SQLAlchemy:
 
     db.app = app
     db.create_all()
+
+    # Bypass pysqlite's broken transactions (see https://bit.ly/2DKiixa).
+    # pylint:disable=unused-argument
+    # pylint:disable=unused-variable
+    @event.listens_for(db.engine, 'connect')
+    def do_connect(connection: Connection, *args) -> None:
+        connection.isolation_level = None
+
+    # pylint:disable=unused-variable
+    @event.listens_for(db.engine, 'begin')
+    def do_begin(connection: Connection) -> None:
+        connection.execute('BEGIN')
 
     def teardown() -> None:
         db.drop_all()
