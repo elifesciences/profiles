@@ -1,5 +1,4 @@
 *.dist
-*.sha1
 adr/
 .adr-dir
 build/
