@@ -32,7 +32,7 @@ curl -v localhost:8080/ping  # 'pong'
 ```
 
 Local virtual environment (for IDE usage)
-------------------------------------------
+-----------------------------------------
 
 Experimental:
 
