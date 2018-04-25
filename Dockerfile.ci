@@ -2,10 +2,8 @@ ARG commit=develop
 FROM elifesciences/profiles:${commit}
 ENV DEBUG=1
 
-USER root
-RUN pipenv install --system --deploy --dev
-
 USER elife
+RUN pipenv install --deploy --dev
 COPY --chown=elife:elife test/ /srv/profiles/test/
 COPY --chown=elife:elife \
     .coveragerc \

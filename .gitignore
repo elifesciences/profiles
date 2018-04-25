@@ -5,4 +5,3 @@
 /uwsgi.ini
 /var/*
 __pycache__/
-.venv/

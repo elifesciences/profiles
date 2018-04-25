@@ -14,7 +14,7 @@ services:
             context: .
             dockerfile: Dockerfile
         image: elifesciences/profiles:${IMAGE_TAG}
-        command: newrelic-admin run-program uwsgi --ini=/srv/profiles/uwsgi.ini --enable-threads
+        command: .venv/bin/newrelic-admin run-program .venv/bin/uwsgi --ini=/srv/profiles/uwsgi.ini --enable-threads
         volumes:
             - ./config/app.cfg:/srv/profiles/app.cfg
             - ./config/clients.yaml:/srv/profiles/clients.yaml
@@ -41,7 +41,7 @@ services:
             context: .
             dockerfile: Dockerfile
         image: elifesciences/profiles:${IMAGE_TAG}
-        command: bash -c "/srv/bin/wait_for_port 5432 60 db && python manage.py db upgrade"
+        command: bash -c "/srv/bin/wait_for_port 5432 60 db && .venv/bin/python manage.py db upgrade"
         volumes:
             - ./config/app.cfg:/srv/profiles/app.cfg
             - ./config/clients.yaml:/srv/profiles/clients.yaml

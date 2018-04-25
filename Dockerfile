@@ -7,12 +7,12 @@ RUN pip install -U pipenv
 
 USER elife
 ENV PROJECT_FOLDER=/srv/profiles
+ENV PIPENV_VENV_IN_PROJECT=true
 RUN mkdir ${PROJECT_FOLDER}
 WORKDIR ${PROJECT_FOLDER}
 
-USER root
 COPY --chown=elife:elife Pipfile Pipfile.lock /srv/profiles/
-RUN pipenv install --system --deploy
+RUN pipenv install --deploy
 
 USER elife
 COPY --chown=elife:elife manage.py /srv/profiles/
@@ -25,7 +25,7 @@ USER root
 RUN mkdir var/logs && chown www-data:www-data var/logs
 
 USER www-data
-CMD ["python"]
+CMD [".venv/bin/python"]
 
 ARG dependencies_orcid_dummy
 LABEL org.elifesciences.dependencies.orcid-dummy="${dependencies_orcid_dummy}"

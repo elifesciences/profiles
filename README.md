@@ -20,7 +20,7 @@ Running the tests
 -----------------
 
 ```
-docker-compose run --rm ci pytest
+docker-compose run --rm ci .venv/bin/pytest
 ```
 
 Running the site
@@ -29,4 +29,13 @@ Running the site
 ```
 docker-compose up -d
 curl -v localhost:8080/ping  # 'pong'
+```
+
+Local virtual environment (for IDE usage)
+------------------------------------------
+
+Experimental:
+
+```
+docker cp profiles_ci_1:/srv/profiles/.venv/ .
 ```
