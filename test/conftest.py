@@ -1,16 +1,19 @@
 import hashlib
+import json
 import logging
 import os
 from typing import Callable, Dict
 from unittest.mock import MagicMock, patch
 
 from _pytest.fixtures import FixtureRequest
+from elife_api_validator import SCHEMA_DIRECTORY
 from flask import Flask
 from flask.testing import FlaskClient
 from flask_sqlalchemy import SQLAlchemy, models_committed
 from hypothesis import settings as hyp_settings
 from hypothesis.configuration import set_hypothesis_home_dir
 from itsdangerous import URLSafeSerializer
+from jsonschema import ValidationError, validate
 from pytest import fixture
 from sqlalchemy import event
 from sqlalchemy.engine import Connection
@@ -230,5 +233,28 @@ def commit(session: Session) -> Callable[[], None]:
     def wrapped() -> None:
         with patch('profiles.orcid.request'):
             session.commit()
+
+    return wrapped
+
+
+@fixture
+def validate_json():
+    def wrapped(data: dict, schema_name: str, schema_dir: str = ''):
+        # option to provide a schema_dir allows dummy_schema to be found for tests,
+        # this whole function will be removed and replaced with
+        # api-validator-python functionality
+        schema_dir = schema_dir or SCHEMA_DIRECTORY
+
+        schema_path = os.path.join(schema_dir, '{}.json'.format(schema_name))
+
+        try:
+            with open(schema_path) as schema_file:
+                validate(data, schema=json.load(schema_file))
+            return True
+        except (FileNotFoundError, ValidationError):
+            # Need to re raise with schema/validation failure information,
+            # though as this will be replaced by api-validator-python
+            # leaving for now
+            return False
 
     return wrapped

@@ -42,7 +42,7 @@ def create_app(config: Config, clients: Clients) -> Flask:
 
     config_bus = dict(config.bus)
     config_bus['env'] = config.name
-    publisher = get_publisher(pub_name='profiles', config=config_bus)
+    publisher = get_publisher(config=config_bus)
     app.commands = [
         ClearCommand(orcid_tokens, profiles),
         CreateProfileCommand(profiles),

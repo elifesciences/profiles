@@ -1,0 +1,46 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+alembic = "==0.9.5"
+blinker = "==1.4"
+elife-bus-sdk = "==0.0.6"
+Flask = "==0.12"
+Flask-Migrate = "==2.1.1"
+Flask-Script = "==2.0.5"
+Flask-SQLAlchemy = "==2.2"
+iso3166 = "==0.8"
+itsdangerous = "==0.24"
+jmespath = "==0.9.3"
+Mako = "==1.0.7"
+newrelic = "==2.92.0.78"
+pendulum = "==1.2.5"
+psycopg2 = "==2.7.3.1"
+python-json-logger = "==0.1.8"
+PyYAML = "==3.12"
+requests = "==2.18.4"
+retrying = "==1.3.3"
+SQLAlchemy = "==1.1.14"
+urllib3 = "==1.22"
+uWSGI = "==2.0.15"
+Werkzeug = "==0.12.2"
+
+[dev-packages]
+coveralls = "*"
+elife_api_validator = {git = "https://github.com/elifesciences/api-validator-python.git", ref = "65eb47c5933bfd4bc5c83773bfab1135cb7cdc5d"}
+Faker = "==0.8.6"
+flake8 = "==3.5.0"
+flake8-import-order = "==0.13"
+freezegun = "==0.3.9"
+hypothesis = "==3.32.0"
+jsonschema = "==2.6.0"
+proofreader = "==0.0.8"
+pylint = "==1.8.2"
+pytest = "==3.2.1"
+pytest-socket = "==0.2.0"
+requests-mock = "==1.3.0"
+
+[requires]
+python_version = "3.6"

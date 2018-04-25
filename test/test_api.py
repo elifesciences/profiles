@@ -5,10 +5,9 @@ from flask.testing import FlaskClient
 from iso3166 import countries
 
 from profiles.models import Address, Affiliation, Name, Profile, db
-from profiles.utilities import validate_json
 
 
-def test_empty_list_of_profiles(test_client: FlaskClient) -> None:
+def test_empty_list_of_profiles(test_client: FlaskClient, validate_json) -> None:
     response = test_client.get('/profiles')
 
     assert response.status_code == 200
@@ -40,7 +39,8 @@ def test_list_of_profiles_revalidation(test_client: FlaskClient) -> None:
     assert response.status_code == 200
 
 
-def test_list_of_profiles(test_client: FlaskClient, commit: Callable[[], None]) -> None:
+def test_list_of_profiles(test_client: FlaskClient, commit: Callable[[], None],
+                          validate_json) -> None:
     for number in range(1, 31):
         number = str(number).zfill(2)
         db.session.add(Profile(str(number), Name('Profile %s' % number)))
@@ -62,7 +62,7 @@ def test_list_of_profiles(test_client: FlaskClient, commit: Callable[[], None]) 
 
 
 def test_list_of_profiles_only_contains_snippets(test_client: FlaskClient,
-                                                 commit: Callable[[], None]) -> None:
+                                                 commit: Callable[[], None], validate_json) -> None:
     profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
     profile.add_email_address('foo@example.com')
 
@@ -78,7 +78,7 @@ def test_list_of_profiles_only_contains_snippets(test_client: FlaskClient,
 
 
 def test_list_of_profiles_in_ascending_order(test_client: FlaskClient,
-                                             commit: Callable[[], None]) -> None:
+                                             commit: Callable[[], None], validate_json) -> None:
     for number in range(1, 31):
         number = str(number).zfill(2)
         db.session.add(Profile(str(number), Name('Profile %s' % number)))
@@ -99,7 +99,8 @@ def test_list_of_profiles_in_ascending_order(test_client: FlaskClient,
         assert data['items'][number - 1]['id'] == str(number).zfill(2)
 
 
-def test_list_of_profiles_in_pages(test_client: FlaskClient, commit: Callable[[], None]) -> None:
+def test_list_of_profiles_in_pages(test_client: FlaskClient, commit: Callable[[], None],
+                                   validate_json) -> None:
     for number in range(1, 11):
         number = str(number).zfill(2)
         db.session.add(Profile(str(number), Name('Profile %s' % number)))
@@ -183,7 +184,7 @@ def test_400s_on_unknown_order(test_client: FlaskClient) -> None:
     assert response.headers.get('Content-Type') == 'application/problem+json'
 
 
-def test_get_profile(test_client: FlaskClient, commit: Callable[[], None]) -> None:
+def test_get_profile(test_client: FlaskClient, commit: Callable[[], None], validate_json) -> None:
     profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
 
     db.session.add(profile)
@@ -232,7 +233,8 @@ def test_profile_not_found(test_client: FlaskClient) -> None:
 
 
 def test_get_profile_response_contains_email_addresses(test_client: FlaskClient,
-                                                       commit: Callable[[], None]) -> None:
+                                                       commit: Callable[[], None],
+                                                       validate_json) -> None:
     profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
     profile.add_email_address('1@example.com')
     profile.add_email_address('2@example.com')
@@ -250,7 +252,8 @@ def test_get_profile_response_contains_email_addresses(test_client: FlaskClient,
 
 
 def test_does_not_contain_restricted_email_addresses(test_client: FlaskClient,
-                                                     commit: Callable[[], None]) -> None:
+                                                     commit: Callable[[], None],
+                                                     validate_json) -> None:
     profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
     profile.add_email_address('1@example.com')
     profile.add_email_address('2@example.com', restricted=True)
@@ -268,7 +271,8 @@ def test_does_not_contain_restricted_email_addresses(test_client: FlaskClient,
 
 
 def test_get_profile_response_contains_affiliations(test_client: FlaskClient, yesterday,
-                                                    commit: Callable[[], None]) -> None:
+                                                    commit: Callable[[], None],
+                                                    validate_json) -> None:
     address = Address(country=countries.get('gb'), city='City', region='Region')
     affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
                               starts=yesterday)
@@ -290,7 +294,8 @@ def test_get_profile_response_contains_affiliations(test_client: FlaskClient, ye
 
 
 def test_it_does_not_return_restricted_affiliations(test_client: FlaskClient, yesterday,
-                                                    commit: Callable[[], None]) -> None:
+                                                    commit: Callable[[], None],
+                                                    validate_json) -> None:
     address = Address(country=countries.get('gb'), city='City', region='Region')
     affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
                               starts=yesterday)
