@@ -1,19 +1,21 @@
-ARG commit=develop
-FROM elifesciences/profiles:${commit}
-ENV DEBUG=1
+ARG image_tag=latest
+FROM elifesciences/profiles:${image_tag}
 
-USER elife
-COPY --chown=elife:elife requirements-debug.txt /srv/profiles/
-RUN venv/bin/pip install -r requirements-debug.txt
-COPY --chown=elife:elife test/ /srv/profiles/test/
+USER root
+RUN mkdir build && \
+    chown www-data:www-data build
+
 COPY --chown=elife:elife \
     .coveragerc \
     .flake8 \
     project_tests.sh \
     .pylintrc \
     pytest.ini \
-    /srv/profiles/
-RUN mkdir build/ && chmod 777 build/
+    requirements-debug.txt
+    ./
+
+RUN venv/bin/pip install --requirement requirements-debug.txt --no-cache-dir
+COPY --chown=elife:elife test/ /srv/profiles/test/
 
 USER www-data
-CMD ["/bin/bash"]
+CMD ["./project_tests.sh"]

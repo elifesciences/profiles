@@ -3,7 +3,7 @@ adr/
 .adr-dir
 build/
 config/
-docker-compose.yml
+docker-compose*.yml
 .git
 .gitignore
 Jenkinsfile*
@@ -12,4 +12,3 @@ README.md
 var/
 venv/
 **/__pycache__/
-**/*.pyc

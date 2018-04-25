@@ -1,20 +1,20 @@
+ARG image_tag=latest
+FROM elifesciences/profiles_venv:${image_tag} as venv
 FROM elifesciences/python:b22fbad8f66100d88cb4bd7c7d092b376a9e09bc
 
-USER elife
 ENV PROJECT_FOLDER=/srv/profiles
-RUN mkdir ${PROJECT_FOLDER}
-WORKDIR /srv/profiles
-COPY --chown=elife:elife install.sh requirements.txt /srv/profiles/
-RUN PROFILES_SKIP_DB=1 /bin/bash install.sh
-
-COPY --chown=elife:elife manage.py /srv/profiles/
-COPY --chown=elife:elife migrations/ /srv/profiles/migrations/
-COPY --chown=elife:elife profiles/ /srv/profiles/profiles/
-COPY --chown=elife:elife smoke_tests_wsgi.sh /srv/profiles/
-RUN mkdir /srv/profiles/var/
+WORKDIR ${PROJECT_FOLDER}
 
 USER root
-RUN mkdir var/logs && chown www-data:www-data var/logs
+RUN mkdir -p var/logs && \
+    chown --recursive elife:elife . && \
+    chown www-data:www-data var/logs
+
+COPY --chown=elife:elife smoke_tests_wsgi.sh ./
+COPY --chown=elife:elife manage.py ./
+COPY --chown=elife:elife migrations/ migrations/
+COPY --from=venv --chown=elife:elife ${PROJECT_FOLDER}/venv/ venv/
+COPY --chown=elife:elife profiles/ profiles/
 
 USER www-data
 CMD ["venv/bin/python"]
