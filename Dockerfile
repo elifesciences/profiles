@@ -7,15 +7,14 @@ RUN pip install -U pipenv
 
 USER elife
 ENV PROJECT_FOLDER=/srv/profiles
-ENV PIPENV_VENV_IN_PROJECT=true
 RUN mkdir ${PROJECT_FOLDER}
 WORKDIR ${PROJECT_FOLDER}
 
+RUN virtualenv venv
+ENV VIRTUAL_ENV=${PROJECT_FOLDER}/venv
 COPY --chown=elife:elife Pipfile Pipfile.lock /srv/profiles/
 RUN pipenv install --deploy
 
-USER elife
-RUN ln -s .venv venv
 COPY --chown=elife:elife manage.py /srv/profiles/
 COPY --chown=elife:elife migrations/ /srv/profiles/migrations/
 COPY --chown=elife:elife profiles/ /srv/profiles/profiles/
