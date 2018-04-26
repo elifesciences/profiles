@@ -29,7 +29,7 @@ Werkzeug = "==0.12.2"
 
 [dev-packages]
 coveralls = "*"
-elife_api_validator = {git = "https://github.com/elifesciences/api-validator-python.git", ref = "65eb47c5933bfd4bc5c83773bfab1135cb7cdc5d"}
+elife_api_validator = {git = "https://github.com/elifesciences/api-validator-python.git", ref = "01a5a9203b0fdfa8d6c4c3650e9999d8e90fe67b"}
 Faker = "==0.8.6"
 flake8 = "==3.5.0"
 flake8-import-order = "==0.13"
