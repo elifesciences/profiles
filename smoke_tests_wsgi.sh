@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -ex
 
-host=$(.venv/bin/python manage.py read-configuration --method web_host)
-db=$(.venv/bin/python manage.py read-configuration --method db_host)
+host=$(venv/bin/python manage.py read-configuration --method web_host)
+db=$(venv/bin/python manage.py read-configuration --method db_host)
 
 wait_for_port 5432 15 "${db}"
 uwsgi_curl 127.0.0.1:9000 "${host}/ping"

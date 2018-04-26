@@ -15,6 +15,7 @@ COPY --chown=elife:elife Pipfile Pipfile.lock /srv/profiles/
 RUN pipenv install --deploy
 
 USER elife
+RUN ln -s .venv venv
 COPY --chown=elife:elife manage.py /srv/profiles/
 COPY --chown=elife:elife migrations/ /srv/profiles/migrations/
 COPY --chown=elife:elife profiles/ /srv/profiles/profiles/
@@ -25,7 +26,7 @@ USER root
 RUN mkdir var/logs && chown www-data:www-data var/logs
 
 USER www-data
-CMD [".venv/bin/python"]
+CMD ["venv/bin/python"]
 
 ARG dependencies_orcid_dummy
 LABEL org.elifesciences.dependencies.orcid-dummy="${dependencies_orcid_dummy}"

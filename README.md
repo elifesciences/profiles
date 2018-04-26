@@ -20,7 +20,7 @@ Running the tests
 -----------------
 
 ```
-docker-compose run --rm ci .venv/bin/pytest
+docker-compose run --rm ci venv/bin/pytest
 ```
 
 Running the site
@@ -37,5 +37,5 @@ Local virtual environment (for IDE usage)
 Experimental:
 
 ```
-docker cp profiles_ci_1:/srv/profiles/.venv/ .
+docker cp profiles_ci_1:/srv/profiles/venv/ .
 ```
