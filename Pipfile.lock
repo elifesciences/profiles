@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "04d9dacc5072368d155d32a3da538929506f58a1a21492e7fa503efc5bb9c93c"
+            "sha256": "40d3a5d866f65beac77c90d82ad61832d5e27f67f55f3e1cc120026e5ddc8e47"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -72,6 +72,10 @@
                 "sha256:7a4bd47eaf6596e1295ecb11361139febe29b084a87bf005bf899f9a42edc3c6"
             ],
             "version": "==0.14"
+        },
+        "elife-api-validator": {
+            "git": "https://github.com/elifesciences/api-validator-python.git",
+            "ref": "01a5a9203b0fdfa8d6c4c3650e9999d8e90fe67b"
         },
         "elife-bus-sdk": {
             "hashes": [
@@ -148,6 +152,14 @@
             ],
             "index": "pypi",
             "version": "==0.9.3"
+        },
+        "jsonschema": {
+            "hashes": [
+                "sha256:000e68abd33c972a5248544925a0cae7d1125f9bf6c58280d37546b946769a08",
+                "sha256:6ff5f3180870836cae40f06fa10419f557208175f13ad7bc26caa77beb1f6e02"
+            ],
+            "index": "pypi",
+            "version": "==2.6.0"
         },
         "mako": {
             "hashes": [
@@ -425,10 +437,6 @@
             ],
             "version": "==0.6.2"
         },
-        "elife-api-validator": {
-            "git": "https://github.com/elifesciences/api-validator-python.git",
-            "ref": "01a5a9203b0fdfa8d6c4c3650e9999d8e90fe67b"
-        },
         "faker": {
             "hashes": [
                 "sha256:3c98dd04bba667ecfddb77fcd0dfd19b376b258d21beeaf5b95578826e275a83",
@@ -484,14 +492,6 @@
                 "sha256:ec9ef8f4a9bc6f71eec99e1806bfa2de401650d996c59330782b89a5555c1497"
             ],
             "version": "==4.3.4"
-        },
-        "jsonschema": {
-            "hashes": [
-                "sha256:000e68abd33c972a5248544925a0cae7d1125f9bf6c58280d37546b946769a08",
-                "sha256:6ff5f3180870836cae40f06fa10419f557208175f13ad7bc26caa77beb1f6e02"
-            ],
-            "index": "pypi",
-            "version": "==2.6.0"
         },
         "lazy-object-proxy": {
             "hashes": [
