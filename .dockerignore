@@ -11,3 +11,4 @@ LICENSE
 README.md
 var/
 **/__pycache__/
+**/*.pyc
