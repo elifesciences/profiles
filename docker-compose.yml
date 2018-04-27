@@ -5,6 +5,8 @@ services:
         build:
             context: .
             dockerfile: Dockerfile.venv
+            args:
+                pipenv_dev_arg: ${PIPENV_DEV_ARG}
         image: elifesciences/profiles_venv:${IMAGE_TAG}
     web:
         image: nginx:1.13.7

@@ -16,6 +16,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Command(ABC, BaseCommand):
+    # pylint: disable=keyword-arg-before-vararg
     def __call__(self, app=None, *args, **kwargs) -> None:
         with app.app_context():
             return self.run(*args, **kwargs)

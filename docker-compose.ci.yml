@@ -1,6 +1,17 @@
 version: '3'
 
 services:
+    venv:
+        build:
+            args:
+                pipenv_dev_arg:
+    venv-dev:
+        build:
+            context: .
+            dockerfile: Dockerfile.venv
+            args:
+                pipenv_dev_arg: --dev
+        image: elifesciences/profiles_venv_dev:${IMAGE_TAG}
     wsgi:
         build:
             args:
@@ -23,6 +34,5 @@ services:
             - dev.env
         environment:
             - COVERALLS_REPO_TOKEN
-
-volumes:
-    logs:
+        depends_on:
+            - venv-dev

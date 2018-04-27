@@ -1,4 +1,5 @@
 ARG image_tag=latest
+FROM elifesciences/profiles_venv_dev:${image_tag} as venv
 FROM elifesciences/profiles:${image_tag}
 
 USER root
@@ -11,10 +12,9 @@ COPY --chown=elife:elife \
     project_tests.sh \
     .pylintrc \
     pytest.ini \
-    requirements-debug.txt
     ./
 
-RUN venv/bin/pip install --requirement requirements-debug.txt --no-cache-dir
+COPY --from=venv --chown=elife:elife ${PROJECT_FOLDER}/venv/ venv/
 COPY --chown=elife:elife test/ /srv/profiles/test/
 
 USER www-data

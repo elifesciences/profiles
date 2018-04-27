@@ -3,7 +3,8 @@ version: '3'
 services:
     venv:
         volumes:
-            - ./requirements.txt:/srv/profiles/requirements.txt
+            - ./Pipfile:/srv/profiles/Pipfile
+            - ./Pipfile.lock:/srv/profiles/Pipfile.lock
             - venv:/srv/profiles/venv
     wsgi:
         command: venv/bin/uwsgi --ini=/srv/profiles/uwsgi.ini --enable-threads

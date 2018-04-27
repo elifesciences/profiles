@@ -34,11 +34,7 @@ curl -v localhost:8080/ping  # 'pong'
 Local virtual environment (for IDE usage)
 -----------------------------------------
 
-```
-PROFILES_SKIP_DB=1 ./install.sh
-```
-
-or the experimental:
+Experimental:
 
 ```
 docker cp profiles_ci_1:/srv/profiles/venv/ .

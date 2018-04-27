@@ -1,8 +1,7 @@
 /app.cfg
-/build/*
+/build/
 /clients.yaml
 /uwsgi.ini
 /var/
-/venv/
 __pycache__/
 !.gitkeep

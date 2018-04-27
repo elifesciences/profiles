@@ -1,14 +1,20 @@
 FROM elifesciences/python:b22fbad8f66100d88cb4bd7c7d092b376a9e09bc
 
+ARG pipenv_dev_arg
+
+ENV LANG=C.UTF-8
+
 ENV PROJECT_FOLDER=/srv/profiles
 WORKDIR ${PROJECT_FOLDER}
 
 USER root
+RUN pip install -U pipenv
 RUN chown --recursive elife:elife .
 
 USER elife
 
 RUN virtualenv venv
+ENV VIRTUAL_ENV=${PROJECT_FOLDER}/venv
 
-COPY requirements.txt ./
-RUN venv/bin/pip install --requirement requirements.txt --no-cache-dir
+COPY --chown=elife:elife Pipfile Pipfile.lock /srv/profiles/
+RUN pipenv install ${pipenv_dev_arg} --deploy
