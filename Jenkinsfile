@@ -18,12 +18,12 @@ elifePipeline {
                 withEnv(["COVERALLS_REPO_TOKEN=$coverallsToken"]) {
                     dockerComposeProjectTests 'profiles', commit
                 }
-                try {
-                    sh "IMAGE_TAG=${commit} docker-compose -f docker-compose.yml -f docker-compose.ci.yml up -d"
-                    sh "IMAGE_TAG=${commit} docker-compose -f docker-compose.yml -f docker-compose.ci.yml exec -T wsgi ./smoke_tests_wsgi.sh"
-                } finally {
-                    sh 'docker-compose -f docker-compose.yml -f docker-compose.ci.yml down'
-                }
+                dockerComposeSmokeTests('profiles', commit, [
+                    'waitFor': ['profiles_migrate_1'],
+                    'scripts': [
+                        'wsgi': './smoke_tests_wsgi.sh',
+                    ],
+                ])
             }
 
             elifeMainlineOnly {
