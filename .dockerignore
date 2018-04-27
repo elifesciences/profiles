@@ -10,6 +10,5 @@ Jenkinsfile*
 LICENSE
 README.md
 var/
-venv/
 **/__pycache__/
 **/*.pyc

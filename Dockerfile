@@ -1,11 +1,19 @@
 FROM elifesciences/python:b22fbad8f66100d88cb4bd7c7d092b376a9e09bc
 
+ENV LANG=C.UTF-8
+
+USER root
+RUN pip install -U pipenv
+
 USER elife
 ENV PROJECT_FOLDER=/srv/profiles
 RUN mkdir ${PROJECT_FOLDER}
-WORKDIR /srv/profiles
-COPY --chown=elife:elife install.sh requirements.txt /srv/profiles/
-RUN PROFILES_SKIP_DB=1 /bin/bash install.sh
+WORKDIR ${PROJECT_FOLDER}
+
+RUN virtualenv venv
+ENV VIRTUAL_ENV=${PROJECT_FOLDER}/venv
+COPY --chown=elife:elife Pipfile Pipfile.lock /srv/profiles/
+RUN pipenv install --deploy
 
 COPY --chown=elife:elife manage.py /srv/profiles/
 COPY --chown=elife:elife migrations/ /srv/profiles/migrations/

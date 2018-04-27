@@ -4,5 +4,4 @@
 /newrelic.ini
 /uwsgi.ini
 /var/*
-/venv/
 __pycache__/
