@@ -16,7 +16,7 @@ elifePipeline {
             stage 'Project tests', {
                 def coverallsToken = sh(script:'cat /etc/coveralls/tokens/profiles', returnStdout: true).trim()
                 withEnv(["COVERALLS_REPO_TOKEN=$coverallsToken"]) {
-                    dockerProjectTests 'profiles', commit
+                    dockerComposeProjectTests 'profiles', commit
                 }
                 try {
                     sh "IMAGE_TAG=${commit} docker-compose -f docker-compose.yml -f docker-compose.ci.yml up -d"
