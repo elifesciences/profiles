@@ -11,6 +11,7 @@ services:
             dockerfile: Dockerfile.venv
             args:
                 pipenv_dev_arg: --dev
+                python_version: ${PYTHON_VERSION}
         image: elifesciences/profiles_venv_dev:${IMAGE_TAG}
     wsgi:
         build:

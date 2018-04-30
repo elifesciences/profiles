@@ -1,6 +1,7 @@
 ARG image_tag=latest
 FROM elifesciences/profiles_venv:${image_tag} as venv
-FROM elifesciences/python:b22fbad8f66100d88cb4bd7c7d092b376a9e09bc
+ARG python_version
+FROM elifesciences/python:${python_version}
 
 ENV PROJECT_FOLDER=/srv/profiles
 WORKDIR ${PROJECT_FOLDER}

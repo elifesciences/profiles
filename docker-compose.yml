@@ -7,6 +7,7 @@ services:
             dockerfile: Dockerfile.venv
             args:
                 pipenv_dev_arg: ${PIPENV_DEV_ARG}
+                python_version: ${PYTHON_VERSION}
         image: elifesciences/profiles_venv:${IMAGE_TAG}
     web:
         image: nginx:1.13.7
@@ -22,6 +23,7 @@ services:
             dockerfile: Dockerfile
             args:
                 image_tag: "${IMAGE_TAG}"
+                python_version: ${PYTHON_VERSION}
         image: elifesciences/profiles:${IMAGE_TAG}
         command: venv/bin/newrelic-admin run-program venv/bin/uwsgi --ini=/srv/profiles/uwsgi.ini --enable-threads
         volumes:

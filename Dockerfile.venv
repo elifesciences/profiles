@@ -1,4 +1,5 @@
-FROM elifesciences/python:b22fbad8f66100d88cb4bd7c7d092b376a9e09bc
+ARG python_version
+FROM elifesciences/python:${python_version}
 
 ARG pipenv_dev_arg
 
