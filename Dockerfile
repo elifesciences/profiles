@@ -7,6 +7,9 @@ ENV PROJECT_FOLDER=/srv/profiles
 WORKDIR ${PROJECT_FOLDER}
 
 USER root
+RUN apt-get update && apt-get install -y \
+    git \
+    && rm -rf /var/lib/apt/lists/*
 RUN mkdir -p var/logs && \
     chown --recursive elife:elife . && \
     chown www-data:www-data var/logs
