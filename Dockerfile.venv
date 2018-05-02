@@ -1,21 +1,13 @@
 ARG python_version
-FROM elifesciences/python:${python_version}
+FROM elifesciences/python_3.6_pipenv:${python_version}
 
 ARG pipenv_dev_arg
-
-ENV LANG=C.UTF-8
 
 ENV PROJECT_FOLDER=/srv/profiles
 WORKDIR ${PROJECT_FOLDER}
 
-USER root
-RUN pip install -U pipenv
-RUN chown --recursive elife:elife .
-
-USER elife
-
 RUN virtualenv venv
 ENV VIRTUAL_ENV=${PROJECT_FOLDER}/venv
 
-COPY --chown=elife:elife Pipfile Pipfile.lock /srv/profiles/
+COPY Pipfile Pipfile.lock ./
 RUN pipenv install ${pipenv_dev_arg} --deploy
