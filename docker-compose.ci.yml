@@ -31,6 +31,8 @@ services:
             args:
                 image_tag: "${IMAGE_TAG}"
         image: elifesciences/profiles_ci:${IMAGE_TAG}
+        volumes:
+            - ./.git:/srv/profiles/.git
         env_file:
             - dev.env
         environment:
