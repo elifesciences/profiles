@@ -4,7 +4,10 @@ FROM elifesciences/profiles:${image_tag}
 
 USER root
 RUN mkdir build && \
-    chown www-data:www-data build
+    chown www-data:www-data build && \
+    apt-get update && apt-get install -y --no-install-recommends \
+        git \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --chown=elife:elife \
     .coveragerc \
