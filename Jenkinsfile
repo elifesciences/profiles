@@ -10,13 +10,13 @@ elifePipeline {
         {
             stage 'Build images', {
                 checkout scm
-                dockerComposeBuild commit
+                dockerComposeBuild(commit)
             }
 
             stage 'Project tests', {
                 def coverallsToken = sh(script:'cat /etc/coveralls/tokens/profiles', returnStdout: true).trim()
                 withEnv(["COVERALLS_REPO_TOKEN=$coverallsToken"]) {
-                    dockerComposeProjectTests 'profiles', commit
+                    dockerComposeProjectTests('profiles', commit, ['/srv/profiles/build/*.xml'])
                 }
                 dockerComposeSmokeTests('profiles', commit, [
                     'waitFor': ['profiles_migrate_1'],
