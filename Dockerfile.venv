@@ -1,0 +1,13 @@
+ARG python_version
+FROM elifesciences/python_3.6_pipenv:${python_version}
+
+ARG pipenv_dev_arg
+
+ENV PROJECT_FOLDER=/srv/profiles
+WORKDIR ${PROJECT_FOLDER}
+
+RUN virtualenv venv
+ENV VIRTUAL_ENV=${PROJECT_FOLDER}/venv
+
+COPY Pipfile Pipfile.lock ./
+RUN pipenv install ${pipenv_dev_arg} --deploy

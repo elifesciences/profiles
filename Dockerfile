@@ -1,28 +1,23 @@
-FROM elifesciences/python:b22fbad8f66100d88cb4bd7c7d092b376a9e09bc
+ARG image_tag=latest
+ARG python_version
+FROM elifesciences/profiles_venv:${image_tag} as venv
+FROM elifesciences/python_3.6:${python_version}
 
-ENV LANG=C.UTF-8
-
-USER root
-RUN pip install -U pipenv
-
-USER elife
 ENV PROJECT_FOLDER=/srv/profiles
-RUN mkdir ${PROJECT_FOLDER}
 WORKDIR ${PROJECT_FOLDER}
 
-RUN virtualenv venv
-ENV VIRTUAL_ENV=${PROJECT_FOLDER}/venv
-COPY --chown=elife:elife Pipfile Pipfile.lock /srv/profiles/
-RUN pipenv install --deploy
-
-COPY --chown=elife:elife manage.py /srv/profiles/
-COPY --chown=elife:elife migrations/ /srv/profiles/migrations/
-COPY --chown=elife:elife profiles/ /srv/profiles/profiles/
-COPY --chown=elife:elife smoke_tests_wsgi.sh /srv/profiles/
-RUN mkdir /srv/profiles/var/
-
 USER root
-RUN mkdir var/logs && chown www-data:www-data var/logs
+RUN mkdir -p var/logs && \
+    chown --recursive elife:elife . && \
+    chown www-data:www-data var/logs
+
+COPY --chown=elife:elife \
+    smoke_tests_wsgi.sh \
+    manage.py \
+    ./
+COPY --chown=elife:elife migrations/ migrations/
+COPY --from=venv --chown=elife:elife ${PROJECT_FOLDER}/venv/ venv/
+COPY --chown=elife:elife profiles/ profiles/
 
 USER www-data
 CMD ["venv/bin/python"]

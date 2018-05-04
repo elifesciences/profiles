@@ -1,18 +1,24 @@
-ARG commit=develop
-FROM elifesciences/profiles:${commit}
-ENV DEBUG=1
+ARG image_tag=latest
+FROM elifesciences/profiles_venv_dev:${image_tag} as venv
+FROM elifesciences/profiles:${image_tag}
 
-USER elife
-RUN pipenv install --deploy --dev
-COPY --chown=elife:elife test/ /srv/profiles/test/
+USER root
+RUN mkdir build && \
+    chown www-data:www-data build && \
+    apt-get update && apt-get install -y --no-install-recommends \
+        git \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY --chown=elife:elife \
     .coveragerc \
     .flake8 \
     project_tests.sh \
     .pylintrc \
     pytest.ini \
-    /srv/profiles/
-RUN mkdir build/ && chmod 777 build/
+    ./
+
+COPY --from=venv --chown=elife:elife ${PROJECT_FOLDER}/venv/ venv/
+COPY --chown=elife:elife test/ /srv/profiles/test/
 
 USER www-data
-CMD ["/bin/bash"]
+CMD ["./project_tests.sh"]

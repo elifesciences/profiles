@@ -1,7 +1,7 @@
 /app.cfg
-/build/*
+/build/
 /clients.yaml
-/newrelic.ini
 /uwsgi.ini
-/var/*
+/var/
 __pycache__/
+!.gitkeep

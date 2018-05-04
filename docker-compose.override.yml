@@ -1,0 +1,33 @@
+version: '3'
+
+services:
+    venv:
+        volumes:
+            - ./Pipfile:/srv/profiles/Pipfile
+            - ./Pipfile.lock:/srv/profiles/Pipfile.lock
+            - venv:/srv/profiles/venv
+    wsgi:
+        command: venv/bin/uwsgi --ini=/srv/profiles/uwsgi.ini --enable-threads
+        volumes:
+            - ./:/srv/profiles
+            - /srv/profiles/build
+            - /srv/profiles/var
+            - logs:/srv/profiles/var/logs
+            - venv:/srv/profiles/venv
+        env_file:
+            - dev.env
+    migrate:
+        volumes:
+            - ./:/srv/profiles
+            - /srv/profiles/build
+            - /srv/profiles/var
+            - logs:/srv/profiles/var/logs
+            - venv:/srv/profiles/venv
+        env_file:
+            - dev.env
+        depends_on:
+            - db
+            - venv
+
+volumes:
+    venv:
