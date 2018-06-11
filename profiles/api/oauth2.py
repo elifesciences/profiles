@@ -38,7 +38,8 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
         except KeyError as exception:
             raise BadRequest('Invalid client_id') from exception
 
-        if request.args.get('redirect_uri', client.redirect_uri) != client.redirect_uri:
+        redirect_uri = request.args.get('redirect_uri', client.canonical_uri())
+        if redirect_uri not in client.redirect_uris:
             raise BadRequest('Invalid redirect_uri')
 
         if not request.args.get('response_type'):
@@ -50,7 +51,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
             raise ClientInvalidScope(client)
 
         state = remove_none_values({
-            'redirect_uri': client.redirect_uri,
+            'redirect_uri': redirect_uri,
             'client_id': client.client_id,
             'original': request.args.get('state')
         })
@@ -81,7 +82,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
         except KeyError as exception:
             raise BadRequest('Invalid state (client_id)') from exception
 
-        if state['redirect_uri'] != client.redirect_uri:
+        if state['redirect_uri'] not in client.redirect_uris:
             raise BadRequest('Invalid state (redirect_uri)')
 
         query = remove_none_values(OrderedDict([
@@ -91,7 +92,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
             ('state', state.get('original')),
         ]))
 
-        return redirect('{}?{}'.format(client.redirect_uri, urlencode(query, True)), code=302)
+        return redirect('{}?{}'.format(state['redirect_uri'], urlencode(query, True)), code=302)
 
     @blueprint.route('/token', methods=['POST'])
     @no_cache
@@ -104,9 +105,10 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
         except KeyError as exception:
             raise InvalidClient from exception
 
+        redirect_uri = request.form.get('redirect_uri')
         if request.form.get('client_secret') != client.client_secret:
             raise InvalidClient
-        elif request.form.get('redirect_uri') != client.redirect_uri:
+        elif redirect_uri not in client.redirect_uris:
             raise InvalidRequest('Invalid redirect_uri')
         elif request.form.get('grant_type') != 'authorization_code':
             raise UnsupportedGrantType
