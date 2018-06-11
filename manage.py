@@ -17,6 +17,10 @@ CONFIG_FILE = configparser.ConfigParser()
 CONFIG_FILE.read('app.cfg')
 
 CLIENTS_DATA = yaml.load(open('clients.yaml')) or {}
+# remove deprecated configuration key
+for data in CLIENTS_DATA:
+    if 'redirect_uri' in data:
+        del data['redirect_uri']
 CLIENTS = Clients(*[Client(name, **CLIENTS_DATA[name]) for name in CLIENTS_DATA])
 
 CONFIG = create_app_config(CONFIG_FILE)
