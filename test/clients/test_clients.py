@@ -1,5 +1,5 @@
 from hypothesis import given
-from hypothesis.strategies import lists, text
+from hypothesis.strategies import text
 
 import pytest
 
