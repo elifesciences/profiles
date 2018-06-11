@@ -6,11 +6,10 @@ import pytest
 from profiles.clients import Client, Clients
 
 
-@given(lists(text(), max_size=4, min_size=4), lists(text(), max_size=4, min_size=4))
-def test_it_contains_clients(client1_args, client2_args):
+def test_it_contains_clients():
     clients = Clients(
-        Client('name1', client_id1, 'client_secret1', ['redirect_uri1']),
-        Client('name2', client_id2, 'client_secret2', ['redirect_uri2'])
+        Client('name1', 'client_id1', 'client_secret1', ['redirect_uri1']),
+        Client('name2', 'client_id2', 'client_secret2', ['redirect_uri2'])
     )
 
     assert len(clients) == 2
