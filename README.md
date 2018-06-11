@@ -20,7 +20,8 @@ Running the tests
 -----------------
 
 ```
-docker-compose run --rm ci venv/bin/pytest
+docker-compose -f docker-compose.yml -f docker-compose.ci.yml build
+docker-compose -f docker-compose.yml -f docker-compose.ci.yml run --rm ci venv/bin/pytest
 ```
 
 Running the site
