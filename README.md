@@ -20,7 +20,13 @@ Running the tests
 -----------------
 
 ```
-docker-compose run --rm ci venv/bin/pytest
+docker-compose run --rm cli venv/bin/pytest
+```
+
+For `proofreader` static checks:
+
+```
+docker-compose run cli /bin/bash -c 'source venv/bin/activate && venv/bin/proofreader --targets manage.py profiles/ test/'
 ```
 
 Running the site
@@ -34,8 +40,8 @@ curl -v localhost:8080/ping  # 'pong'
 Local virtual environment (for IDE usage)
 -----------------------------------------
 
-Experimental:
+Experimental (`sudo` necessary due to `root` ownership):
 
 ```
-docker cp profiles_ci_1:/srv/profiles/venv/ .
+sudo docker cp profiles_cli_1:/srv/profiles/venv .
 ```
