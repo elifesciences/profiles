@@ -9,8 +9,6 @@ services:
     cli:
         volumes:
             - ./:/srv/profiles
-            - /srv/profiles/build
-            # TODO: what is this 
             - /srv/profiles/var
             - logs:/srv/profiles/var/logs
             - venv:/srv/profiles/venv
