@@ -38,7 +38,7 @@ class ClientError(OAuth2Error):
     status_code = 302
 
     def __init__(self, client: Client, description: str = None) -> None:
-        self.uri = client.canonical_redirect_uri()
+        self.uri = client.canonical_redirect_uri
 
         super(ClientError, self).__init__(description)
 

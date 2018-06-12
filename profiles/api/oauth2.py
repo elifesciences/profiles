@@ -38,7 +38,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
         except KeyError as exception:
             raise BadRequest('Invalid client_id') from exception
 
-        redirect_uri = request.args.get('redirect_uri', client.canonical_redirect_uri())
+        redirect_uri = request.args.get('redirect_uri', client.canonical_redirect_uri)
         if redirect_uri not in client.redirect_uris:
             raise BadRequest('Invalid redirect_uri')
 

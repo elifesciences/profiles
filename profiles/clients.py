@@ -9,6 +9,7 @@ class Client(object):
         self.client_secret = client_secret
         self.redirect_uris = redirect_uris
 
+    @property
     def canonical_redirect_uri(self):
         return self.redirect_uris[0]
 
