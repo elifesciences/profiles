@@ -35,3 +35,8 @@ def test_it_has_redirect_uris():
     client = Client(name, client_id, client_secret, redirect_uris)
 
     assert client.redirect_uris == redirect_uris
+
+def test_it_has_a_canonical_redirect_uri():
+    client = Client(name, client_id, client_secret, redirect_uris)
+
+    assert client.canonical_redirect_uri == 'example.com'
