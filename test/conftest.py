@@ -63,7 +63,7 @@ def app(request: FixtureRequest) -> Flask:
         ),
         clients=Clients(
             Client(name='client', client_id='client_id', client_secret='client_secret',
-                   redirect_uri='http://www.example.com/client/redirect'),
+                   redirect_uris=['http://www.example.com/client/redirect']),
         ),
     )
 
