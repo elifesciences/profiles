@@ -9,6 +9,24 @@ services:
                 pipenv_dev_arg: ${PIPENV_DEV_ARG}
                 python_version: ${PYTHON_VERSION}
         image: elifesciences/profiles_venv:${IMAGE_TAG}
+    cli:
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                image_tag: "${IMAGE_TAG}"
+                python_version: ${PYTHON_VERSION}
+        image: elifesciences/profiles:${IMAGE_TAG}
+        command: venv/bin/python
+        volumes:
+            - ./config/app.cfg:/srv/profiles/app.cfg
+            - ./config/clients.yaml:/srv/profiles/clients.yaml
+            - ./config/uwsgi.ini:/srv/profiles/uwsgi.ini
+            - logs:/srv/profiles/var/logs
+        env_file:
+            - dev.env
+        depends_on:
+            - venv
     web:
         image: nginx:1.13.7
         ports:
@@ -35,7 +53,7 @@ services:
             - dev.env
         depends_on:
             - goaws
-            - migrate
+            - cli
             - orcid_dummy
             - venv
     db:
@@ -45,12 +63,6 @@ services:
         env_file:
             - dev.env
     migrate:
-        build:
-            context: .
-            dockerfile: Dockerfile
-            args:
-                image_tag: "${IMAGE_TAG}"
-                python_version: ${PYTHON_VERSION}
         image: elifesciences/profiles:${IMAGE_TAG}
         command: bash -c "wait_for_port 5432 60 db && venv/bin/python manage.py db upgrade"
         volumes:
@@ -60,8 +72,8 @@ services:
         env_file:
             - dev.env
         depends_on:
+            - cli
             - db
-            - venv
     orcid_dummy:
         image: elifesciences/orcid-dummy:${DEPENDENCIES_ORCID_DUMMY}
     goaws:
