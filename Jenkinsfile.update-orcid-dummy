@@ -9,7 +9,7 @@ elifeUpdatePipeline(
         )
         sh "sed -i -e 's/DEPENDENCIES_ORCID_DUMMY=.*/DEPENDENCIES_ORCID_DUMMY=${commit}/' .env"
         sh "git add .env"
-        orcidDummysummary = "Update orcid-dummy to ${commit}"
+        orcidDummySummary = "Update orcid-dummy to ${commit}"
     },
     {
         return orcidDummySummary
