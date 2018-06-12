@@ -1,16 +1,18 @@
 def orcidDummySummary;
 elifeUpdatePipeline(
     { commit ->
-        lock('profiles--ci') {
-            builderDeployRevision 'profiles--ci', commit
-            builderCmd "profiles--ci", "./update-orcid-dummy.sh", "/srv/profiles"
-            builderSync "ci--profiles.elife.internal", "/srv/profiles/"
-            sh "git add orcid-dummy.sha1"
-            orcidDummysummary = builderCmd "profiles--ci", "git log -1 --pretty=\"%B\" | head -n 1", "/srv/orcid-dummy", true
-        }
+        elifeOnNode(
+            {
+                commit = dockerReadLabel('elifesciences/orcid-dummy:latest', 'org.label-schema.vcs-ref')
+            },
+            'containers--medium'
+        )
+        sh "sed -i -e 's/DEPENDENCIES_ORCID_DUMMY=.*/DEPENDENCIES_ORCID_DUMMY=${commit}/' .env"
+        sh "git add .env"
+        orcidDummysummary = "Update orcid-dummy to ${commit}"
     },
     {
-        return "Updated orcid-dummy" // to: ${orcidDummySummary}"
+        return orcidDummySummary
     },
     'update_orcid_dummy/'
 )
