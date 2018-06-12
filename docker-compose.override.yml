@@ -16,7 +16,6 @@ services:
         command: venv/bin/uwsgi --ini=/srv/profiles/uwsgi.ini --enable-threads
         volumes:
             - ./:/srv/profiles
-            - /srv/profiles/build
             - /srv/profiles/var
             - logs:/srv/profiles/var/logs
             - venv:/srv/profiles/venv
@@ -25,7 +24,6 @@ services:
     migrate:
         volumes:
             - ./:/srv/profiles
-            - /srv/profiles/build
             - /srv/profiles/var
             - logs:/srv/profiles/var/logs
             - venv:/srv/profiles/venv
