@@ -9,14 +9,12 @@ services:
     cli:
         volumes:
             - ./:/srv/profiles
-            - /srv/profiles/var
             - logs:/srv/profiles/var/logs
             - venv:/srv/profiles/venv
     wsgi:
         command: venv/bin/uwsgi --ini=/srv/profiles/uwsgi.ini --enable-threads
         volumes:
             - ./:/srv/profiles
-            - /srv/profiles/var
             - logs:/srv/profiles/var/logs
             - venv:/srv/profiles/venv
         env_file:
@@ -24,7 +22,6 @@ services:
     migrate:
         volumes:
             - ./:/srv/profiles
-            - /srv/profiles/var
             - logs:/srv/profiles/var/logs
             - venv:/srv/profiles/venv
         env_file:
