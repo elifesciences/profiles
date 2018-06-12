@@ -1,3 +1,4 @@
+import pytest
 from profiles.clients import Client
 
 
@@ -36,9 +37,11 @@ def test_it_has_redirect_uris():
 
     assert client.redirect_uris == redirect_uris
 
+
 def test_it_must_have_at_least_one_redirect_uri():
     with pytest.raises(ValueError):
-        client = Client(name, client_id, client_secret, [])
+        Client(name, client_id, client_secret, [])
+
 
 def test_it_has_a_canonical_redirect_uri():
     client = Client(name, client_id, client_secret, redirect_uris)
