@@ -1,13 +1,26 @@
 import collections
-from typing import Any, Iterable
+from typing import Any, Iterable, List
 
 
 class Client(object):
-    def __init__(self, name: str, client_id: str, client_secret: str, redirect_uri: str) -> None:
+    def __init__(self,
+                 name: str,
+                 client_id: str,
+                 client_secret: str,
+                 redirect_uris: List[str]) -> None:
         self.name = name
         self.client_id = client_id
         self.client_secret = client_secret
-        self.redirect_uri = redirect_uri
+        if not redirect_uris:
+            raise ValueError(
+                "redirect_uris must provide at least one value to use as canonical: %s"
+                % redirect_uris
+            )
+        self.redirect_uris = redirect_uris
+
+    @property
+    def canonical_redirect_uri(self) -> str:
+        return self.redirect_uris[0]
 
     def __repr__(self) -> str:
         return '<Client %r>' % self.name
