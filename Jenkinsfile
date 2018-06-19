@@ -6,8 +6,7 @@ elifePipeline {
         commit = elifeGitRevision()
     }
 
-    elifeOnNode(
-        {
+    node('containers-jenkins-plugin') {
             stage 'Build images', {
                 checkout scm
                 dockerComposeBuild(commit)
@@ -32,9 +31,7 @@ elifePipeline {
                     image.push()
                 }
             }
-        },
-        'elife-libraries--ci'
-    )
+    }
 
 
     elifeMainlineOnly {
