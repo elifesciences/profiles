@@ -18,6 +18,9 @@ def test_it_contains_clients():
         assert isinstance(client, Client)
         assert client in clients
 
+    assert Client('name3', 'client_id3', 'client_secret3', ['redirect_uri3']) \
+        not in clients
+
 
 @given(text(min_size=1))
 def test_it_finds_clients(id_base):
