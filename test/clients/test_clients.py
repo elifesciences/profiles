@@ -14,6 +14,10 @@ def test_it_contains_clients():
 
     assert len(clients) == 2
 
+    for client in clients:
+        assert isinstance(client, Client)
+        assert client in clients
+
 
 @given(text(min_size=1))
 def test_it_finds_clients(id_base):
@@ -29,10 +33,6 @@ def test_it_finds_clients(id_base):
 
     assert clients.find(client_id1) == client1
     assert clients.find(client_id2) == client2
-
-    for client in clients:
-        assert isinstance(client, Client)
-        assert client in clients
 
     with pytest.raises(KeyError):
         clients.find(unknown_client_id)
