@@ -17,7 +17,7 @@ elifePipeline {
                 withEnv(["COVERALLS_REPO_TOKEN=$coverallsToken"]) {
                     dockerComposeProjectTests('profiles', commit, ['/srv/profiles/build/*.xml'])
                 }
-                dockerComposeSmokeTests('profiles', commit, [
+                dockerComposeSmokeTests(commit, [
                     'waitFor': ['profiles_migrate_1'],
                     'scripts': [
                         'wsgi': './smoke_tests_wsgi.sh',
