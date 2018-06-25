@@ -55,12 +55,11 @@ elifePipeline {
 
         stage 'Approval', {
             elifeGitMoveToBranch commit, 'approved'
-            elifeOnNode(
-                {
-                    image.tag('approved').push()
-                },
-                'elife-libraries--ci'
-            )
+            node('containers-jenkins-plugin') {
+                image = DockerImage.elifesciences(this, "profiles", commit)
+                image.pull()
+                image.tag('approved').push()
+            }
         }
     }
 }
