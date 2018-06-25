@@ -12,6 +12,7 @@ elifePipeline {
             elifeOnNode(
                 {
                     def image = DockerImage.elifesciences(this, "profiles", commit)
+                    image.pull()
                     image.tag('latest').push()
                 },
                 'elife-libraries--ci'
