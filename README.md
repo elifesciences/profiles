@@ -31,6 +31,19 @@ docker-compose up -d
 curl -v localhost:8080/ping  # 'pong'
 ```
 
+Update a package
+-----------------
+
+You [can't upgrade a single package at the moment](https://github.com/pypa/pipenv/issues/966). If there is something that must not be upgraded, pin an appropriate major, minor, or patch version in the `Pipfile`.
+
+This is a reproducible workflow for a global update:
+```
+docker-compose build
+docker rm profiles_venv_update
+docker-compose run --name=profiles_venv_update venv /bin/bash -c 'source venv/bin/activate && pipenv update'
+docker cp profiles_venv_update:/srv/profiles/Pipfile.lock .
+```
+
 Local virtual environment (for IDE usage)
 -----------------------------------------
 
