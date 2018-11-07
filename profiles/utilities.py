@@ -56,11 +56,14 @@ def no_cache(func: Callable[..., Response]) -> Callable[..., Response]:
 
     return wrapper
 
+
 def utcnow():
     return datetime.utcnow().replace(tzinfo=timezone.utc)
 
+
 def expires_at(expires_in: int) -> datetime:
     return utcnow() + timedelta(seconds=expires_in)
+
 
 def generate_random_string(length: int, chars: str = string.ascii_letters + string.digits) -> str:
     return ''.join(random.SystemRandom().choice(chars) for _ in range(length))
