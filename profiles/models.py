@@ -68,9 +68,9 @@ class Date(object):
 
     def __eq__(self, other: Any) -> bool:
         return isinstance(other, Date) and \
-               other.year == self.year and \
-               other.month == self.month and \
-               other.day == self.day
+            other.year == self.year and \
+            other.month == self.month and \
+            other.day == self.day
 
     def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
@@ -109,8 +109,8 @@ class Name(object):
 
     def __eq__(self, other: Any) -> bool:
         return isinstance(other, Name) and \
-               other.preferred == self.preferred and \
-               other.index == self.index
+            other.preferred == self.preferred and \
+            other.index == self.index
 
     def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
@@ -130,9 +130,9 @@ class Address(object):
 
     def __eq__(self, other: Any) -> bool:
         return isinstance(other, Address) and \
-               other.city == self.city and \
-               other.region == self.region and \
-               other.country == self.country
+            other.city == self.city and \
+            other.region == self.region and \
+            other.country == self.country
 
     def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)

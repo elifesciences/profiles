@@ -2,7 +2,7 @@ import json
 import os
 import random
 import string
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from functools import wraps
 from logging import Logger
 from typing import Any, Callable
@@ -10,7 +10,6 @@ from typing import Any, Callable
 from elife_api_validator import SCHEMA_DIRECTORY
 from flask import request
 from jsonschema import SchemaError, ValidationError, validate
-import pendulum
 from werkzeug.wrappers import Response
 
 from profiles.exceptions import SchemaNotFound
@@ -58,8 +57,12 @@ def no_cache(func: Callable[..., Response]) -> Callable[..., Response]:
     return wrapper
 
 
+def utcnow():
+    return datetime.utcnow().replace(tzinfo=timezone.utc)
+
+
 def expires_at(expires_in: int) -> datetime:
-    return pendulum.utcnow().add(seconds=expires_in)
+    return utcnow() + timedelta(seconds=expires_in)
 
 
 def generate_random_string(length: int, chars: str = string.ascii_letters + string.digits) -> str:
