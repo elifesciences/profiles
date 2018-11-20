@@ -1,12 +1,9 @@
 def orcidDummySummary;
 elifeUpdatePipeline(
     { commit ->
-        elifeOnNode(
-            {
-                commit = dockerReadLabel('elifesciences/orcid-dummy:latest', 'org.label-schema.vcs-ref')
-            },
-            'containers--medium'
-        )
+        node('containers-jenkins-plugin') {
+            commit = dockerReadLabel('elifesciences/orcid-dummy:latest', 'org.label-schema.vcs-ref')
+        }
         sh "sed -i -e 's/DEPENDENCIES_ORCID_DUMMY=.*/DEPENDENCIES_ORCID_DUMMY=${commit}/' .env"
         sh "git add .env"
         orcidDummySummary = "Update orcid-dummy to ${commit}"
