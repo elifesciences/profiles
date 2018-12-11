@@ -1,3 +1,4 @@
+import os
 import re
 import sys
 from abc import ABC
@@ -14,7 +15,7 @@ class Config(ABC):
 
     # pylint: disable=invalid-name,too-many-arguments
     def __init__(self, orcid: Dict[str, str], db: str, logging: Dict[str, str],
-                 bus: Dict[str, str], server_name: str, scheme: str, **_kwargs) -> None:
+                 bus: Dict[str, str], scheme: str, server_name: str = None, **_kwargs) -> None:
         self.orcid = orcid
         self.SQLALCHEMY_DATABASE_URI = db
         self.logging = logging

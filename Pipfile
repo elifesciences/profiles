@@ -6,7 +6,7 @@ name = "pypi"
 [packages]
 alembic = "~=0.9"
 blinker = "~=1.4"
-elife_api_validator = {git = "https://github.com/elifesciences/api-validator-python.git", ref = "01a5a9203b0fdfa8d6c4c3650e9999d8e90fe67b"}
+elife_api_validator = {git = "https://github.com/elifesciences/api-validator-python.git",ref = "01a5a9203b0fdfa8d6c4c3650e9999d8e90fe67b"}
 elife-bus-sdk = "~=0.0"
 Flask = "~=0.12"
 Flask-Migrate = "~=2.1"
@@ -43,6 +43,8 @@ pylint = "~=1.8"
 pytest = "~=3.2"
 pytest-socket = "~=0.2"
 requests-mock = "~=1.3"
+ipdb = "~=0.8.2"
+pydevd = "~=1.4.0"
 
 [requires]
 python_version = "3.6"
