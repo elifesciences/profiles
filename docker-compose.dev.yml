@@ -15,11 +15,12 @@ services:
       dockerfile: Dockerfile.dev
     working_dir: /srv/profiles
     volumes:
+      - ./app.cfg.dev:/srv/profiles/app.cfg
       - .:/srv/profiles
     command: "python manage.py runserver --host=0.0.0.0"
     ports:
       - "5000:5000"
-    links:
+    depends_on:
       - db
       - orcid_dummy
       - goaws

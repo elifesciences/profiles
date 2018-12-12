@@ -5,9 +5,6 @@ from typing import List
 
 from pythonjsonlogger import jsonlogger
 
-sql_engine_logger = logging.getLogger('sqlalchemy.engine')
-app_logger = logging.getLogger(__name__)
-
 
 class CustomJsonFormatter(jsonlogger.JsonFormatter):
     def formatException(self, ei: List) -> dict:
@@ -20,12 +17,12 @@ class CustomJsonFormatter(jsonlogger.JsonFormatter):
 
 
 def configure_logging(env: str = 'dev', level: int = logging.INFO, path: str = None) -> None:
-    app_logger.setLevel(level)
-    sql_engine_logger.setLevel(logging.INFO)
+    logging.getLogger().setLevel(level)
+    logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
     console_handler = logging.StreamHandler()
     console_handler.setLevel(level)
-    app_logger.addHandler(console_handler)
+    logging.getLogger().addHandler(console_handler)
 
     if path:
         log_filename = os.path.abspath(os.path.join(
@@ -38,4 +35,4 @@ def configure_logging(env: str = 'dev', level: int = logging.INFO, path: str = N
         file_handler.setLevel(level)
         formatter = CustomJsonFormatter('(name) (message) (asctime) (levelname)')
         file_handler.setFormatter(formatter)
-        app_logger.addHandler(file_handler)
+        logging.getLogger().addHandler(file_handler)

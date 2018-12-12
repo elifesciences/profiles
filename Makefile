@@ -3,21 +3,20 @@ help:
 	@echo "stop   - stop all running containers belonging to the project"
 	@echo "test   - runs tests in debug mode (able to use pdb breakpoints)"
 	@echo "debug  - runs the application in debug mode (able to use pdb breakpoints)"
-	@echo "clean  - WARNING: delete all containers, images and volumes on your system"
+	@echo "clean  - delete project containers, images and volumes"
 
 start:
 	docker-compose -f docker-compose.dev.yml up
 
 stop:
-	docker-compose -f docker-compose.dev.yml down
+	docker-compose -f docker-compose.dev.yml down -v
 
-test:
+tests:
 	docker-compose -f docker-compose.dev.yml run --rm --service-ports web pytest -s
 
 debug:
 	docker-compose -f docker-compose.dev.yml run --rm --service-ports web
 
-clean:
-	-docker rm `docker ps -aq`
-	-docker rmi `docker images -aq`
-	-docker volume rm `docker volume ls -q`
+clean: stop
+	-docker rm `docker-compose -f docker-compose.dev.yml ps -q`
+	-docker rmi `docker-compose -f docker-compose.dev.yml images -q`
