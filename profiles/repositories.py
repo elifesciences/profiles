@@ -68,8 +68,9 @@ class SQLAlchemyOrcidTokens(OrcidTokens):
         try:
             return self.db.session.query(OrcidToken).filter_by(orcid=orcid).one()
         except NoResultFound as exception:
-            raise OrcidTokenNotFound('ORCID token for the ORCID {} not found'.format(orcid)) \
-                from exception
+            msg = 'ORCID token for the ORCID {} not found'.format(orcid)
+            LOGGER.info(msg=msg)
+            raise OrcidTokenNotFound(msg) from exception
 
     def clear(self) -> None:
         self.db.session.query(OrcidToken).delete()
@@ -79,6 +80,8 @@ class SQLAlchemyOrcidTokens(OrcidTokens):
             orcid_token = self.db.session.query(OrcidToken).filter_by(orcid=orcid).one()
             self.db.session.delete(orcid_token)
         except NoResultFound:
+            msg = 'Unalbe to remove ORCID token for ORCID {}. Token not found'.format(orcid)
+            LOGGER.info(msg=msg)
             pass
 
 
@@ -102,16 +105,18 @@ class SQLAlchemyProfiles(Profiles):
             self.db.session.rollback()
 
             message = exception.args[0]
+            log_msg = 'Unable to create profile with id {}. '.format(profile.id)
 
             if 'orcid' in message and profile.orcid:
-                LOGGER.info('Profile for ORCID %s appears to already exist', profile.orcid)
+                log_msg += 'Profile with ORCID {} already exists'.format(profile.orcid)
+                LOGGER.info(msg=log_msg)
 
                 return self.get_by_orcid(profile.orcid)
             elif 'EmailAddress' in message and profile.email_addresses:
                 email_addresses = [x.email for x in profile.email_addresses]
 
-                LOGGER.info('Profile with email address %s appears to already exist',
-                            email_addresses)
+                log_msg += 'Profile with email address {} already exists'.format(email_addresses)
+                LOGGER.info(msg=log_msg)
 
                 return self.get_by_email_address(*email_addresses)
 
@@ -123,15 +128,17 @@ class SQLAlchemyProfiles(Profiles):
         try:
             return self.db.session.query(Profile).filter_by(id=profile_id).one()
         except NoResultFound as exception:
-            raise ProfileNotFound('Profile with the ID {} not found'.format(profile_id)) \
-                from exception
+            msg = 'Profile with ID {} not found'.format(profile_id)
+            LOGGER.info(msg=msg)
+            raise ProfileNotFound(msg) from exception
 
     def get_by_orcid(self, orcid: str) -> Profile:
         try:
             return self.db.session.query(Profile).filter_by(orcid=orcid).one()
         except NoResultFound as exception:
-            raise ProfileNotFound('Profile with the ORCID {} not found'.format(orcid)) \
-                from exception
+            msg = 'Profile with ORCID {} not found'.format(orcid)
+            LOGGER.info(msg=msg)
+            raise ProfileNotFound(msg) from exception
 
     def get_by_email_address(self, *email_addresses: str) -> Profile:
         if not email_addresses:
@@ -141,8 +148,9 @@ class SQLAlchemyProfiles(Profiles):
             return self.db.session.query(Profile).join(EmailAddress) \
                 .filter(EmailAddress.email.in_(email_addresses)).one()
         except NoResultFound as exception:
-            raise ProfileNotFound('Profile with the email address(es) {} not found'
-                                  .format(email_addresses)) from exception
+            msg = 'Profile with email address(es) {} not found'.format(email_addresses)
+            LOGGER.info(msg=msg)
+            raise ProfileNotFound(msg) from exception
 
     @retry(stop_max_attempt_number=10)
     def next_id(self) -> str:

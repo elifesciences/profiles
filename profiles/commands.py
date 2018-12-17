@@ -1,7 +1,7 @@
 from typing import List, Optional
 
-from iso3166 import countries
 import jmespath
+from iso3166 import countries
 
 from profiles.models import Address, Affiliation, Date, Name, Profile
 from profiles.orcid import VISIBILITY_PUBLIC

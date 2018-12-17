@@ -12,7 +12,7 @@ stop:
 	docker-compose -f docker-compose.dev.yml down -v
 
 tests:
-	docker-compose -f docker-compose.dev.yml run --rm --service-ports web pytest -s
+	docker-compose -f docker-compose.dev.yml run --rm --service-ports web pytest -s --pdbcls=IPython.terminal.debugger:Pdb --log-cli-level DEBUG
 
 debug:
 	docker-compose -f docker-compose.dev.yml run --rm --service-ports web
