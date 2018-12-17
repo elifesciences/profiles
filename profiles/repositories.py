@@ -82,7 +82,6 @@ class SQLAlchemyOrcidTokens(OrcidTokens):
         except NoResultFound:
             msg = 'Unable to remove ORCID token for ORCID {}. Token not found'.format(orcid)
             LOGGER.info(msg=msg)
-            pass
 
 
 class SQLAlchemyProfiles(Profiles):

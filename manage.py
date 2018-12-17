@@ -26,10 +26,9 @@ for data in CLIENTS_DATA:
 CLIENTS = Clients(*[Client(name, **CLIENTS_DATA[name]) for name in CLIENTS_DATA])
 
 CONFIG = create_app_config(CONFIG_FILE)
-
-level = getattr(logging, CONFIG.logging.get('level'))
-path = CONFIG.logging.get('path')
-configure_logging(env=CONFIG.name, level=level, path=path)
+configure_logging(env=CONFIG.name,
+                  level=getattr(logging, CONFIG.logging.get('level')),
+                  path=CONFIG.logging.get('path'))
 
 APP = create_app(CONFIG, CLIENTS)
 MANAGER = Manager(APP)
