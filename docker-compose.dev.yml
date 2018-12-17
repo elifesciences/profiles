@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+
+  db:
+    image: postgres:9.4
+    volumes:
+      - ./config/application_user.sql:/docker-entrypoint-initdb.d/application_user.sql
+    env_file:
+      - dev.env
+
+  web:
+    build:
+      context: ./
+      dockerfile: Dockerfile.dev
+    working_dir: /srv/profiles
+    volumes:
+      - ./app.cfg.dev:/srv/profiles/app.cfg
+      - .:/srv/profiles
+    command: "python manage.py runserver --host=0.0.0.0"
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+      - orcid_dummy
+      - goaws
+    env_file:
+      - dev.env
+
+  orcid_dummy:
+    image: elifesciences/orcid-dummy:${DEPENDENCIES_ORCID_DUMMY}
+
+  goaws:
+    image: elifesciences/goaws:1.0.1
+    ports:
+      - 4100:4100
+    volumes:
+      - ./config/goaws.yaml:/conf/goaws.yaml
