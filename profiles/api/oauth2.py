@@ -4,8 +4,8 @@ from json import JSONDecodeError, dumps
 from typing import Dict
 from urllib.parse import urlencode
 
-import requests
 from flask import Blueprint, json, jsonify, make_response, redirect, request, url_for
+import requests
 from requests import RequestException
 from werkzeug.exceptions import BadRequest
 from werkzeug.wrappers import Response
