@@ -6,49 +6,36 @@ eLife Profiles
 Dependencies
 ------------
 
-* [Python 3.5](https://www.python.org/)
-* [virtualenv](https://virtualenv.pypa.io/)
+* [Docker](https://www.docker.com/)
 
-Installation
-------------
+Running the site locally
+------------------------
 
-1. Create `app.cfg` from `app.cfg.dist`
-2. Create `clients.yaml` from `clients.yaml.dist`
-3. `./install.sh`
+```
+make start
+```
+This command will build and run the site locally for development purposes.
+
+```
+make stop
+```
+Use this command to stop containers and clean up any anonymous volumes.
 
 Running the tests
 -----------------
-
+Use this command when writing and running tests for development purposes:
 ```
-docker-compose run --rm ci venv/bin/pytest
-```
-
-Running the site
-----------------
-
-```
-docker-compose up -d
-curl -v localhost:8080/ping  # 'pong'
+make tests
 ```
 
-Update a package
------------------
-
-You [can't upgrade a single package at the moment](https://github.com/pypa/pipenv/issues/966). If there is something that must not be upgraded, pin an appropriate major, minor, or patch version in the `Pipfile`.
-
-This is a reproducible workflow for a global update:
+Use this command to run tests using production settings (typically used for running tests in CI pipeline)
 ```
-docker-compose build
-docker rm profiles_venv_update
-docker-compose run --name=profiles_venv_update venv /bin/bash -c 'source venv/bin/activate && pipenv update'
-docker cp profiles_venv_update:/srv/profiles/Pipfile.lock .
+docker-compose -f docker-compose.yml -f docker-compose.ci.yml run --rm ci venv/bin/pytest
 ```
 
-Local virtual environment (for IDE usage)
------------------------------------------
-
-Experimental:
-
+Make commands
+-------------
+For a full list of make commands run:
 ```
-docker cp profiles_ci_1:/srv/profiles/venv/ .
+make help
 ```

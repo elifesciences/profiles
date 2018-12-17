@@ -68,7 +68,7 @@ class SQLAlchemyOrcidTokens(OrcidTokens):
         try:
             return self.db.session.query(OrcidToken).filter_by(orcid=orcid).one()
         except NoResultFound as exception:
-            msg = 'ORCID token for the ORCID {} not found'.format(orcid)
+            msg = 'ORCID token for ORCID {} not found'.format(orcid)
             LOGGER.info(msg=msg)
             raise OrcidTokenNotFound(msg) from exception
 
