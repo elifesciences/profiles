@@ -80,7 +80,7 @@ class SQLAlchemyOrcidTokens(OrcidTokens):
             orcid_token = self.db.session.query(OrcidToken).filter_by(orcid=orcid).one()
             self.db.session.delete(orcid_token)
         except NoResultFound:
-            msg = 'Unalbe to remove ORCID token for ORCID {}. Token not found'.format(orcid)
+            msg = 'Unable to remove ORCID token for ORCID {}. Token not found'.format(orcid)
             LOGGER.info(msg=msg)
             pass
 
