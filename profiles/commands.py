@@ -11,8 +11,7 @@ LOGGER = logging.getLogger()
 
 
 def update_profile_from_orcid_record(profile: Profile, orcid_record: dict) -> None:
-    LOGGER.info('Updating profile %s with ORCID record %s' %
-                (profile.id, orcid_record.get('path')))
+    LOGGER.info('Updating profile %s with ORCID record %s', profile.id, orcid_record.get('path'))
     _update_name_from_orcid_record(profile, orcid_record)
     _update_affiliations_from_orcid_record(profile, orcid_record)
     _update_email_addresses_from_orcid_record(profile, orcid_record)
@@ -95,4 +94,4 @@ def _convert_orcid_date(orcid_date: dict) -> Optional[Date]:
         try:
             return Date(year, month, day)
         except ValueError as exception:
-            LOGGER.error(msg='{}: {}'.format(exception, (year, month, day)))
+            LOGGER.error('%s: %s', exception, (year, month, day))
