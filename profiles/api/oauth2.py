@@ -106,7 +106,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
         try:
             client = clients.find(request.form.get('client_id'))
         except KeyError as exception:
-            LOGGER.error('Invalid Client: %s not in list of known clients' % \
+            LOGGER.error('Invalid Client: %s not in list of known clients' %
                          request.form.get('client_id'))
             raise InvalidClient from exception
 
