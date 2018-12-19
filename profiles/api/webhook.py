@@ -14,6 +14,7 @@ from profiles.repositories import OrcidTokens, Profiles
 
 LOGGER = logging.getLogger()
 
+
 def create_blueprint(profiles: Profiles, orcid_config: Dict[str, str],
                      orcid_client: OrcidClient, orcid_tokens: OrcidTokens,
                      uri_signer: URLSafeSerializer) -> Blueprint:

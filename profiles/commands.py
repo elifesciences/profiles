@@ -9,9 +9,10 @@ from profiles.orcid import VISIBILITY_PUBLIC
 
 LOGGER = logging.getLogger()
 
-def update_profile_from_orcid_record(profile: Profile, orcid_record: dict) -> None:
-    LOGGER.info(msg='Updating profile %s with ORCID record %s' % (profile.id, orcid_record.get('path')))
 
+def update_profile_from_orcid_record(profile: Profile, orcid_record: dict) -> None:
+    LOGGER.info('Updating profile %s with ORCID record %s' % \
+                (profile.id, orcid_record.get('path')))
     _update_name_from_orcid_record(profile, orcid_record)
     _update_affiliations_from_orcid_record(profile, orcid_record)
     _update_email_addresses_from_orcid_record(profile, orcid_record)

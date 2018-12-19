@@ -106,19 +106,24 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
         try:
             client = clients.find(request.form.get('client_id'))
         except KeyError as exception:
-            LOGGER.error('Invalid Client: %s not in list of known clients' % request.form.get('client_id'))
+            LOGGER.error('Invalid Client: %s not in list of known clients' % \
+                         request.form.get('client_id'))
             raise InvalidClient from exception
 
         redirect_uri = request.form.get('redirect_uri')
         if request.form.get('client_secret') != client.client_secret:
             LOGGER.error('Invalid Client: client_secret not in request')
             raise InvalidClient
+
         elif redirect_uri not in client.redirect_uris:
-            LOGGER.error('Invalid Request: redirect_uri not in client.redirect_uris - %s' % redirect_uri)
+            LOGGER.error('Invalid Request: redirect_uri not in '
+                         'client.redirect_uris - %s' % redirect_uri)
             raise InvalidRequest('Invalid redirect_uri')
+
         elif request.form.get('grant_type') != 'authorization_code':
             LOGGER.error('Unsupported grant type %s' % request.form.get('grant_type'))
             raise UnsupportedGrantType
+
         elif 'code' not in request.form:
             LOGGER.error('Invalid Grant: "code" not in request.form')
             raise InvalidGrant
