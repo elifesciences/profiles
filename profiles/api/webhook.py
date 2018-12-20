@@ -22,7 +22,8 @@ def create_blueprint(profiles: Profiles, orcid_config: Dict[str, str],
 
     @blueprint.route('/orcid-webhook/<payload>', methods=['POST'])
     def _update(payload: str) -> Response:
-        LOGGER.info('POST request received from /orcid-webhook/%s', uri_signer.loads_unsafe(payload))
+        LOGGER.info('POST request received from /orcid-webhook/%s',
+                    uri_signer.loads_unsafe(payload))
 
         try:
             orcid = uri_signer.loads(payload)
@@ -39,8 +40,8 @@ def create_blueprint(profiles: Profiles, orcid_config: Dict[str, str],
         try:
             access_token = orcid_tokens.get(profile.orcid).access_token
         except OrcidTokenNotFound:
-            LOGGER.info('OrcidTokenNotFound: Access Token not found for %s. Reverting to public access token',
-                        profile.orcid)
+            LOGGER.info('OrcidTokenNotFound: Access Token not found for %s. '
+                        'Reverting to public access token', profile.orcid)
             access_token = orcid_config.get('read_public_access_token')
 
         try:
