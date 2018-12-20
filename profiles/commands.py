@@ -7,7 +7,7 @@ import jmespath
 from profiles.models import Address, Affiliation, Date, Name, Profile
 from profiles.orcid import VISIBILITY_PUBLIC
 
-LOGGER = logging.getLogger()
+LOGGER = logging.getLogger(__name__)
 
 
 def update_profile_from_orcid_record(profile: Profile, orcid_record: dict) -> None:

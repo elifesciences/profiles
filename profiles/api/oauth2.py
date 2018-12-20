@@ -98,34 +98,34 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
     @no_cache
     def _token() -> Response:
         if 'client_id' not in request.form:
-            LOGGER.error('Post request to /token without client_id specified')
+            LOGGER.error('InvalidClient: /token POST request received without client_id specified')
             raise InvalidClient
 
-        LOGGER.info('Post request to /token from %s', request.form.get('client_id'))
+        LOGGER.info('/token POST request received from %s', request.form.get('client_id'))
 
         try:
             client = clients.find(request.form.get('client_id'))
         except KeyError as exception:
-            LOGGER.error('Invalid Client: %s not in list of known clients',
+            LOGGER.error('InvalidClient: %s not in list of known clients',
                          request.form.get('client_id'))
             raise InvalidClient from exception
 
         redirect_uri = request.form.get('redirect_uri')
         if request.form.get('client_secret') != client.client_secret:
-            LOGGER.error('Invalid Client: client_secret not in request')
+            LOGGER.error('InvalidClient: client_secret not in request')
             raise InvalidClient
 
         elif redirect_uri not in client.redirect_uris:
-            LOGGER.error('Invalid Request: redirect_uri not in client.redirect_uris - %s',
+            LOGGER.error('InvalidRequest: redirect_uri not in client.redirect_uris - %s',
                          redirect_uri)
             raise InvalidRequest('Invalid redirect_uri')
 
         elif request.form.get('grant_type') != 'authorization_code':
-            LOGGER.error('Unsupported grant type %s', request.form.get('grant_type'))
+            LOGGER.error('UnsupportedGrantType: %s', request.form.get('grant_type'))
             raise UnsupportedGrantType
 
         elif 'code' not in request.form:
-            LOGGER.error('Invalid Grant: "code" not in request.form')
+            LOGGER.error('InvalidGrant: "code" not in request.form')
             raise InvalidGrant
 
         data = {
@@ -136,7 +136,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
             'code': request.form['code'],
         }
 
-        LOGGER.info('Making POST request to %s', orcid.get('token_uri'))
+        LOGGER.info('Sending POST request to %s', orcid.get('token_uri'))
         response = requests.post(url=orcid['token_uri'],
                                  data=data,
                                  headers={'Accept': 'application/json'})
