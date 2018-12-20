@@ -3,8 +3,9 @@ from typing import Callable
 
 from flask.testing import FlaskClient
 from iso3166 import countries
+from werkzeug.datastructures import Headers
 
-from profiles.models import Address, Affiliation, Name, Profile, db
+from profiles.models import Address, Affiliation, Name, Profile, db, Date
 from profiles.utilities import validate_json
 
 
@@ -314,3 +315,54 @@ def test_it_does_not_return_restricted_affiliations(test_client: FlaskClient, ye
     assert response.headers.get('Content-Type') == 'application/vnd.elife.profile+json;version=1'
     assert validate_json(data, schema_name='profile.v1') is True
     assert [e['value']['name'] for e in data['affiliations']] == [['Dep', 'Org']]
+
+
+def test_it_does_return_restricted_data_when_authenticated(
+        test_client: FlaskClient, yesterday: Date, commit: Callable[[], None]) -> None:
+
+    address = Address(country=countries.get('gb'), city='City', region='Region')
+    affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
+                              starts=yesterday, restricted=True)
+
+    profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
+    profile.add_email_address('1@example.com', restricted=True)
+    profile.add_affiliation(affiliation)
+
+    db.session.add(profile)
+    commit()
+
+    headers = Headers()
+    headers.set('x-consumer-groups', 'view-restricted-profiles')
+    response = test_client.get('/profiles/a1b2c3d4', headers=headers)
+    data = json.loads(response.data.decode('UTF-8'))
+
+    assert response.status_code == 200
+    assert response.headers.get('Content-Type') == 'application/vnd.elife.profile+json;version=1'
+    assert validate_json(data, schema_name='profile.v1') is True
+    assert len(data['affiliations']) == 1
+    assert len(data['emailAddresses']) == 1
+    assert [e['value'] for e in data['emailAddresses']] == ['1@example.com']
+
+
+def test_it_does_not_return_restricted_data_when_authenticated(
+        test_client: FlaskClient, yesterday: Date, commit: Callable[[], None]) -> None:
+
+    address = Address(country=countries.get('gb'), city='City', region='Region')
+    affiliation = Affiliation('1', address=address, organisation='Org', department='Dep',
+                              starts=yesterday, restricted=True)
+
+    profile = Profile('a1b2c3d4', Name('Foo Bar'), '0000-0002-1825-0097')
+    profile.add_email_address('1@example.com', restricted=True)
+    profile.add_affiliation(affiliation)
+
+    db.session.add(profile)
+    commit()
+
+    response = test_client.get('/profiles/a1b2c3d4')
+    data = json.loads(response.data.decode('UTF-8'))
+
+    assert response.status_code == 200
+    assert response.headers.get('Content-Type') == 'application/vnd.elife.profile+json;version=1'
+    assert validate_json(data, schema_name='profile.v1') is True
+    assert len(data['affiliations']) == 0
+    assert len(data['emailAddresses']) == 0
