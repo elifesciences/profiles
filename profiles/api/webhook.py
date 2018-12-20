@@ -1,3 +1,4 @@
+import logging
 from typing import Dict
 
 from flask import Blueprint
@@ -11,6 +12,8 @@ from profiles.exceptions import OrcidTokenNotFound, ProfileNotFound
 from profiles.orcid import OrcidClient
 from profiles.repositories import OrcidTokens, Profiles
 
+LOGGER = logging.getLogger(__name__)
+
 
 def create_blueprint(profiles: Profiles, orcid_config: Dict[str, str],
                      orcid_client: OrcidClient, orcid_tokens: OrcidTokens,
@@ -19,9 +22,14 @@ def create_blueprint(profiles: Profiles, orcid_config: Dict[str, str],
 
     @blueprint.route('/orcid-webhook/<payload>', methods=['POST'])
     def _update(payload: str) -> Response:
+        LOGGER.info('POST request received from /orcid-webhook/%s',
+                    uri_signer.loads_unsafe(payload))
+
         try:
             orcid = uri_signer.loads(payload)
         except BadSignature as exception:
+            LOGGER.error('BadSignature: payload signature does not match: /orcid-webhook/%s',
+                         uri_signer.loads_unsafe(payload))
             raise NotFound from exception
 
         try:
@@ -32,6 +40,8 @@ def create_blueprint(profiles: Profiles, orcid_config: Dict[str, str],
         try:
             access_token = orcid_tokens.get(profile.orcid).access_token
         except OrcidTokenNotFound:
+            LOGGER.info('OrcidTokenNotFound: Access Token not found for %s. '
+                        'Reverting to public access token', profile.orcid)
             access_token = orcid_config.get('read_public_access_token')
 
         try:

@@ -1,3 +1,4 @@
+import logging
 from typing import List, Optional
 
 from iso3166 import countries
@@ -6,8 +7,11 @@ import jmespath
 from profiles.models import Address, Affiliation, Date, Name, Profile
 from profiles.orcid import VISIBILITY_PUBLIC
 
+LOGGER = logging.getLogger(__name__)
+
 
 def update_profile_from_orcid_record(profile: Profile, orcid_record: dict) -> None:
+    LOGGER.info('Updating profile %s with ORCID record %s', profile.id, orcid_record.get('path'))
     _update_name_from_orcid_record(profile, orcid_record)
     _update_affiliations_from_orcid_record(profile, orcid_record)
     _update_email_addresses_from_orcid_record(profile, orcid_record)
@@ -87,5 +91,7 @@ def _convert_orcid_date(orcid_date: dict) -> Optional[Date]:
         year = int(orcid_date['year']['value'])
         month = int(orcid_date['month']['value']) if orcid_date.get('month') else None
         day = int(orcid_date['day']['value']) if orcid_date.get('day') else None
-
-        return Date(year, month, day)
+        try:
+            return Date(year, month, day)
+        except ValueError as exception:
+            LOGGER.error('%s: %s', exception, (year, month, day))

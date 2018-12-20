@@ -98,21 +98,34 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
     @no_cache
     def _token() -> Response:
         if 'client_id' not in request.form:
+            LOGGER.error('InvalidClient: /token POST request received without client_id specified')
             raise InvalidClient
+
+        LOGGER.info('/token POST request received from %s', request.form.get('client_id'))
 
         try:
             client = clients.find(request.form.get('client_id'))
         except KeyError as exception:
+            LOGGER.error('InvalidClient: %s not in list of known clients',
+                         request.form.get('client_id'))
             raise InvalidClient from exception
 
         redirect_uri = request.form.get('redirect_uri')
         if request.form.get('client_secret') != client.client_secret:
+            LOGGER.error('InvalidClient: client_secret not in request')
             raise InvalidClient
+
         elif redirect_uri not in client.redirect_uris:
+            LOGGER.error('InvalidRequest: redirect_uri not in client.redirect_uris - %s',
+                         redirect_uri)
             raise InvalidRequest('Invalid redirect_uri')
+
         elif request.form.get('grant_type') != 'authorization_code':
+            LOGGER.error('UnsupportedGrantType: %s', request.form.get('grant_type'))
             raise UnsupportedGrantType
+
         elif 'code' not in request.form:
+            LOGGER.error('InvalidGrant: "code" not in request.form')
             raise InvalidGrant
 
         data = {
@@ -123,6 +136,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
             'code': request.form['code'],
         }
 
+        LOGGER.info('Sending POST request to %s', orcid.get('token_uri'))
         response = requests.post(url=orcid['token_uri'],
                                  data=data,
                                  headers={'Accept': 'application/json'})
@@ -172,6 +186,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
             orcid_token.access_token = token_data['access_token']
             orcid_token.expires_at = expires_at(token_data['expires_in'])
         except OrcidTokenNotFound:
+            LOGGER.info('ORCID token not found for %s. Creating Orcid Token.', token_data['orcid'])
             orcid_token = OrcidToken(token_data['orcid'], token_data['access_token'],
                                      expires_at(token_data['expires_in']))
             orcid_tokens.add(orcid_token)
