@@ -365,5 +365,5 @@ def test_it_does_not_return_restricted_data_when_authenticated(
     assert response.status_code == 200
     assert response.headers.get('Content-Type') == 'application/vnd.elife.profile+json;version=1'
     assert validate_json(data, schema_name='profile.v1') is True
-    assert len(data['affiliations']) == 0
-    assert len(data['emailAddresses']) == 0
+    assert not data['affiliations']
+    assert not data['emailAddresses']
