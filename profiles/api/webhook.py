@@ -23,13 +23,13 @@ def create_blueprint(profiles: Profiles, orcid_config: Dict[str, str],
     @blueprint.route('/orcid-webhook/<payload>', methods=['POST'])
     def _update(payload: str) -> Response:
         LOGGER.info('POST request received from /orcid-webhook/%s',
-                    uri_signer.loads_unsafe(payload))
+                    uri_signer.loads_unsafe(payload)[-1])
 
         try:
             orcid = uri_signer.loads(payload)
         except BadSignature as exception:
             LOGGER.error('BadSignature: payload signature does not match: /orcid-webhook/%s',
-                         uri_signer.loads_unsafe(payload))
+                         uri_signer.loads_unsafe(payload)[-1])
             raise NotFound from exception
 
         try:
