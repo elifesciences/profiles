@@ -6,7 +6,7 @@ from werkzeug.wrappers import Response
 
 from profiles.exceptions import ProfileNotFound
 from profiles.repositories import Profiles
-from profiles.serializer.normalizer import normalize, normalize_snippet
+from profiles.serializer.normalizer import normalize, normalize_restricted, normalize_snippet
 from profiles.utilities import cache
 
 ORDER_ASC = 'asc'
@@ -62,7 +62,10 @@ def create_blueprint(profiles: Profiles) -> Blueprint:
         except ProfileNotFound as exception:
             raise NotFound(str(exception)) from exception
 
-        response = make_response(json.dumps(profile, default=normalize))
+        if 'view-restricted-profiles' in request.headers.get('x-consumer-groups', '').lower():
+            response = make_response(json.dumps(profile, default=normalize_restricted))
+        else:
+            response = make_response(json.dumps(profile, default=normalize))
         response.headers['Content-Type'] = 'application/vnd.elife.profile+json;version=1'
         response.headers['Vary'] = 'Accept'
 

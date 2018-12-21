@@ -13,6 +13,11 @@ def normalize(value: Any) -> Any:
 
 
 @singledispatch
+def normalize_restricted(value: Any) -> Any:
+    return value
+
+
+@singledispatch
 def normalize_snippet(value: Any) -> Any:
     return value
 
@@ -22,6 +27,17 @@ def normalize_profile(profile: Profile) -> dict:
     data = normalize_profile_snippet(profile)
     data['emailAddresses'] = [normalize(email) for email in profile.get_email_addresses()]
     data['affiliations'] = [normalize(aff) for aff in profile.get_affiliations()]
+
+    return data
+
+
+@normalize_restricted.register(Profile)
+def normalize_restricted_profile(profile: Profile) -> dict:
+    data = normalize_profile_snippet(profile)
+    data['emailAddresses'] = [
+        normalize(email) for email in profile.get_email_addresses(include_restricted=True)]
+    data['affiliations'] = [
+        normalize(aff) for aff in profile.get_affiliations(include_restricted=True)]
 
     return data
 
