@@ -6,8 +6,7 @@ from werkzeug.wrappers import Response
 
 from profiles.exceptions import ProfileNotFound
 from profiles.repositories import Profiles
-from profiles.serializer.normalizer import normalize, normalize_snippet, \
-    normalize_restricted
+from profiles.serializer.normalizer import normalize, normalize_restricted, normalize_snippet
 from profiles.utilities import cache
 
 ORDER_ASC = 'asc'
@@ -63,7 +62,7 @@ def create_blueprint(profiles: Profiles) -> Blueprint:
         except ProfileNotFound as exception:
             raise NotFound(str(exception)) from exception
 
-        if request.headers.get('x-consumer-groups') == 'view-restricted-profiles':
+        if 'view-restricted-profiles' in request.headers.get('x-consumer-groups', '').lower():
             response = make_response(json.dumps(profile, default=normalize_restricted))
         else:
             response = make_response(json.dumps(profile, default=normalize))

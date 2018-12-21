@@ -5,7 +5,7 @@ from flask.testing import FlaskClient
 from iso3166 import countries
 from werkzeug.datastructures import Headers
 
-from profiles.models import Address, Affiliation, Name, Profile, db, Date
+from profiles.models import Address, Affiliation, Date, Name, Profile, db
 from profiles.utilities import validate_json
 
 
@@ -332,7 +332,7 @@ def test_it_does_return_restricted_data_when_authenticated(
     commit()
 
     headers = Headers()
-    headers.set('x-consumer-groups', 'view-restricted-profiles')
+    headers.set('X-Consumer-Groups', 'View-restricted-profiles, Something else')
     response = test_client.get('/profiles/a1b2c3d4', headers=headers)
     data = json.loads(response.data.decode('UTF-8'))
 
@@ -342,6 +342,7 @@ def test_it_does_return_restricted_data_when_authenticated(
     assert len(data['affiliations']) == 1
     assert len(data['emailAddresses']) == 1
     assert [e['value'] for e in data['emailAddresses']] == ['1@example.com']
+    assert [e['value']['name'] for e in data['affiliations']] == [['Dep', 'Org']]
 
 
 def test_it_does_not_return_restricted_data_when_authenticated(
