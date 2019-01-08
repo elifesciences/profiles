@@ -27,7 +27,6 @@ def normalize_profile(profile: Profile) -> dict:
     data = normalize_profile_snippet(profile)
     data['emailAddresses'] = [normalize(email) for email in profile.get_email_addresses()]
     data['affiliations'] = [normalize(aff) for aff in profile.get_affiliations()]
-
     return data
 
 
@@ -44,21 +43,29 @@ def normalize_restricted_profile(profile: Profile) -> dict:
 
 @normalize.register(Affiliation)
 def normalize_affiliation(affiliation: Affiliation) -> dict:
+    if affiliation.department is not None:
+        name = [affiliation.department, affiliation.organisation]
+    else:
+        name = [affiliation.organisation]
+
+    if affiliation.address.region is not None:
+        address = [affiliation.address.city, affiliation.address.region,
+                   affiliation.address.country.name]
+        components = {"locality": [affiliation.address.city],
+                      "area": [affiliation.address.region],
+                      "country": affiliation.address.country.name}
+    else:
+        address = [affiliation.address.city, affiliation.address.country.name]
+        components = {"locality": [affiliation.address.city],
+                      "country": affiliation.address.country.name}
+
     return {
         'access': ACCESS_RESTRICTED if affiliation.restricted else ACCESS_PUBLIC,
         'value': {
-            "name": [affiliation.department, affiliation.organisation],
+            "name": name,
             "address": {
-                "formatted": [
-                    affiliation.address.city,
-                    affiliation.address.region,
-                    affiliation.address.country.name,
-                ],
-                "components": {
-                    "locality": [affiliation.address.city],
-                    "area": [affiliation.address.region],
-                    "country": affiliation.address.country.name
-                }
+                "formatted": address,
+                "components": components
             }
         },
     }

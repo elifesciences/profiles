@@ -80,6 +80,21 @@ def remove_none_values(items: dict) -> dict:
     return dict(filter(lambda item: item[1] is not None, items.items()))
 
 
+def dict_contains_none_values(data: dict) -> bool:
+    visited, stack = [], list(data.values())
+    while stack:
+        vertex = stack.pop()
+        if vertex is None:
+            return True
+        if vertex not in visited:
+            visited.append(vertex)
+            if isinstance(vertex, dict):
+                stack.extend(vertex.values())
+            elif isinstance(vertex, list):
+                stack.extend(vertex)
+    return False
+
+
 def validate_json(data: dict, schema_name: str, schema_dir: str = ''):
     # option to provide a schema_dir allows dummy_schema to be found for tests,
     # this whole function will be removed and replaced with
