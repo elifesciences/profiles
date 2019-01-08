@@ -6,7 +6,7 @@ from iso3166 import countries
 from werkzeug.datastructures import Headers
 
 from profiles.models import Address, Affiliation, Date, Name, Profile, db
-from profiles.utilities import dict_contains_none_values, validate_json
+from profiles.utilities import contains_none_values, validate_json
 
 
 def test_empty_list_of_profiles(test_client: FlaskClient) -> None:
@@ -398,4 +398,4 @@ def test_it_does_not_return_null_values_in_response(test_client: FlaskClient,
     assert response.status_code == 200, response.status_code
     assert response.headers.get('Content-Type') == 'application/vnd.elife.profile+json;version=1'
     assert validate_json(data, schema_name='profile.v1') is True
-    assert dict_contains_none_values(data) is False
+    assert contains_none_values(data) is False

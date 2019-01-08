@@ -80,18 +80,15 @@ def remove_none_values(items: dict) -> dict:
     return dict(filter(lambda item: item[1] is not None, items.items()))
 
 
-def dict_contains_none_values(data: dict) -> bool:
-    visited, stack = [], list(data.values())
-    while stack:
-        vertex = stack.pop()
-        if vertex is None:
+def contains_none_values(data):
+    if isinstance(data, dict):
+        data = data.values()
+
+    for element in data:
+        if element is None:
             return True
-        if vertex not in visited:
-            visited.append(vertex)
-            if isinstance(vertex, dict):
-                stack.extend(vertex.values())
-            elif isinstance(vertex, list):
-                stack.extend(vertex)
+        if isinstance(element, (dict, list)) and contains_none_values(element):
+            return True
     return False
 
 
