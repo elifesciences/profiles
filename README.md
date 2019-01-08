@@ -3,6 +3,26 @@ eLife Profiles
 
 [![Build Status](https://ci--alfred.elifesciences.org/buildStatus/icon?job=test-profiles)](https://ci--alfred.elifesciences.org/job/test-profiles/) [![Coverage Status](https://coveralls.io/repos/github/elifesciences/profiles/badge.svg?branch=develop)](https://coveralls.io/github/elifesciences/profiles?branch=develop)
 
+Profiles is a service used by eLife Sciences Publications, Ltd. to create and 
+store eLife user profiles. Currently, eLife uses [ORCID](https://orcid.org/) for 
+authentication.
+
+When a user account is created or updated on ORCID, the new account information is sent to 
+the Profiles service via a webhook and a new eLife profile is created, ready to be
+used by other services.
+
+End points
+----------
+- `/ping` returns the message `pong`
+- `/profiles` returns a list of profiles *(this is paginated by default, 
+sending 20 results per request. Only basic info sent. 
+See [Here](https://api.elifesciences.org) for more information)*
+- `/profiles/<profile_id>` returns all information for the given profile (will 
+only return private information if authenticated)
+ 
+Development
+===========
+
 Dependencies
 ------------
 
