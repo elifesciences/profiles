@@ -13,12 +13,9 @@ used by other services.
 
 End points
 ----------
-- `/ping` returns the message `pong`
-- `/profiles` returns a list of profiles *(this is paginated by default, 
-sending 20 results per request. Only basic info sent. 
-See [Here](https://api.elifesciences.org) for more information)*
-- `/profiles/<profile_id>` returns all information for the given profile (will 
-only return private information if authenticated)
+- `/ping` returns the message `pong` *(useful for testing connection to the service)*
+- `/profiles` returns a list of profiles *(See [Here](https://api.elifesciences.org) for more information)*
+- `/profiles/<profile_id>` returns a given profile *(See [Here](https://api.elifesciences.org) for more information)*
  
 Development
 ===========
