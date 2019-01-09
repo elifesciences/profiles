@@ -30,7 +30,7 @@ LIST_WITH_NESTED_LISTS_WITH_NONE_VALUE_AND_FOLLOWING_VALUES = [
     4]
 
 
-@pytest.mark.parametrize('input, expected_result', [
+@pytest.mark.parametrize('test_data, expected_result', [
     (EMPTY_DICT, False),
     (DICT_WITH_NONE_VALUE, True),
     (DICT_WITH_NESTED_DICTS_WITHOUT_NONE_VALUE, False),
@@ -41,5 +41,5 @@ LIST_WITH_NESTED_LISTS_WITH_NONE_VALUE_AND_FOLLOWING_VALUES = [
     (LIST_WITHOUT_NONE_VALUE, False),
     (LIST_WITH_NESTED_LISTS_WITH_NONE_VALUE_AND_FOLLOWING_VALUES, True)
 ])
-def test_contains_none_values(input, expected_result) -> None:
-    assert contains_none_values(input) is expected_result
+def test_contains_none_values(test_data, expected_result) -> None:
+    assert contains_none_values(test_data) is expected_result
