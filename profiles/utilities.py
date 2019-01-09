@@ -5,7 +5,7 @@ import string
 from datetime import datetime, timedelta, timezone
 from functools import wraps
 from logging import Logger
-from typing import Any, Callable
+from typing import Any, Callable, Union
 
 from elife_api_validator import SCHEMA_DIRECTORY
 from flask import request
@@ -80,7 +80,7 @@ def remove_none_values(items: dict) -> dict:
     return dict(filter(lambda item: item[1] is not None, items.items()))
 
 
-def contains_none_values(data):
+def contains_none_values(data: Union[dict, list]) -> bool:
     if isinstance(data, dict):
         data = data.values()
 
