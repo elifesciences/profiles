@@ -27,7 +27,6 @@ def normalize_profile(profile: Profile) -> dict:
     data = normalize_profile_snippet(profile)
     data['emailAddresses'] = [normalize(email) for email in profile.get_email_addresses()]
     data['affiliations'] = [normalize(aff) for aff in profile.get_affiliations()]
-
     return data
 
 
@@ -44,21 +43,23 @@ def normalize_restricted_profile(profile: Profile) -> dict:
 
 @normalize.register(Affiliation)
 def normalize_affiliation(affiliation: Affiliation) -> dict:
+    name = [affiliation.organisation]
+    if affiliation.department is not None:
+        name.insert(0, affiliation.department)
+
+    components = {"locality": [affiliation.address.city],
+                  "area": [affiliation.address.region],
+                  "country": affiliation.address.country.name}
+    if affiliation.address.region is None:
+        del components['area']
+
     return {
         'access': ACCESS_RESTRICTED if affiliation.restricted else ACCESS_PUBLIC,
         'value': {
-            "name": [affiliation.department, affiliation.organisation],
+            "name": name,
             "address": {
-                "formatted": [
-                    affiliation.address.city,
-                    affiliation.address.region,
-                    affiliation.address.country.name,
-                ],
-                "components": {
-                    "locality": [affiliation.address.city],
-                    "area": [affiliation.address.region],
-                    "country": affiliation.address.country.name
-                }
+                "formatted": [v[0] if isinstance(v, list) else v for v in components.values()],
+                "components": components
             }
         },
     }
