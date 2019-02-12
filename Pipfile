@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-alembic = "~=0.9"
+alembic = "~=1.0"
 blinker = "~=1.4"
 elife_api_validator = {git = "https://github.com/elifesciences/api-validator-python.git",ref = "01a5a9203b0fdfa8d6c4c3650e9999d8e90fe67b"}
 elife-bus-sdk = "~=0.0"
