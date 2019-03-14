@@ -1,3 +1,4 @@
+import json
 from typing import Callable
 
 from flask.testing import FlaskClient
@@ -33,6 +34,59 @@ def test_it_updates_and_returns_204_if_a_profile_is_found(test_client: FlaskClie
 
     assert response.status_code == 204
     assert profile.name.preferred == 'Given Names Family Name'
+
+
+def test_it_does_not_cause_db_to_get_into_broken_state(test_client: FlaskClient,
+                                                       webhook_payload: str) -> None:
+
+    profile_1 = Profile('a1b2c3d4', Name('Foo Bar'))
+    profile_1.add_email_address('1@example.com', restricted=False)
+
+    profile_2 = Profile('b2c3d4e5', Name('Old Name'), '0000-0002-1825-0097')
+
+    db.session.add(profile_1)
+    db.session.add(profile_2)
+    db.session.commit()
+
+    with requests_mock.Mocker() as mocker:
+        mocker.get('http://www.example.com/api/v2.1/0000-0002-1825-0097/record',
+                   json={
+                       'person': {
+                           'name': {
+                               'family-name': {'value': 'Name'},
+                               'given-names': {'value': 'New'}
+                           },
+                           'emails': {
+                               'email': [
+                                   {'email': '1@example.com',
+                                    'primary': True,
+                                    'verified': True,
+                                    'visibility': 'PUBLIC'}
+                               ]
+                           }
+                       }
+                   })
+
+        response = test_client.post('/orcid-webhook/{}'.format(webhook_payload))
+        assert response.status_code == 204
+
+    response = test_client.get('/profiles/a1b2c3d4')
+    assert response.status_code == 200
+
+    data = json.loads(response.data)
+    assert data['id'] == 'a1b2c3d4'
+    assert data.get('orcid') is None
+    assert data['emailAddresses'][0]['value'] == '1@example.com'
+    assert data['name']['preferred'] == 'Foo Bar'
+
+    response = test_client.get('/profiles/b2c3d4e5')
+    assert response.status_code == 200
+
+    data = json.loads(response.data)
+    assert data['id'] == 'b2c3d4e5'
+    assert data['orcid'] == '0000-0002-1825-0097'
+    assert data['emailAddresses'] == []
+    assert data['name']['preferred'] == 'New Name'
 
 
 def test_it_returns_404_if_a_payload_is_invalid(test_client: FlaskClient) -> None:
