@@ -36,6 +36,7 @@ def test_it_updates_and_returns_204_if_a_profile_is_found(test_client: FlaskClie
     assert profile.name.preferred == 'Given Names Family Name'
 
 
+# pylint: disable=invalid-name
 def test_it_prevents_unique_constraint_error_when_inserting_existing_email_address(
         test_client: FlaskClient, webhook_payload: str) -> None:
     """
@@ -91,6 +92,7 @@ def test_it_prevents_unique_constraint_error_when_inserting_existing_email_addre
     assert data['orcid'] == '0000-0002-1825-0097'
     assert data['emailAddresses'] == []
     assert data['name']['preferred'] == 'New Name'
+# pylint: enable=invalid-name
 
 
 def test_it_returns_404_if_a_payload_is_invalid(test_client: FlaskClient) -> None:
