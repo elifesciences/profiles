@@ -36,8 +36,12 @@ def test_it_updates_and_returns_204_if_a_profile_is_found(test_client: FlaskClie
     assert profile.name.preferred == 'Given Names Family Name'
 
 
-def test_it_does_not_cause_db_to_get_into_broken_state(test_client: FlaskClient,
-                                                       webhook_payload: str) -> None:
+def test_it_prevents_unique_constraint_error_when_inserting_existing_email_address(
+        test_client: FlaskClient, webhook_payload: str) -> None:
+    """
+    This test was added as a result of this issue:
+    https://github.com/elifesciences/issues/issues/4633
+    """
 
     profile_1 = Profile('a1b2c3d4', Name('Foo Bar'))
     profile_1.add_email_address('1@example.com', restricted=False)
