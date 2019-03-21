@@ -8,6 +8,7 @@ elifePipeline {
 
     node('containers-jenkins-plugin') {
         stage 'Build images', {
+            throw new RuntimeException("A sample build failure")
             checkout scm
             dockerComposeBuild(commit)
         }
