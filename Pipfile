@@ -8,7 +8,7 @@ alembic = "~=0.9"
 blinker = "~=1.4"
 elife_api_validator = {git = "https://github.com/elifesciences/api-validator-python.git",ref = "01a5a9203b0fdfa8d6c4c3650e9999d8e90fe67b"}
 elife-bus-sdk = "~=0.0"
-Flask = "~=0.12"
+Flask = "~=1.0"
 Flask-Migrate = "~=2.1"
 Flask-Script = "~=2.0"
 Flask-SQLAlchemy = "~=2.2"
