@@ -12,8 +12,9 @@ RUN mkdir -p var/logs && \
     chown www-data:www-data var/logs && \
     apt-get update && \
     apt-get install -yqq --no-install-recommends \
-    libpq5
-
+    libpq5 && \
+    rm -rf /var/lib/apt/lists/*
+ 
 COPY --chown=elife:elife \
     smoke_tests_wsgi.sh \
     manage.py \
