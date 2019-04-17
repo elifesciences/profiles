@@ -1,0 +1,15 @@
+def pythonSummary;
+elifeUpdatePipeline(
+    { commit ->
+        node('containers-jenkins-plugin') {
+            commit = dockerReadLabel('elifesciences/python_3.6:latest', 'org.label-schema.vcs-ref')
+        }
+        sh "sed -i -e 's/PYTHON_VERSION=.*/PYTHON_VERSION=${commit}/' .env"
+        sh "git add .env"
+        pythonSummary = "Update elifescience/python* base images to ${commit}"
+    },
+    {
+        return pythonSummary
+    },
+    'update_python/'
+)
