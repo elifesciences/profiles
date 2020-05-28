@@ -16,6 +16,7 @@ services:
     working_dir: /srv/profiles
     volumes:
       - ./app.cfg.dev:/srv/profiles/app.cfg
+      - ./config/clients.yaml:/srv/profiles/clients.yaml
       - .:/srv/profiles
     command: "python manage.py runserver --host=0.0.0.0"
     ports:

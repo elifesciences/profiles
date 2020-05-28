@@ -4,8 +4,10 @@ from typing import List, Optional
 from iso3166 import countries
 import jmespath
 
-from profiles.models import Address, Affiliation, Date, Name, Profile
+from profiles.exceptions import ProfileNotFound
+from profiles.models import Address, Affiliation, Date, Name, Profile, db
 from profiles.orcid import VISIBILITY_PUBLIC
+from profiles.repositories import SQLAlchemyProfiles
 
 LOGGER = logging.getLogger(__name__)
 
@@ -70,18 +72,34 @@ def _update_affiliations_from_orcid_record(profile: Profile, orcid_record: dict)
 
 
 def _update_email_addresses_from_orcid_record(profile: Profile, orcid_record: dict) -> None:
-    orcid_emails = extract_email_addresses(orcid_record)
+    orcid_email_dicts = extract_email_addresses(orcid_record)
+    profiles = SQLAlchemyProfiles(db)
+
+    for index, email_dict in enumerate(orcid_email_dicts):
+        email = email_dict.get('email')
+        try:
+            email_profile = profiles.get_by_email_address(email)
+        except ProfileNotFound:
+            continue
+
+        if email_profile.id != profile.id:
+            message = ('Profile %s is trying to add email address %s but this '
+                       'email is associated with profile %s which violates '
+                       'unique constraint for email addresses' %
+                       (profile.id, email, email_profile.id))
+            LOGGER.error(message)
+            del orcid_email_dicts[index]
 
     for email in profile.email_addresses:
         found = False
-        for orcid_email in orcid_emails:
+        for orcid_email in orcid_email_dicts:
             if orcid_email['email'] == email.email:
                 found = True
                 break
         if not found:
             profile.remove_email_address(email.email)
 
-    for orcid_email in orcid_emails:
+    for orcid_email in orcid_email_dicts:
         profile.add_email_address(orcid_email['email'], orcid_email['primary'],
                                   orcid_email['visibility'] != VISIBILITY_PUBLIC)
 

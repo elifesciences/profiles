@@ -5,7 +5,7 @@ import string
 from datetime import datetime, timedelta, timezone
 from functools import wraps
 from logging import Logger
-from typing import Any, Callable
+from typing import Any, Callable, Union
 
 from elife_api_validator import SCHEMA_DIRECTORY
 from flask import request
@@ -78,6 +78,18 @@ def guess_index_name(name: str) -> str:
 
 def remove_none_values(items: dict) -> dict:
     return dict(filter(lambda item: item[1] is not None, items.items()))
+
+
+def contains_none_values(data: Union[dict, list]) -> bool:
+    if isinstance(data, dict):
+        data = data.values()
+
+    for element in data:
+        if element is None:
+            return True
+        if isinstance(element, (dict, list)) and contains_none_values(element):
+            return True
+    return False
 
 
 def validate_json(data: dict, schema_name: str, schema_dir: str = ''):
