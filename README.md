@@ -3,20 +3,16 @@ eLife Profiles
 
 [![Build Status](https://ci--alfred.elifesciences.org/buildStatus/icon?job=test-profiles)](https://ci--alfred.elifesciences.org/job/test-profiles/) [![Coverage Status](https://coveralls.io/repos/github/elifesciences/profiles/badge.svg?branch=develop)](https://coveralls.io/github/elifesciences/profiles?branch=develop)
 
-Profiles is a service used by eLife Sciences Publications, Ltd. to create and 
-store eLife user profiles. Currently, eLife uses [ORCID](https://orcid.org/) for 
-authentication.
+`profiles` is a service used to create and store eLife user profiles.
 
-When a user account is created or updated on ORCID, the new account information is sent to 
-the Profiles service via a webhook and a new eLife profile is created, ready to be
-used by other services.
+When a user authenticates through `profiles` with [ORCID](https://orcid.org/) OAuth, a 'user profile' is created/updated 
+and a webhook in ORCID is established to send future ORCID profile updates to the eLife `profiles` service.
 
-End points
-----------
-- `/ping` returns the message `pong` *(useful for testing connection to the service)*
-- `/profiles` returns a list of profiles *(See [Here](https://api.elifesciences.org) for more information)*
-- `/profiles/<profile_id>` returns a given profile *(See [Here](https://api.elifesciences.org) for more information)*
- 
+A user profile is only created through *voluntary* authentication with the eLife `profiles` service and only a subset of
+the public data held by ORCID [is captured](./profiles/models.py) (name, address and affiliations).
+
+`profiles` data is accessible through the [eLife API](https://api.elifesciences.org/documentation/#profiles).
+
 Development
 ===========
 
