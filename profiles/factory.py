@@ -33,6 +33,8 @@ def create_app(config: Config, clients: Clients) -> Flask:
     Migrate(app, db)
 
     orcid_client = OrcidClient(config.orcid['api_uri'])
+    app.orcid_client = orcid_client
+
     orcid_tokens = SQLAlchemyOrcidTokens(db)
     profiles = SQLAlchemyProfiles(db)
 
