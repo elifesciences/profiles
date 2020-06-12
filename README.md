@@ -6,7 +6,7 @@ eLife Profiles
 `profiles` is a service used to create and store eLife author and reviewer data and mediates login to the 
 [submission system](https://reviewer.elifesciences.org) via ORCID and OAuth.
 
-When a user authenticates through `profiles` with [ORCID OAuth]](https://orcid.org/), a 'profile' is created or updated 
+When a user authenticates through `profiles` with [ORCID OAuth](https://orcid.org/), a 'profile' is created or updated 
 and a webhook in ORCID is established to send future ORCID profile updates to the eLife `profiles` service.
 
 A profile is only created through *voluntary* authentication with the eLife `profiles` service and only a subset of
@@ -17,7 +17,7 @@ the data held by ORCID [is captured](./profiles/models.py) (name, email, address
 Important!
 ----------
 
-Restricted data is honoured and not made available publicly. A user's ORCID `name` *must* be public however otherwise
+Restricted data is honoured and not made available publicly. A user's ORCID `name` *must* be public however, otherwise
 login is impossible.
 
 Development
