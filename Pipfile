@@ -6,7 +6,7 @@ name = "pypi"
 [packages]
 alembic = "~=0.9"
 blinker = "~=1.4"
-elife_api_validator = {git = "https://github.com/elifesciences/api-validator-python.git",ref = "01a5a9203b0fdfa8d6c4c3650e9999d8e90fe67b"}
+api-validator-python = {git = "https://github.com/elifesciences/api-validator-python.git",ref = "01a5a9203b0fdfa8d6c4c3650e9999d8e90fe67b"}
 elife-bus-sdk = "~=0.0"
 Flask = ">=1.0"
 Flask-Migrate = "~=2.1"
@@ -38,7 +38,6 @@ flake8 = "~=3.5"
 flake8-import-order = "~=0.13"
 freezegun = "~=0.3"
 hypothesis = "==3.82.5"
-proofreader = "~=0.0"
 pylint = "~=1.8"
 pytest = "~=3.2"
 pytest-socket = "~=0.2"
