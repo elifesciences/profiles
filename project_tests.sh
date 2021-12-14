@@ -5,5 +5,3 @@ source venv/bin/activate
 export PYTHONOPTIMIZE=
 
 coverage run -m pytest --junitxml=build/pytest.xml
-
-coveralls

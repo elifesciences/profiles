@@ -1,7 +1,7 @@
 eLife Profiles
 ==============
 
-[![Build Status](https://ci--alfred.elifesciences.org/buildStatus/icon?job=test-profiles)](https://ci--alfred.elifesciences.org/job/test-profiles/) [![Coverage Status](https://coveralls.io/repos/github/elifesciences/profiles/badge.svg?branch=develop)](https://coveralls.io/github/elifesciences/profiles?branch=develop)
+[![Build Status](https://ci--alfred.elifesciences.org/buildStatus/icon?job=test-profiles)](https://ci--alfred.elifesciences.org/job/test-profiles/)
 
 `profiles` is a service used to create and store eLife author and reviewer data and mediates login to the 
 [submission system](https://reviewer.elifesciences.org) via ORCID and OAuth.
