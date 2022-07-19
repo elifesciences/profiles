@@ -2,7 +2,7 @@ ARG python_version
 FROM elifesciences/python_3.6_pipenv:${python_version}
 
 # force latest pipenv, should be upgraded in base image
-RUN pip install --upgrade pipenv
+RUN pip install --upgrade pipenv==2022.4.8
 
 ARG pipenv_dev_arg
 

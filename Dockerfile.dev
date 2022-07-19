@@ -4,7 +4,7 @@ WORKDIR /srv/profiles
 
 COPY Pipfile ./
 COPY Pipfile.lock ./
-RUN pip install --no-cache-dir pipenv
+RUN pip install --no-cache-dir pipenv==2022.4.8
 RUN pipenv install --system --dev
 
 COPY . /srv/profiles

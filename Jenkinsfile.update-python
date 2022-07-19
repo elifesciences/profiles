@@ -6,7 +6,7 @@ elifeUpdatePipeline(
         }
         sh "sed -i -e 's/PYTHON_VERSION=.*/PYTHON_VERSION=${commit}/' .env"
         sh "git add .env"
-        pythonSummary = "Update elifescience/python* base images to ${commit}"
+        pythonSummary = "Update elifesciences/python* base images to ${commit}"
     },
     {
         return pythonSummary
