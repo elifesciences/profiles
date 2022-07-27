@@ -11,6 +11,10 @@ alembic = "~=0.9"
 blinker = "~=1.4"
 api-validator-python = {git = "https://github.com/elifesciences/api-validator-python.git",ref = "01a5a9203b0fdfa8d6c4c3650e9999d8e90fe67b"}
 elife-bus-sdk = "~=0.0"
+# pinned, Flask depends on MarkupSafe (same guy/org), which removed a feature in a minor version.
+# - https://github.com/pallets/flask/issues/4455
+# - https://github.com/pallets/markupsafe/issues/286
+MarkupSafe = "==2.0.1"
 Flask = "~=1.0"
 Flask-Migrate = "~=2.1"
 Flask-Script = "~=2.0"
