@@ -3,10 +3,17 @@ FROM elifesciences/python_3.8:${python_version}
 
 ARG pipenv_dev_arg
 
+# lsh@2022-07-27: uwsgi needs to be built, uncertain how it was happening before.
+# note: 'python3-dev' under 'elifesciences/python_3.8' will install python3.9-dev and python3.9.
+#       - https://packages.debian.org/bullseye/python3-dev
+USER root
+RUN apt-get update -y && \
+    apt-get install build-essential python3-dev clang git -y --no-install-recommends
+
 ENV PROJECT_FOLDER=/srv/profiles
 WORKDIR ${PROJECT_FOLDER}
 
-RUN virtualenv venv
+RUN python3.8 -m venv venv
 ENV VIRTUAL_ENV=${PROJECT_FOLDER}/venv
 
 COPY Pipfile Pipfile.lock ./
