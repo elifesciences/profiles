@@ -10,21 +10,21 @@ from profiles.utilities import expires_at
 MAX_EXPIRE = 999999
 
 
-@given(text(), text(), integers(max_value=MAX_EXPIRE))
+@given(text(), text(), integers(min_value=-MAX_EXPIRE, max_value=MAX_EXPIRE))
 def test_it_can_be_printed(orcid, token, expire):
     orcid_token = OrcidToken(orcid, token, expires_at(expire))
 
     assert repr(orcid_token) == "<OrcidToken for {!r}>".format(orcid)
 
 
-@given(text(), text(), integers(max_value=MAX_EXPIRE))
+@given(text(), text(), integers(min_value=-MAX_EXPIRE, max_value=MAX_EXPIRE))
 def test_it_has_an_orcid(orcid, token, expire):
     orcid_token = OrcidToken(orcid, token, expires_at(expire))
 
     assert orcid_token.orcid == '{}'.format(orcid)
 
 
-@given(text(), text(), integers(max_value=MAX_EXPIRE))
+@given(text(), text(), integers(min_value=-MAX_EXPIRE, max_value=MAX_EXPIRE))
 def test_it_has_an_access_token(orcid, token, expire):
     orcid_token = OrcidToken(orcid, token, expires_at(expire))
 
@@ -32,7 +32,7 @@ def test_it_has_an_access_token(orcid, token, expire):
 
 
 @freeze_time('2017-01-01 00:00:00')
-@given(text(), text(), integers(max_value=MAX_EXPIRE))
+@given(text(), text(), integers(min_value=-MAX_EXPIRE, max_value=MAX_EXPIRE))
 def test_it_has_an_expiry_date(orcid, token, expire):
     orcid_token = OrcidToken(orcid, token, expires_at(expire))
 
