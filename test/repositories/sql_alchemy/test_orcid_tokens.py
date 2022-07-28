@@ -25,7 +25,7 @@ def test_it_contains_orcid_tokens():
         orcid_tokens.get('0000-0002-1825-0099')
 
 
-@given(text(), text(), integers(max_value=999999))
+@given(text(), text(), integers(min_value=-999999, max_value=999999))
 def test_it_clears_orcid_tokens(orcid, token, expire):
     orcid_tokens = SQLAlchemyOrcidTokens(db)
     orcid_tokens.add(OrcidToken(orcid, token, expires_at(expire)))
