@@ -10,6 +10,7 @@ from flask.testing import FlaskClient
 from flask_sqlalchemy import SQLAlchemy, models_committed
 from hypothesis import settings as hyp_settings
 from hypothesis.configuration import set_hypothesis_home_dir
+from hypothesis.database import DirectoryBasedExampleDatabase
 from itsdangerous import URLSafeSerializer
 from pytest import fixture
 from sqlalchemy import event
@@ -33,7 +34,9 @@ TEST_DATABASE_URI = 'sqlite:///' + TEST_DATABASE_PATH
 logging.disable(logging.CRITICAL)
 
 set_hypothesis_home_dir(BUILD_PATH + 'hypothesis/home')
-hyp_settings.register_profile('default', hyp_settings(database_file=BUILD_PATH + 'hypothesis/db'))
+# lsh@2022-07-27: 'database_file' removed in 4.x, replaced with this:
+# - https://hypothesis.readthedocs.io/en/latest/database.html#upgrading-hypothesis-and-changing-your-tests
+hyp_settings.register_profile('default', hyp_settings(database=DirectoryBasedExampleDatabase(BUILD_PATH + 'hypothesis/db')))
 hyp_settings.load_profile('default')
 
 
