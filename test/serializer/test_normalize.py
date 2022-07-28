@@ -1,10 +1,8 @@
 from hypothesis import given
-from hypothesis.strategies import booleans, integers, text
+from hypothesis.strategies import booleans, integers, text, emails
 from iso3166 import countries
-
 from profiles.models import Address, Affiliation, EmailAddress, Name, Profile
 from profiles.serializer.normalizer import normalize
-from hypothesis.strategies import emails
 
 @given(text(), integers())
 def test_it_normalizes_scalars(string, num):
