@@ -1,11 +1,8 @@
 from hypothesis import given
-from hypothesis.extra.fakefactory import fake_factory
-from hypothesis.strategies import booleans, integers, text
+from hypothesis.strategies import booleans, integers, text, emails
 from iso3166 import countries
-
 from profiles.models import Address, Affiliation, EmailAddress, Name, Profile
 from profiles.serializer.normalizer import normalize
-
 
 @given(text(), integers())
 def test_it_normalizes_scalars(string, num):
@@ -43,7 +40,7 @@ def test_it_normalizes_profile_with_orcid():
     }
 
 
-@given(text(), text(), text(), text(), fake_factory('email'))
+@given(text(), text(), text(), text(), emails())
 def test_it_normalizes_profile_with_single_email_address(id_, preferred, index, orcid, email):
     profile = Profile(id_, Name(preferred, index), orcid)
     profile.add_email_address(email)
@@ -53,7 +50,7 @@ def test_it_normalizes_profile_with_single_email_address(id_, preferred, index, 
     assert len(normalized_profile['emailAddresses']) == 1
 
 
-@given(text(), text(), text(), text(), fake_factory('email'))
+@given(text(), text(), text(), text(), emails())
 def test_it_normalizes_profile_with_multiple_email_addresses(id_, preferred, index, orcid, email):
     profile = Profile(id_, Name(preferred, index), orcid)
     profile.add_email_address(email)
@@ -217,7 +214,7 @@ def test_it_normalizes_affiliation(yesterday, restricted):
     }
 
 
-@given(fake_factory('email'), booleans())
+@given(emails(), booleans())
 def test_it_normalizes_email_address(email, restricted):
     email_address = EmailAddress(email, restricted)
 
