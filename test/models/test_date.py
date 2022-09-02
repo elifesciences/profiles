@@ -21,33 +21,33 @@ def test_it_casts_to_a_string():
     date2 = Date(2017, 1)
     date3 = Date(2017, 1, 2)
 
-    assert str(date1) == '2017'
-    assert str(date2) == '2017-01'
-    assert str(date3) == '2017-01-02'
+    assert str(date1) == "2017"
+    assert str(date2) == "2017-01"
+    assert str(date3) == "2017-01-02"
 
 
-@freeze_time('2017-01-02 00:00:00')
+@freeze_time("2017-01-02 00:00:00")
 def test_it_can_be_created_from_a_datetime():
     date = Date.from_datetime(datetime.now())
 
     assert date == Date(2017, 1, 2)
 
 
-@freeze_time('2017-01-02 00:00:00')
+@freeze_time("2017-01-02 00:00:00")
 def test_it_can_be_created_for_yesterday():
     date = Date.yesterday()
 
     assert date == Date(2017, 1, 1)
 
 
-@freeze_time('2017-01-02 00:00:00')
+@freeze_time("2017-01-02 00:00:00")
 def test_it_can_be_created_for_today():
     date = Date.today()
 
     assert date == Date(2017, 1, 2)
 
 
-@freeze_time('2017-01-02 00:00:00')
+@freeze_time("2017-01-02 00:00:00")
 def test_it_can_be_created_for_tomorrow():
     date = Date.tomorrow()
 
@@ -104,9 +104,9 @@ def test_it_can_become_the_lowest_possible_datetime():
     date2 = Date(2017, 2)
     date3 = Date(2017, 3, 4)
 
-    assert date1.lowest_possible().isoformat() == '2017-01-01T00:00:00'
-    assert date2.lowest_possible().isoformat() == '2017-02-01T00:00:00'
-    assert date3.lowest_possible().isoformat() == '2017-03-04T00:00:00'
+    assert date1.lowest_possible().isoformat() == "2017-01-01T00:00:00"
+    assert date2.lowest_possible().isoformat() == "2017-02-01T00:00:00"
+    assert date3.lowest_possible().isoformat() == "2017-03-04T00:00:00"
 
 
 def test_it_can_become_the_highest_possible_datetime():
@@ -115,10 +115,10 @@ def test_it_can_become_the_highest_possible_datetime():
     date3 = Date(2016, 2)
     date4 = Date(2017, 3, 4)
 
-    assert date1.highest_possible().isoformat() == '2017-12-31T00:00:00'
-    assert date2.highest_possible().isoformat() == '2017-02-28T00:00:00'
-    assert date3.highest_possible().isoformat() == '2016-02-29T00:00:00'
-    assert date4.highest_possible().isoformat() == '2017-03-04T00:00:00'
+    assert date1.highest_possible().isoformat() == "2017-12-31T00:00:00"
+    assert date2.highest_possible().isoformat() == "2017-02-28T00:00:00"
+    assert date3.highest_possible().isoformat() == "2016-02-29T00:00:00"
+    assert date4.highest_possible().isoformat() == "2017-03-04T00:00:00"
 
 
 def test_it_can_be_compared():

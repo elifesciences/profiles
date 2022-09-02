@@ -24,12 +24,18 @@ def error_handler(exception: Exception) -> Response:
 def client_error_handler(exception: ClientError) -> Response:
     LOGGER.exception(exception)
 
-    query = remove_none_values(OrderedDict([
-        ('error', exception.error),
-        ('error_description', exception.description),
-    ]))
+    query = remove_none_values(
+        OrderedDict(
+            [
+                ("error", exception.error),
+                ("error_description", exception.description),
+            ]
+        )
+    )
 
-    return redirect('{}?{}'.format(exception.uri, urlencode(query, True)), exception.status_code)
+    return redirect(
+        "{}?{}".format(exception.uri, urlencode(query, True)), exception.status_code
+    )
 
 
 def http_error_handler(exception: HTTPException) -> Response:
@@ -44,22 +50,28 @@ def http_error_handler(exception: HTTPException) -> Response:
 def oauth2_error_handler(exception: OAuth2Error) -> Response:
     LOGGER.exception(exception)
 
-    body = remove_none_values(OrderedDict([
-        ('error', exception.error),
-        ('error_description', exception.description),
-    ]))
+    body = remove_none_values(
+        OrderedDict(
+            [
+                ("error", exception.error),
+                ("error_description", exception.description),
+            ]
+        )
+    )
 
     return make_response(jsonify(body), exception.status_code)
 
 
 def _handle_http_error(exception: HTTPException) -> Response:
-    if request.path.startswith('/oauth2/authorize') or request.path.startswith('/oauth2/check'):
+    if request.path.startswith("/oauth2/authorize") or request.path.startswith(
+        "/oauth2/check"
+    ):
         return make_response(exception, exception.code)
 
     body = {
-        'title': getattr(exception, 'description', exception.name),
+        "title": getattr(exception, "description", exception.name),
     }
     response = make_response(jsonify(body), exception.code)
-    response.headers['Content-Type'] = 'application/problem+json'
+    response.headers["Content-Type"] = "application/problem+json"
 
     return response

@@ -18,9 +18,9 @@ ID_LENGTH = 8
 class Date(object):
     def __init__(self, year: int, month: int = None, day: int = None) -> None:
         if day is not None and month is None:
-            raise ValueError('Month is missing')
+            raise ValueError("Month is missing")
         elif month is not None and not 1 <= month <= 12:
-            raise ValueError('Invalid date')
+            raise ValueError("Invalid date")
         elif day is not None:
             pendulum.date(year, month, day)
 
@@ -29,48 +29,53 @@ class Date(object):
         self.day = day
 
     @classmethod
-    def from_datetime(cls: 'Date', datetime: datetime) -> 'Date':
+    def from_datetime(cls: "Date", datetime: datetime) -> "Date":
         return Date(datetime.year, datetime.month, datetime.day)
 
     @classmethod
-    def yesterday(cls: 'Date') -> 'Date':
+    def yesterday(cls: "Date") -> "Date":
         return cls.from_datetime(pendulum.yesterday())
 
     @classmethod
-    def today(cls: 'Date') -> 'Date':
+    def today(cls: "Date") -> "Date":
         return cls.from_datetime(pendulum.today())
 
     @classmethod
-    def tomorrow(cls: 'Date') -> 'Date':
+    def tomorrow(cls: "Date") -> "Date":
         return cls.from_datetime(pendulum.tomorrow())
 
     def lowest_possible(self) -> datetime:
         return datetime(self.year, self.month or 1, self.day or 1)
 
     def highest_possible(self) -> datetime:
-        return datetime(self.year, self.month or 12,
-                        self.day or monthrange(self.year, self.month or 12)[1])
+        return datetime(
+            self.year,
+            self.month or 12,
+            self.day or monthrange(self.year, self.month or 12)[1],
+        )
 
     def __composite_values__(self) -> Iterable[Optional[int]]:
         return self.year, self.month, self.day
 
     def __str__(self) -> str:
-        parts = ['{0:04d}'.format(self.year)]
+        parts = ["{0:04d}".format(self.year)]
         if self.month:
-            parts.append('{0:02d}'.format(self.month))
+            parts.append("{0:02d}".format(self.month))
         if self.day:
-            parts.append('{0:02d}'.format(self.day))
+            parts.append("{0:02d}".format(self.day))
 
-        return '-'.join(parts)
+        return "-".join(parts)
 
     def __repr__(self) -> str:
-        return '<Date %r>' % str(self)
+        return "<Date %r>" % str(self)
 
     def __eq__(self, other: Any) -> bool:
-        return isinstance(other, Date) and \
-            other.year == self.year and \
-            other.month == self.month and \
-            other.day == self.day
+        return (
+            isinstance(other, Date)
+            and other.year == self.year
+            and other.month == self.month
+            and other.day == self.day
+        )
 
     def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
@@ -84,10 +89,10 @@ class OrcidToken(db.Model):
     def __init__(self, orcid: str, access_token: str, expires_at: datetime) -> None:
         self.orcid = orcid
         self.access_token = access_token
-        self.expires_at = pendulum.timezone('utc').convert(expires_at)
+        self.expires_at = pendulum.timezone("utc").convert(expires_at)
 
     def __repr__(self) -> str:
-        return '<OrcidToken for %r>' % self.orcid
+        return "<OrcidToken for %r>" % self.orcid
 
 
 class Name(object):
@@ -105,12 +110,14 @@ class Name(object):
         return self.preferred
 
     def __repr__(self) -> str:
-        return '<Name %r>' % self.preferred
+        return "<Name %r>" % self.preferred
 
     def __eq__(self, other: Any) -> bool:
-        return isinstance(other, Name) and \
-            other.preferred == self.preferred and \
-            other.index == self.index
+        return (
+            isinstance(other, Name)
+            and other.preferred == self.preferred
+            and other.index == self.index
+        )
 
     def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
@@ -126,13 +133,15 @@ class Address(object):
         return self.country, self.city, self.region
 
     def __repr__(self) -> str:
-        return '<Address %r %r %r>' % (self.city, self.region, self.country.alpha2)
+        return "<Address %r %r %r>" % (self.city, self.region, self.country.alpha2)
 
     def __eq__(self, other: Any) -> bool:
-        return isinstance(other, Address) and \
-            other.city == self.city and \
-            other.region == self.region and \
-            other.country == self.country
+        return (
+            isinstance(other, Address)
+            and other.city == self.city
+            and other.region == self.region
+            and other.country == self.country
+        )
 
     def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
@@ -142,27 +151,34 @@ class Affiliation(db.Model):
     id = db.Column(db.Text(), primary_key=True)
     department = db.Column(db.Text())
     organisation = db.Column(db.Text(), nullable=False)
-    address = composite(Address, '_country', '_city', '_region')
-    _city = db.Column(db.Text(), name='city', nullable=False)
-    _region = db.Column(db.Text(), name='region')
-    _country = db.Column(ISO3166Country, name='country', nullable=False)
-    _starts = composite(Date, '_starts_year', '_starts_month', '_starts_day')
-    _starts_year = db.Column(db.Integer(), name='starts_year')
-    _starts_month = db.Column(db.Integer(), name='starts_month')
-    _starts_day = db.Column(db.Integer(), name='starts_day')
-    _ends = composite(Date, '_ends_year', '_ends_month', '_ends_day')
-    _ends_year = db.Column(db.Integer(), name='ends_year')
-    _ends_month = db.Column(db.Integer(), name='ends_month')
-    _ends_day = db.Column(db.Integer(), name='ends_day')
+    address = composite(Address, "_country", "_city", "_region")
+    _city = db.Column(db.Text(), name="city", nullable=False)
+    _region = db.Column(db.Text(), name="region")
+    _country = db.Column(ISO3166Country, name="country", nullable=False)
+    _starts = composite(Date, "_starts_year", "_starts_month", "_starts_day")
+    _starts_year = db.Column(db.Integer(), name="starts_year")
+    _starts_month = db.Column(db.Integer(), name="starts_month")
+    _starts_day = db.Column(db.Integer(), name="starts_day")
+    _ends = composite(Date, "_ends_year", "_ends_month", "_ends_day")
+    _ends_year = db.Column(db.Integer(), name="ends_year")
+    _ends_month = db.Column(db.Integer(), name="ends_month")
+    _ends_day = db.Column(db.Integer(), name="ends_day")
     restricted = db.Column(db.Boolean(), nullable=False)
-    profile_id = db.Column(db.String(ID_LENGTH), db.ForeignKey('profile.id'))
-    profile = db.relationship('Profile', back_populates='affiliations')
+    profile_id = db.Column(db.String(ID_LENGTH), db.ForeignKey("profile.id"))
+    profile = db.relationship("Profile", back_populates="affiliations")
     position = db.Column(db.Integer())
 
     # pylint: disable=too-many-arguments
-    def __init__(self, affiliation_id: str, address: Address, organisation: str,
-                 starts: Date = None, department: str = None, ends: Date = None,
-                 restricted: bool = False) -> None:
+    def __init__(
+        self,
+        affiliation_id: str,
+        address: Address,
+        organisation: str,
+        starts: Date = None,
+        department: str = None,
+        ends: Date = None,
+        restricted: bool = False,
+    ) -> None:
         self.id = affiliation_id
         self.department = department
         self.organisation = organisation
@@ -190,27 +206,37 @@ class Affiliation(db.Model):
         self._ends = ends
 
     def is_current(self) -> bool:
-        starts = pendulum.instance(self.starts.lowest_possible()) if self.starts else None
+        starts = (
+            pendulum.instance(self.starts.lowest_possible()) if self.starts else None
+        )
         ends = pendulum.instance(self.ends.highest_possible()) if self.ends else None
 
         return (not starts or starts.is_past()) and (not ends or ends.is_future())
 
     def __repr__(self) -> str:
-        return '<Affiliation %r>' % self.id
+        return "<Affiliation %r>" % self.id
 
 
 class Profile(db.Model):
     id = db.Column(db.String(ID_LENGTH), primary_key=True)
-    name = composite(Name, '_preferred_name', '_index_name')
-    _preferred_name = db.Column(db.Text(), name='preferred_name', nullable=False)
-    _index_name = db.Column(db.Text(), name='index_name', nullable=False)
+    name = composite(Name, "_preferred_name", "_index_name")
+    _preferred_name = db.Column(db.Text(), name="preferred_name", nullable=False)
+    _index_name = db.Column(db.Text(), name="index_name", nullable=False)
     orcid = db.Column(db.String(19), unique=True)
-    affiliations = db.relationship('Affiliation', order_by='Affiliation.position',
-                                   collection_class=ordering_list('position'),
-                                   cascade='all, delete-orphan', back_populates='profile')
-    email_addresses = db.relationship('EmailAddress', order_by='EmailAddress.position',
-                                      collection_class=ordering_list('position'),
-                                      cascade='all, delete-orphan', back_populates='profile')
+    affiliations = db.relationship(
+        "Affiliation",
+        order_by="Affiliation.position",
+        collection_class=ordering_list("position"),
+        cascade="all, delete-orphan",
+        back_populates="profile",
+    )
+    email_addresses = db.relationship(
+        "EmailAddress",
+        order_by="EmailAddress.position",
+        collection_class=ordering_list("position"),
+        cascade="all, delete-orphan",
+        back_populates="profile",
+    )
 
     def __init__(self, profile_id: str, name: Name, orcid: str = None) -> None:
         self.id = profile_id
@@ -248,10 +274,11 @@ class Profile(db.Model):
             if affiliation.id == affiliation_id:
                 return affiliation
 
-        raise AffiliationNotFound('Affiliation with the ID {} not found'.format(id))
+        raise AffiliationNotFound("Affiliation with the ID {} not found".format(id))
 
-    def get_affiliations(self, current_only: bool = True,
-                         include_restricted: bool = False) -> List[Affiliation]:
+    def get_affiliations(
+        self, current_only: bool = True, include_restricted: bool = False
+    ) -> List[Affiliation]:
 
         affiliations = self.affiliations
 
@@ -270,8 +297,9 @@ class Profile(db.Model):
                 self.affiliations.reorder()
                 return
 
-    def add_email_address(self, email: str, primary: bool = False,
-                          restricted: bool = False) -> None:
+    def add_email_address(
+        self, email: str, primary: bool = False, restricted: bool = False
+    ) -> None:
         for email_address in self.email_addresses:
             if email_address.email == email:
                 email_address.restricted = restricted
@@ -303,14 +331,14 @@ class Profile(db.Model):
                 return
 
     def __repr__(self) -> str:
-        return '<Profile %r>' % self.id
+        return "<Profile %r>" % self.id
 
 
 class EmailAddress(db.Model):
     email = db.Column(db.Text(), primary_key=True)
     restricted = db.Column(db.Boolean(), nullable=False)
-    profile_id = db.Column(db.String(ID_LENGTH), db.ForeignKey('profile.id'))
-    profile = db.relationship('Profile', back_populates='email_addresses')
+    profile_id = db.Column(db.String(ID_LENGTH), db.ForeignKey("profile.id"))
+    profile = db.relationship("Profile", back_populates="email_addresses")
     position = db.Column(db.Integer())
 
     def __init__(self, email: str, restricted: bool = False) -> None:
@@ -318,4 +346,4 @@ class EmailAddress(db.Model):
         self.restricted = restricted
 
     def __repr__(self) -> str:
-        return '<EmailAddress %r>' % self.email
+        return "<EmailAddress %r>" % self.email

@@ -15,21 +15,29 @@ from profiles.repositories import OrcidTokens, Profiles
 LOGGER = logging.getLogger(__name__)
 
 
-def create_blueprint(profiles: Profiles, orcid_config: Dict[str, str],
-                     orcid_client: OrcidClient, orcid_tokens: OrcidTokens,
-                     uri_signer: URLSafeSerializer) -> Blueprint:
-    blueprint = Blueprint('webhook', __name__)
+def create_blueprint(
+    profiles: Profiles,
+    orcid_config: Dict[str, str],
+    orcid_client: OrcidClient,
+    orcid_tokens: OrcidTokens,
+    uri_signer: URLSafeSerializer,
+) -> Blueprint:
+    blueprint = Blueprint("webhook", __name__)
 
-    @blueprint.route('/orcid-webhook/<payload>', methods=['POST'])
+    @blueprint.route("/orcid-webhook/<payload>", methods=["POST"])
     def _update(payload: str) -> Response:
-        LOGGER.info('POST request received from /orcid-webhook/%s',
-                    uri_signer.loads_unsafe(payload)[-1])
+        LOGGER.info(
+            "POST request received from /orcid-webhook/%s",
+            uri_signer.loads_unsafe(payload)[-1],
+        )
 
         try:
             orcid = uri_signer.loads(payload)
         except BadSignature as exception:
-            LOGGER.error('BadSignature: payload signature does not match: /orcid-webhook/%s',
-                         uri_signer.loads_unsafe(payload)[-1])
+            LOGGER.error(
+                "BadSignature: payload signature does not match: /orcid-webhook/%s",
+                uri_signer.loads_unsafe(payload)[-1],
+            )
             raise NotFound from exception
 
         try:
@@ -40,15 +48,20 @@ def create_blueprint(profiles: Profiles, orcid_config: Dict[str, str],
         try:
             access_token = orcid_tokens.get(profile.orcid).access_token
         except OrcidTokenNotFound:
-            LOGGER.info('OrcidTokenNotFound: Access Token not found for %s. '
-                        'Reverting to public access token', profile.orcid)
-            access_token = orcid_config.get('read_public_access_token')
+            LOGGER.info(
+                "OrcidTokenNotFound: Access Token not found for %s. "
+                "Reverting to public access token",
+                profile.orcid,
+            )
+            access_token = orcid_config.get("read_public_access_token")
 
         try:
             orcid_record = orcid_client.get_record(orcid, access_token)
         except RequestException as exception:
-            if exception.response.status_code == 403 and not access_token == \
-                    orcid_config.get('read_public_access_token'):
+            if (
+                exception.response.status_code == 403
+                and not access_token == orcid_config.get("read_public_access_token")
+            ):
                 orcid_tokens.remove(profile.orcid)
 
                 # Let ORCID retry, it will use the public access token

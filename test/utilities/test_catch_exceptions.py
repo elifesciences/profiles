@@ -9,9 +9,9 @@ from profiles.utilities import catch_exceptions
 
 @fixture
 def logger(handler: Handler) -> Logger:
-    logger = Logger('logger', logging.DEBUG)
+    logger = Logger("logger", logging.DEBUG)
     logger.addHandler(handler)
-    logger.manager = Manager('root')
+    logger.manager = Manager("root")
 
     return logger
 
@@ -24,7 +24,7 @@ def handler() -> Handler:
 def test_it_catches_and_logs_exceptions(logger: Logger, handler: BufferingHandler):
     @catch_exceptions(logger)
     def my_function():
-        raise Exception('My exception')
+        raise Exception("My exception")
 
     result = my_function()
 

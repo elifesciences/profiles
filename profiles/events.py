@@ -15,13 +15,14 @@ from profiles.utilities import catch_exceptions
 
 LOGGER = logging.getLogger(__name__)
 
-OPERATION_DELETE = 'delete'
-OPERATION_INSERT = 'insert'
-OPERATION_UPDATE = 'update'
+OPERATION_DELETE = "delete"
+OPERATION_INSERT = "insert"
+OPERATION_UPDATE = "update"
 
 
-def maintain_orcid_webhook(orcid: Dict[str, str], orcid_client: OrcidClient,
-                           uri_signer: URLSafeSerializer) -> Callable[..., None]:
+def maintain_orcid_webhook(
+    orcid: Dict[str, str], orcid_client: OrcidClient, uri_signer: URLSafeSerializer
+) -> Callable[..., None]:
     # pylint:disable=unused-argument
     @catch_exceptions(LOGGER)
     def webhook_maintainer(sender: Any, changes: List[Tuple[db.Model, str]]) -> None:
@@ -30,11 +31,14 @@ def maintain_orcid_webhook(orcid: Dict[str, str], orcid_client: OrcidClient,
         if not profiles:
             return
 
-        access_token = orcid.get('webhook_access_token')
+        access_token = orcid.get("webhook_access_token")
 
         for profile, operation in profiles:
-            uri = url_for('webhook._update', payload=uri_signer.dumps(profile.orcid),
-                          _external=True)
+            uri = url_for(
+                "webhook._update",
+                payload=uri_signer.dumps(profile.orcid),
+                _external=True,
+            )
 
             try:
                 if operation == OPERATION_DELETE:
@@ -53,10 +57,10 @@ def send_update_events(publisher: EventPublisher) -> Callable[..., None]:
     def event_handler(sender: Any, changes: List[Tuple[db.Model, str]]) -> None:
         ids = []
 
-        LOGGER.info('Processing event(s)')
+        LOGGER.info("Processing event(s)")
 
         for instance, operation in changes:  # pylint:disable=unused-variable
-            LOGGER.info('Found operation %s %s', operation, instance)
+            LOGGER.info("Found operation %s %s", operation, instance)
             if isinstance(instance, Profile):
                 ids.append(instance.id)
             if isinstance(instance, (Affiliation, EmailAddress)):
@@ -64,14 +68,17 @@ def send_update_events(publisher: EventPublisher) -> Callable[..., None]:
 
         for profile_id in set(ids):
             try:
-                LOGGER.info('Sending event for Profile %s', profile_id)
+                LOGGER.info("Sending event for Profile %s", profile_id)
 
                 # send message to bus indicating a profile change
                 publisher.publish(ProfileEvent(id=profile_id))
 
-                LOGGER.info('Event sent for profile id: %s', profile_id)
+                LOGGER.info("Event sent for profile id: %s", profile_id)
             except (AttributeError, RuntimeError):
-                LOGGER.exception(UpdateEventFailure('Failed to send event '
-                                                    'for Profile {}'.format(profile_id)))
+                LOGGER.exception(
+                    UpdateEventFailure(
+                        "Failed to send event " "for Profile {}".format(profile_id)
+                    )
+                )
 
     return event_handler

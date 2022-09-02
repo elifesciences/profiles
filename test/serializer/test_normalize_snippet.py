@@ -16,20 +16,17 @@ def test_it_normalizes_profile_snippets(id_, preferred, index, orcid):
     profile = Profile(id_, Name(preferred, index))
 
     assert normalize_snippet(profile) == {
-        'id': id_,
-        'name': {
-            'preferred': preferred,
-            'index': index
-        },
+        "id": id_,
+        "name": {"preferred": preferred, "index": index},
     }
 
     profile = Profile(id_, Name(preferred, index), orcid)
 
     assert normalize_snippet(profile) == {
-        'id': id_,
-        'name': {
-            'preferred': preferred,
-            'index': index,
+        "id": id_,
+        "name": {
+            "preferred": preferred,
+            "index": index,
         },
-        'orcid': orcid,
+        "orcid": orcid,
     }

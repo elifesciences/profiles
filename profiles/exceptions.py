@@ -7,30 +7,30 @@ class OAuth2Error(Exception):
     status_code = 400
 
     def __init__(self, description: str = None) -> None:
-        message = '(' + self.error + ')'
+        message = "(" + self.error + ")"
 
         if description:
             self.description = description
-            message += ' ' + description
+            message += " " + description
 
         super(OAuth2Error, self).__init__(message)
 
 
 class InvalidClient(OAuth2Error):
-    error = 'invalid_client'
+    error = "invalid_client"
     status_code = 401
 
 
 class InvalidGrant(OAuth2Error):
-    error = 'invalid_grant'
+    error = "invalid_grant"
 
 
 class InvalidRequest(OAuth2Error):
-    error = 'invalid_request'
+    error = "invalid_request"
 
 
 class UnsupportedGrantType(OAuth2Error):
-    error = 'unsupported_grant_type'
+    error = "unsupported_grant_type"
 
 
 class ClientError(OAuth2Error):
@@ -44,15 +44,15 @@ class ClientError(OAuth2Error):
 
 
 class ClientInvalidRequest(ClientError):
-    error = 'invalid_request'
+    error = "invalid_request"
 
 
 class ClientUnsupportedResourceType(ClientError):
-    error = 'unsupported_response_type'
+    error = "unsupported_response_type"
 
 
 class ClientInvalidScope(ClientError):
-    error = 'invalid_scope'
+    error = "invalid_scope"
 
 
 class AffiliationNotFound(Exception):

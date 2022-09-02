@@ -24,7 +24,7 @@ class Command(ABC, BaseCommand):
 
 class ReadConfiguration(Command):
     "Allows calling a method on the Config object to print its result"
-    NAME = 'read-configuration'
+    NAME = "read-configuration"
 
     def __init__(self, config) -> None:
         super(ReadConfiguration, self).__init__()
@@ -32,7 +32,7 @@ class ReadConfiguration(Command):
 
     def get_options(self) -> List[Option]:
         return [
-            Option('-s', '--method', dest='method', type=str),
+            Option("-s", "--method", dest="method", type=str),
         ]
 
     # pylint: disable=method-hidden,arguments-differ
@@ -44,7 +44,7 @@ class ReadConfiguration(Command):
 
 
 class ClearCommand(Command):
-    NAME = 'clear'
+    NAME = "clear"
 
     def __init__(self, *repositories: CanBeCleared) -> None:
         super(ClearCommand, self).__init__()
@@ -64,7 +64,8 @@ class CreateProfileCommand(Command):
     $ python manage.py create-profile --name "Test User" --email "test@test.com"
 
     """
-    NAME = 'create-profile'
+
+    NAME = "create-profile"
 
     def __init__(self, profiles: Profiles):
         super(CreateProfileCommand, self).__init__()
@@ -72,8 +73,8 @@ class CreateProfileCommand(Command):
 
     def get_options(self) -> List[Option]:
         return [
-            Option('-e', '--email', dest='email', type=str),
-            Option('-n', '--name', dest='name', type=str),
+            Option("-e", "--email", dest="email", type=str),
+            Option("-n", "--name", dest="name", type=str),
         ]
 
     # pylint: disable=method-hidden,arguments-differ
@@ -91,14 +92,19 @@ class CreateProfileCommand(Command):
 
             return profile.id, email
         else:
-            print('Error: Please provide valid strings for both `--name` and `--email`')
+            print("Error: Please provide valid strings for both `--name` and `--email`")
 
 
 class SetOrcidWebhooksCommand(Command):
-    NAME = 'set-orcid-webhooks'
+    NAME = "set-orcid-webhooks"
 
-    def __init__(self, profiles: Profiles, orcid: Dict[str, str], orcid_client: OrcidClient,
-                 uri_signer: URLSafeSerializer) -> None:
+    def __init__(
+        self,
+        profiles: Profiles,
+        orcid: Dict[str, str],
+        orcid_client: OrcidClient,
+        uri_signer: URLSafeSerializer,
+    ) -> None:
         super(SetOrcidWebhooksCommand, self).__init__()
         self.profiles = profiles
         self.orcid = orcid
@@ -111,13 +117,16 @@ class SetOrcidWebhooksCommand(Command):
     # and we keep flask_script in the long term
     # pylint: disable=method-hidden
     def run(self) -> None:
-        access_token = self.orcid.get('webhook_access_token')
+        access_token = self.orcid.get("webhook_access_token")
 
         profiles = self.profiles.list()
 
         total = len(profiles)
         for index, profile in enumerate(profiles):
-            LOGGER.debug('%s of %s: %s', index + 1, total, profile)
-            uri = url_for('webhook._update', payload=self.uri_signer.dumps(profile.orcid),
-                          _external=True)
+            LOGGER.debug("%s of %s: %s", index + 1, total, profile)
+            uri = url_for(
+                "webhook._update",
+                payload=self.uri_signer.dumps(profile.orcid),
+                _external=True,
+            )
             self.orcid_client.set_webhook(profile.orcid, uri, access_token)

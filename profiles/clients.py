@@ -3,11 +3,9 @@ from typing import Any, Iterable, List
 
 
 class Client(object):
-    def __init__(self,
-                 name: str,
-                 client_id: str,
-                 client_secret: str,
-                 redirect_uris: List[str]) -> None:
+    def __init__(
+        self, name: str, client_id: str, client_secret: str, redirect_uris: List[str]
+    ) -> None:
         self.name = name
         self.client_id = client_id
         self.client_secret = client_secret
@@ -23,7 +21,7 @@ class Client(object):
         return self.redirect_uris[0]
 
     def __repr__(self) -> str:
-        return '<Client %r>' % self.name
+        return "<Client %r>" % self.name
 
 
 class Clients(collections.Set):
@@ -37,7 +35,7 @@ class Clients(collections.Set):
         try:
             return next(v for v in self.elements if v.client_id == client_id)
         except StopIteration as exception:
-            raise KeyError('No client with the client_id') from exception
+            raise KeyError("No client with the client_id") from exception
 
     def __iter__(self) -> Iterable:
         return iter(self.elements)
