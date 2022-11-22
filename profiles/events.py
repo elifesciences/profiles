@@ -39,8 +39,14 @@ def maintain_orcid_webhook(orcid: Dict[str, str], orcid_client: OrcidClient,
             try:
                 if operation == OPERATION_DELETE:
                     orcid_client.remove_webhook(profile.orcid, uri, access_token)
-                else:
+                elif operation == OPERATION_INSERT:
                     orcid_client.set_webhook(profile.orcid, uri, access_token)
+                else:
+                    # lsh@2022-11-22: ignore 'update' events from the ORM.
+                    # orcid have complained about the number of PUT requests being made for
+                    # established webhooks:
+                    # - https://github.com/elifesciences/issues/issues/7933
+                    pass
             except RequestException:
                 pass
 
