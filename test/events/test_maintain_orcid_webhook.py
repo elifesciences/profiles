@@ -1,3 +1,4 @@
+from unittest import skip
 from typing import Callable, Dict, List
 from unittest.mock import MagicMock
 
@@ -32,7 +33,7 @@ def test_it_sets_a_webhook_when_a_profile_is_inserted(profile: Profile,
     assert mock_orcid_client.set_webhook.call_args[0][1] == 'http://localhost/orcid-webhook/{}' \
         .format(url_safe_serializer.dumps('0000-0002-1825-0097'))
 
-
+@skip("lsh@2022-11: webhooks no longer set on profile updates #7933")
 def test_it_sets_a_webhook_when_a_profile_is_updated(profile: Profile,
                                                      orcid_config: Dict[str, str],
                                                      mock_orcid_client: MagicMock,
@@ -55,6 +56,24 @@ def test_it_sets_a_webhook_when_a_profile_is_updated(profile: Profile,
     assert mock_orcid_client.set_webhook.call_args[0][1] == 'http://localhost/orcid-webhook/{}' \
         .format(url_safe_serializer.dumps('0000-0002-1825-0097'))
 
+def test_it_DOES_NOT_set_a_webhook_when_a_profile_is_updated(profile: Profile,
+                                                     orcid_config: Dict[str, str],
+                                                     mock_orcid_client: MagicMock,
+                                                     session: scoped_session,
+                                                     url_safe_serializer: URLSafeSerializer,
+                                                     commit: Callable[[], None]):
+    session.add(profile)
+    commit()
+
+    webhook_maintainer = maintain_orcid_webhook(orcid_config, mock_orcid_client,
+                                                url_safe_serializer)
+    models_committed.connect(receiver=webhook_maintainer)
+
+    profile.add_email_address('1@example.com')
+    session.add(profile)
+    commit()
+
+    assert mock_orcid_client.set_webhook.call_count == 0
 
 def test_it_will_remove_the_webhook_when_a_profile_is_deleted(profile: Profile,
                                                               orcid_config: Dict[str, str],

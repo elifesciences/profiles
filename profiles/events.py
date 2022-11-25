@@ -46,6 +46,10 @@ def maintain_orcid_webhook(orcid: Dict[str, str], orcid_client: OrcidClient,
                     # orcid have complained about the number of PUT requests being made for
                     # established webhooks:
                     # - https://github.com/elifesciences/issues/issues/7933
+                    #
+                    # at this point in the code the token already exists as
+                    # `set_webhook` isn't creating or updating `models.OrcidToken` entries,
+                    # just pinging requests off to ORCID.
                     pass
             except RequestException:
                 pass
