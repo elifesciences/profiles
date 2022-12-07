@@ -112,4 +112,11 @@ def _convert_orcid_date(orcid_date: dict) -> Optional[Date]:
         try:
             return Date(year, month, day)
         except ValueError as exception:
-            LOGGER.error('%s: %s', exception, (year, month, day))
+            # lsh@2022-12-07: downgraded `.error` to `.debug` for a class of bad data.
+            # we're getting 10-90 of these a day and they're just noise.
+            # - https://github.com/elifesciences/issues/issues/7974
+            msg = '%s: %s' % (exception, (year, month, day))
+            if str(exception) == "day is out of range for month":
+                LOGGER.debug(msg)
+            else:
+                LOGGER.error(msg)
