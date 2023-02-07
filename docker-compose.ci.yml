@@ -35,8 +35,6 @@ services:
             - ./.git:/srv/profiles/.git
         env_file:
             - dev.env
-        environment:
-            - COVERALLS_REPO_TOKEN
         depends_on:
             - wsgi
             - venv-dev
