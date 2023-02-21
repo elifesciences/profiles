@@ -36,7 +36,7 @@ SQLAlchemy = "==1.3.*"
 urllib3 = "~=1.26"
 uWSGI = "~=2.0"
 uwsgi-tools = "~=1.1"
-Werkzeug = ">=0.15.5"
+Werkzeug = "~=0.12"
 
 [dev-packages]
 coverage = "~=4.5"
@@ -51,4 +51,3 @@ pytest-socket = "~=0.2"
 requests-mock = "~=1.3"
 ipdb = "~=0.13.9"
 pydevd = "~=1.4.0"
-
