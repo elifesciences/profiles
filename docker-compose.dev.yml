@@ -18,7 +18,7 @@ services:
       - ./app.cfg.dev:/srv/profiles/app.cfg
       - ./config/clients.yaml:/srv/profiles/clients.yaml
       - .:/srv/profiles
-    command: "python manage.py runserver --host=0.0.0.0"
+    command: "python manage.py run --host=0.0.0.0"
     ports:
       - "5000:5000"
     depends_on:
