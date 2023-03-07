@@ -19,7 +19,7 @@ from profiles.clients import Client, Clients
 import profiles.logging
 import profiles.config
 import profiles.factory
-import flask.cli
+import profiles.cli
 
 # what is this doing?
 os.umask(int('002', 8))
@@ -49,22 +49,22 @@ APP = profiles.factory.create_app(CONFIG, CLIENTS)
 
 @APP.cli.command("clear")
 def clear_command():
-    return cli.ClearCommand(APP.orcid_tokens, APP.profiles)()
+    return profiles.cli.ClearCommand(APP.orcid_tokens, APP.profiles)
 
 @APP.cli.command("read-configuration")
 @click.option('-s', '--method', 'method', type=str)
 def read_configuration_command(method):
-    return cli.ReadConfiguration(CONFIG, method)
+    return profiles.cli.ReadConfiguration(CONFIG, method)
 
 @APP.cli.command("create-profile")
 @click.option('-e', '--email', 'email', type=str)
 @click.option('-n', '--name', 'name', type=str)
 def create_profile_command(name, email):
-    return cli.CreateProfile(APP.profiles, name, email)
+    return profiles.cli.CreateProfileCommand(APP.profiles, name, email)
 
 @APP.cli.command("set-orcid-webhooks")
 def set_orcid_webhooks_command():
-    return cli.SetOrcidWebhooksCommand(APP.profiles, CONFIG.orcid, APP.orcid_client, app.uri_signer)
+    return profiles.cli.SetOrcidWebhooksCommand(APP.profiles, CONFIG.orcid, APP.orcid_client, APP.uri_signer)
 
 if __name__ == '__main__':
     # lsh@2023-03-07: manage.py became app.py and manage.py now calls flask with some extra command line args.

@@ -1,10 +1,7 @@
 import logging
-from abc import ABC
-from typing import Dict, List
-
+from typing import Dict
 from flask import url_for
 from itsdangerous import URLSafeSerializer
-
 from profiles.exceptions import ProfileNotFound
 from profiles.models import Name, Profile
 from profiles.orcid import OrcidClient
