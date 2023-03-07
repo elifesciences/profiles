@@ -30,8 +30,8 @@ def create_app(config: Config, clients: Clients) -> Flask:
     app.profiles = SQLAlchemyProfiles(db)
 
     app.uri_signer = URLSafeSerializer(config.orcid['webhook_key'],
-                                   signer_kwargs={'key_derivation': 'hmac',
-                                                  'digest_method': hashlib.sha512})
+                                       signer_kwargs={'key_derivation': 'hmac',
+                                                      'digest_method': hashlib.sha512})
 
     config_bus = dict(config.bus)
     config_bus['env'] = config.name

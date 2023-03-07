@@ -17,7 +17,7 @@ def ReadConfiguration(config, method) -> None:
         print(fn())
     else:
         print("Error: Please provide a valid --method to call")
-            
+
 def ClearCommand(*repositories: CanBeCleared) -> None:
     [repo.clear() for repo in repositories]
 
