@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, Type
-
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from iso3166 import Country, countries
 import pendulum
@@ -8,6 +8,7 @@ from sqlalchemy import types
 from sqlalchemy.engine import Dialect
 
 db = SQLAlchemy()
+migrate = Migrate()
 
 
 class ISO3166Country(types.TypeDecorator):

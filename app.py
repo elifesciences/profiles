@@ -1,3 +1,16 @@
+'''
+flask app instance and command line wrangling is spread across several files.
+
+./app.py (this) is responsible for loading config and creating a flask app instance called APP.
+./manage.py (previous this code) is responsible for wrapping the 'flask' callable.
+./profiles/cli.py for command logic, separate from any 'click' magic.
+./profiles/factory.py provides the 'create_app' function that will return a configured flask app.
+
+entry points into app.py:
+1. `app.APP` used by wsgi, see `config/uwsgi.ini`
+2. `python manage.py`, used by humans
+'''
+import click
 import configparser
 import logging
 import os
@@ -6,6 +19,7 @@ from profiles.clients import Client, Clients
 import profiles.logging
 import profiles.config
 import profiles.factory
+import flask.cli
 
 # what is this doing?
 os.umask(int('002', 8))
@@ -33,30 +47,27 @@ profiles.logging.configure_logging(env=CONFIG.name,
 
 APP = profiles.factory.create_app(CONFIG, CLIENTS)
 
-# two entry points here:
-# 1. `manage.APP` used by wsgi
-# 2. `python manage.py`, used by humans
+@APP.cli.command("clear")
+def clear_command():
+    return cli.ClearCommand(APP.orcid_tokens, APP.profiles)()
 
+@APP.cli.command("read-configuration")
+@click.option('-s', '--method', 'method', type=str)
+def read_configuration_command(method):
+    return cli.ReadConfiguration(CONFIG, method)
 
+@APP.cli.command("create-profile")
+@click.option('-e', '--email', 'email', type=str)
+@click.option('-n', '--name', 'name', type=str)
+def create_profile_command(name, email):
+    return cli.CreateProfile(APP.profiles, name, email)
 
-'''
-MANAGER = Manager(APP)
-
-
-def make_shell_context() -> dict:
-    return {'app': APP}
-
-
-MANAGER.add_command('db', MigrateCommand)
-MANAGER.add_command('runserver', Server())
-MANAGER.add_command('shell', Shell(make_context=make_shell_context))
-
-for c in APP.commands:
-    MANAGER.add_command(c.NAME, c)
+@APP.cli.command("set-orcid-webhooks")
+def set_orcid_webhooks_command():
+    return cli.SetOrcidWebhooksCommand(APP.profiles, CONFIG.orcid, APP.orcid_client, app.uri_signer)
 
 if __name__ == '__main__':
-    MANAGER.run()
-'''
-
-def runserver():
-    pass
+    # lsh@2023-03-07: manage.py became app.py and manage.py now calls flask with some extra command line args.
+    # I couldn't call flask from here because then everything gets initialised twice.
+    # so, double logging, double migrations, etc.
+    exit(1)
