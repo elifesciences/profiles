@@ -17,6 +17,7 @@ RUN mkdir -p var/logs && \
  
 COPY --chown=elife:elife \
     smoke_tests_wsgi.sh \
+    app.py \
     manage.py \
     ./
 COPY --chown=elife:elife migrations/ migrations/
