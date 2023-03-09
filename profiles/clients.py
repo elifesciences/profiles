@@ -1,4 +1,4 @@
-import collections
+import collections.abc
 from typing import Any, Iterable, List
 
 
@@ -26,7 +26,8 @@ class Client(object):
         return '<Client %r>' % self.name
 
 
-class Clients(collections.Set):
+
+class Clients(collections.abc.Set):
     def __init__(self, *args: Client) -> None:
         self.elements = []
         for value in args:

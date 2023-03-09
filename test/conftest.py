@@ -20,7 +20,8 @@ from sqlalchemy.orm import Session, scoped_session
 from profiles.clients import Client, Clients
 from profiles.config import DevConfig
 from profiles.factory import create_app
-from profiles.models import Date, Name, OrcidToken, Profile, db
+from profiles.database import db
+from profiles.models import Date, Name, OrcidToken, Profile
 from profiles.orcid import OrcidClient
 from profiles.repositories import SQLAlchemyOrcidTokens, SQLAlchemyProfiles
 from profiles.utilities import expires_at
@@ -85,6 +86,11 @@ def database(app: Flask, request: FixtureRequest) -> SQLAlchemy:
     if os.path.exists(TEST_DATABASE_PATH):
         os.unlink(TEST_DATABASE_PATH)
 
+
+    db.init_app(app)
+    migrate.init_app(app, db)
+
+        
     db.app = app
     db.create_all()
 

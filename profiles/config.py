@@ -1,11 +1,10 @@
 import re
 import sys
-from abc import ABC
 from configparser import RawConfigParser
 from typing import Dict
 
 
-class Config(ABC):
+class Config():
     name = 'unknown'
     DEBUG = False
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True

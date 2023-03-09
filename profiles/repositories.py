@@ -1,7 +1,6 @@
-import collections
+import collections.abc
 import logging
 import string
-from abc import abstractmethod
 from typing import Callable, List
 
 from flask_sqlalchemy import SQLAlchemy
@@ -18,41 +17,31 @@ LOGGER = logging.getLogger(__name__)
 
 
 class OrcidTokens(CanBeCleared):
-    @abstractmethod
     def add(self, orcid_token: OrcidToken) -> None:
         raise NotImplementedError
 
-    @abstractmethod
     def get(self, orcid: str) -> OrcidToken:
         raise NotImplementedError
 
-    @abstractmethod
     def remove(self, orcid: str) -> None:
         raise NotImplementedError
 
-
-class Profiles(CanBeCleared, collections.Sized):
-    @abstractmethod
+class Profiles(CanBeCleared, collections.abc.Sized):
     def add(self, profile: Profile) -> Profile:
         raise NotImplementedError
 
-    @abstractmethod
     def get(self, profile_id: str) -> Profile:
         raise NotImplementedError
 
-    @abstractmethod
     def get_by_orcid(self, orcid: str) -> Profile:
         raise NotImplementedError
 
-    @abstractmethod
     def get_by_email_address(self, *email_addresses: str) -> Profile:
         raise NotImplementedError
 
-    @abstractmethod
     def next_id(self) -> str:
         raise NotImplementedError
 
-    @abstractmethod
     def list(self, limit: int = None, offset: int = 0, desc: bool = False) -> List[Profile]:
         raise NotImplementedError
 

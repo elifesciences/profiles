@@ -2,13 +2,14 @@
 flask app instance and command line wrangling is spread across several files.
 
 ./app.py (this) is responsible for loading config and creating a flask app instance called APP.
-./manage.py (previous this code) is responsible for wrapping the 'flask' callable.
+./manage.py (previously this code) is responsible for wrapping the 'flask' callable.
 ./profiles/cli.py for command logic, separate from any 'click' magic.
 ./profiles/factory.py provides the 'create_app' function that will return a configured flask app.
 
 entry points into app.py:
 1. `app.APP` used by wsgi, see `config/uwsgi.ini`
-2. `python manage.py`, used by humans
+2. `python manage.py`, used as a CLI, see the Flask CLI:
+   - https://flask.palletsprojects.com/en/2.2.x/cli/#command-line-interface
 '''
 import click
 import configparser
