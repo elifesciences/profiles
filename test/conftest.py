@@ -86,12 +86,7 @@ def database(app: Flask, request: FixtureRequest) -> SQLAlchemy:
     if os.path.exists(TEST_DATABASE_PATH):
         os.unlink(TEST_DATABASE_PATH)
 
-
     db.init_app(app)
-    migrate.init_app(app, db)
-
-        
-    db.app = app
     db.create_all()
 
     # Bypass pysqlite's broken transactions (see https://bit.ly/2DKiixa).
