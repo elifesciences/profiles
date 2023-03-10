@@ -8,7 +8,7 @@ flask app instance and command line wrangling is spread across several files.
 
 entry points into app.py:
 1. `app.APP` used by wsgi, see `config/uwsgi.ini`
-2. `python manage.py`, used by humans
+2. `python manage.py`, used as CLI
 '''
 import click
 import configparser
@@ -21,7 +21,7 @@ import profiles.config
 import profiles.factory
 import profiles.cli
 
-# what is this doing?
+# lsh@2023-03-10: what is this doing? what files is profiles creating?
 os.umask(int('002', 8))
 
 CONFIG_FILE = configparser.ConfigParser()
@@ -68,6 +68,6 @@ def set_orcid_webhooks_command():
 
 if __name__ == '__main__':
     # lsh@2023-03-07: manage.py became app.py and manage.py now calls flask with some extra command line args.
-    # I couldn't call flask from here because then everything gets initialised twice.
-    # so, double logging, double migrations, etc.
+    # flask.main can't be called from here because then everything gets initialised twice,
+    # for example, double logging, double migrations, etc.
     exit(1)
