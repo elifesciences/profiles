@@ -7,7 +7,9 @@ from unittest.mock import MagicMock, patch
 from _pytest.fixtures import FixtureRequest
 from flask import Flask
 from flask.testing import FlaskClient
-from flask_sqlalchemy import SQLAlchemy, models_committed
+from sqlalchemy.orm import sessionmaker
+from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy.track_modifications import models_committed
 from hypothesis import settings as hyp_settings
 from hypothesis.configuration import set_hypothesis_home_dir
 from hypothesis.database import DirectoryBasedExampleDatabase
@@ -20,8 +22,8 @@ from sqlalchemy.orm import Session, scoped_session
 from profiles.clients import Client, Clients
 from profiles.config import DevConfig
 from profiles.factory import create_app
-from profiles.models import Date, Name, OrcidToken, Profile
 from profiles.database import db
+from profiles.models import Date, Name, OrcidToken, Profile
 from profiles.orcid import OrcidClient
 from profiles.repositories import SQLAlchemyOrcidTokens, SQLAlchemyProfiles
 from profiles.utilities import expires_at
@@ -86,8 +88,6 @@ def database(app: Flask, request: FixtureRequest) -> SQLAlchemy:
     if os.path.exists(TEST_DATABASE_PATH):
         os.unlink(TEST_DATABASE_PATH)
 
-    db.init_app(app)
-
     db.create_all()
 
     # Bypass pysqlite's broken transactions (see https://bit.ly/2DKiixa).
@@ -115,15 +115,16 @@ def session(database: SQLAlchemy, request: FixtureRequest) -> scoped_session:
     connection = database.engine.connect()
     transaction = connection.begin()
 
-    options = dict(bind=connection, binds={})
-    session = database.create_scoped_session(options=options)
+    Session = sessionmaker(bind=connection, binds={})
+    session = Session()
 
     database.session = session
 
     def teardown() -> None:
         transaction.rollback()
         connection.close()
-        session.remove()
+        #session.remove()
+        session.close()
 
     request.addfinalizer(teardown)
     return session

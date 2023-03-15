@@ -2,7 +2,7 @@ import hashlib
 
 from elife_bus_sdk import get_publisher
 from flask import Flask
-from flask_sqlalchemy import models_committed
+from flask_sqlalchemy.track_modifications import models_committed
 from itsdangerous import URLSafeSerializer
 
 from profiles.api import api, errors, oauth2, ping, webhook

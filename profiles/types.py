@@ -1,7 +1,4 @@
-from abc import ABC, abstractmethod
 
-
-class CanBeCleared(ABC):
-    @abstractmethod
+class CanBeCleared():
     def clear(self) -> None:
         raise NotImplementedError

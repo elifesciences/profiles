@@ -2,7 +2,7 @@ from unittest import skip
 from typing import Callable, Dict, List
 from unittest.mock import MagicMock
 
-from flask_sqlalchemy import models_committed
+from flask_sqlalchemy.track_modifications import models_committed
 from itsdangerous import URLSafeSerializer
 from sqlalchemy.orm import scoped_session
 

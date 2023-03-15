@@ -1,7 +1,6 @@
-import collections
+import collections.abc
 import logging
 import string
-from abc import abstractmethod
 from typing import Callable, List
 
 from flask_sqlalchemy import SQLAlchemy
@@ -18,41 +17,31 @@ LOGGER = logging.getLogger(__name__)
 
 
 class OrcidTokens(CanBeCleared):
-    @abstractmethod
     def add(self, orcid_token: OrcidToken) -> None:
         raise NotImplementedError
 
-    @abstractmethod
     def get(self, orcid: str) -> OrcidToken:
         raise NotImplementedError
 
-    @abstractmethod
     def remove(self, orcid: str) -> None:
         raise NotImplementedError
 
-
-class Profiles(CanBeCleared, collections.Sized):
-    @abstractmethod
+class Profiles(CanBeCleared, collections.abc.Sized):
     def add(self, profile: Profile) -> Profile:
         raise NotImplementedError
 
-    @abstractmethod
     def get(self, profile_id: str) -> Profile:
         raise NotImplementedError
 
-    @abstractmethod
     def get_by_orcid(self, orcid: str) -> Profile:
         raise NotImplementedError
 
-    @abstractmethod
     def get_by_email_address(self, *email_addresses: str) -> Profile:
         raise NotImplementedError
 
-    @abstractmethod
     def next_id(self) -> str:
         raise NotImplementedError
 
-    @abstractmethod
     def list(self, limit: int = None, offset: int = 0, desc: bool = False) -> List[Profile]:
         raise NotImplementedError
 
@@ -110,7 +99,16 @@ class SQLAlchemyProfiles(Profiles):
                 LOGGER.info(msg=log_msg)
 
                 return self.get_by_orcid(profile.orcid)
-            elif 'EmailAddress' in message and profile.email_addresses:
+
+            # lsh@2023-03-15: message changed between sqlalchemy 1.3 and 1.4
+            # 1.3:
+            #sqlalchemy.orm.exc.FlushError: New instance <EmailAddress at 0x7ff3c444f6d0> with identity key (<class 'profiles.models.EmailAddress'>, ('foo@example.com',), None) conflicts with persistent instance <EmailAddress at 0x7ff3c4424580>
+            # 1.4:
+            #sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) UNIQUE constraint failed: email_address.email
+            #[SQL: INSERT INTO email_address (email, restricted, profile_id, position) VALUES (?, ?, ?, ?)]
+            #[parameters: ('foo@example.com', 0, '12345679', 0)]
+            #(Background on this error at: https://sqlalche.me/e/14/gkpj)
+            elif ('EmailAddress' in message or 'email_address' in message) and profile.email_addresses:
                 email_addresses = [x.email for x in profile.email_addresses]
 
                 log_msg += 'Profile with email address {} already exists'.format(email_addresses)

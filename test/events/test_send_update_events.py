@@ -1,7 +1,7 @@
 from typing import Callable, List
 from unittest.mock import MagicMock
 
-from flask_sqlalchemy import models_committed
+from flask_sqlalchemy.track_modifications import models_committed
 from iso3166 import countries
 from sqlalchemy.orm import scoped_session
 
