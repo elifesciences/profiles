@@ -1,24 +1,24 @@
-# file generated 2023-03-08 - see update-dependencies.sh
-alembic==1.10.1
+# file generated 2023-03-15 - see update-dependencies.sh
+alembic==1.10.2
 api-validator-python @ git+https://github.com/elifesciences/api-validator-python.git@01a5a9203b0fdfa8d6c4c3650e9999d8e90fe67b
 astroid==2.15.0
 attrs==22.2.0
 blinker==1.5
-boto3==1.26.86
-botocore==1.29.86
+boto3==1.26.91
+botocore==1.29.91
 certifi==2022.12.7
 charset-normalizer==3.1.0
 click==8.1.3
 coverage==4.5.4
 dill==0.3.6
 elife-bus-sdk==0.0.7
-exceptiongroup==1.1.0
+exceptiongroup==1.1.1
 Faker==17.6.0
 flake8==6.0.0
 flake8-import-order==0.18.2
 Flask==2.2.3
 Flask-Migrate==4.0.4
-Flask-SQLAlchemy==3.0.3
+Flask-SQLAlchemy==2.5.1
 freezegun==0.3.15
 greenlet==2.0.2
 hypothesis==4.18.3
@@ -40,12 +40,12 @@ newrelic==8.7.0
 packaging==23.0
 pendulum==1.5.1
 pkgutil_resolve_name==1.3.10
-platformdirs==3.1.0
+platformdirs==3.1.1
 pluggy==1.0.0
 psycopg2-binary==2.9.5
 pycodestyle==2.10.0
 pyflakes==3.0.1
-pylint==2.16.4
+pylint==2.17.0
 pyrsistent==0.19.3
 pytest==7.2.2
 pytest-socket==0.6.0
@@ -59,12 +59,12 @@ requests-mock==1.10.0
 retrying==1.3.4
 s3transfer==0.6.0
 six==1.16.0
-SQLAlchemy==2.0.5.post1
+SQLAlchemy==1.4.46
 tomli==2.0.1
 tomlkit==0.11.6
 typing_extensions==4.5.0
 tzlocal==1.5.1
-urllib3==1.26.14
+urllib3==1.26.15
 uWSGI==2.0.21
 uwsgi-tools==1.1.1
 Werkzeug==2.2.3
