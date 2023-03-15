@@ -14,8 +14,10 @@ api-validator-python = {git = "https://github.com/elifesciences/api-validator-py
 elife-bus-sdk = "~=0.0"
 # doesn't follow semver
 Flask = "==2.2.*"
-Flask-Migrate = "~=4.0"
-Flask-SQLAlchemy = "~=2.5"
+# not part of the pallets/flask* family, but *also* doesn't follow semver
+Flask-Migrate = "==4.0.*"
+# like Flask, doesn't follow semver.
+Flask-SQLAlchemy = "==3.0.*"
 iso3166 = "~=0.8"
 itsdangerous = "~=2.1"
 jmespath = "~=1.0"
