@@ -99,7 +99,16 @@ class SQLAlchemyProfiles(Profiles):
                 LOGGER.info(msg=log_msg)
 
                 return self.get_by_orcid(profile.orcid)
-            elif 'EmailAddress' in message and profile.email_addresses:
+
+            # lsh@2023-03-15: message changed between sqlalchemy 1.3 and 1.4
+            # 1.3:
+            #sqlalchemy.orm.exc.FlushError: New instance <EmailAddress at 0x7ff3c444f6d0> with identity key (<class 'profiles.models.EmailAddress'>, ('foo@example.com',), None) conflicts with persistent instance <EmailAddress at 0x7ff3c4424580>
+            # 1.4:
+            #sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) UNIQUE constraint failed: email_address.email
+            #[SQL: INSERT INTO email_address (email, restricted, profile_id, position) VALUES (?, ?, ?, ?)]
+            #[parameters: ('foo@example.com', 0, '12345679', 0)]
+            #(Background on this error at: https://sqlalche.me/e/14/gkpj)
+            elif ('EmailAddress' in message or 'email_address' in message) and profile.email_addresses:
                 email_addresses = [x.email for x in profile.email_addresses]
 
                 log_msg += 'Profile with email address {} already exists'.format(email_addresses)
