@@ -47,12 +47,12 @@ def create_blueprint(profiles: Profiles, orcid_config: Dict[str, str],
         try:
             orcid_record = orcid_client.get_record(orcid, access_token)
         except RequestException as exception:
-            if exception.response.status_code == 403 and not access_token == \
-                    orcid_config.get('read_public_access_token'):
-                orcid_tokens.remove(profile.orcid)
+            if exception.response and exception.response.status_code == 403:
+                if not access_token == orcid_config.get('read_public_access_token'):
+                    orcid_tokens.remove(profile.orcid)
 
-                # Let ORCID retry, it will use the public access token
-                raise ServiceUnavailable from exception
+                    # Let ORCID retry, it will use the public access token
+                    raise ServiceUnavailable from exception
 
             raise InternalServerError from exception
 
