@@ -108,17 +108,20 @@ class SQLAlchemyProfiles(Profiles):
             if 'orcid' in message and profile.orcid:
                 log_msg += 'Profile with ORCID {} already exists'.format(profile.orcid)
                 LOGGER.info(msg=log_msg)
-
                 return self.get_by_orcid(profile.orcid)
+
             elif 'EmailAddress' in message and profile.email_addresses:
                 email_addresses = [x.email for x in profile.email_addresses]
-
                 log_msg += 'Profile with email address {} already exists'.format(email_addresses)
                 LOGGER.info(msg=log_msg)
-
                 return self.get_by_email_address(*email_addresses)
 
             raise exception
+
+        except:
+            self.db.session.rollback()
+            LOGGER.exception("unhandled exception adding profile with id %r, transaction rolled back.", profile.id)
+            raise
 
         return profile
 
