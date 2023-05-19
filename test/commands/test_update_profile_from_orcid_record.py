@@ -1,3 +1,4 @@
+from unittest import mock
 from hypothesis import given
 from hypothesis.searchstrategy import SearchStrategy
 from hypothesis.strategies import sampled_from
@@ -224,35 +225,45 @@ def test_it_removes_affiliations():
     assert len(profile.affiliations) == 0
 
 
-def test_it_updates_affiliations():
+def test_it_updates_affiliations_2(database, session):
+
+    # extant profile
     profile = Profile('12345678', Name('Name'))
-    profile.add_affiliation(Affiliation('1', Address(countries.get('gb'), 'City 1'),
-                                        'Organisation 1', Date(2017)))
-    orcid_record = {'activities-summary': {
-        'employments': {'employment-summary': [
-            {'put-code': 1, 'department-name': 'Department 2',
-             'organization': {'name': 'Organisation 2',
-                              'address': {'city': 'City 2', 'region': 'Region 2', 'country': 'US'}},
-             'start-date': {'year': {'value': '2016'}, 'month': {'value': '12'},
-                            'day': {'value': '31'}},
-             'end-date': {'year': {'value': '2018'}, 'month': {'value': '02'},
-                          'day': {'value': '03'}},
-             'visibility': 'LIMIT'},
-        ]},
-    }}
+    session.add(profile)
+    session.commit()
 
-    update_profile_from_orcid_record(profile, orcid_record)
+    # request comes in to update some affiliations
+    # we simulate that here without committing the session/transaction
+    address = Address(countries.get('gb'), 'City 1')
+    aff1 = Affiliation('1', address, 'Organisation 1', Date(2017))
+    profile.add_affiliation(aff1)
 
-    assert len(profile.affiliations) == 1
-    assert profile.affiliations[0].department == 'Department 2'
-    assert profile.affiliations[0].organisation == 'Organisation 2'
-    assert profile.affiliations[0].address.city == 'City 2'
-    assert profile.affiliations[0].address.region == 'Region 2'
-    assert profile.affiliations[0].address.country == countries.get('US')
-    assert profile.affiliations[0].starts == Date(2016, 12, 31)
-    assert profile.affiliations[0].ends == Date(2018, 2, 3)
-    assert profile.affiliations[0].restricted is True
-    assert profile.affiliations[0].position == 0
+    def killerfn(*args):
+        # meanwhile, another request has come along to also update that profile with the same affiliation.
+        # one of the two requests will succeed.
+        # we can't (easily) simulate multiple threads here and whatever state the database session is in,
+        # so we skip the logic in `profile.add_affiliation` and just add it directly.
+        aff2 = Affiliation('1', address, 'Organisation 1', Date(2017))
+        aff2.profile = profile
+        session.add(aff2)
+
+    with mock.patch("profiles.commands._update_affiliations_from_orcid_record", side_effect=killerfn):
+        # request comes along from orcid to update profile with a new affliation
+        orcid_record = {
+            'person': {
+                'emails': {
+                    'email': [
+                        {'email': '1@example.com', 'primary': False, 'verified': True, 'visibility': 'LIMIT'},
+                    ]
+                }
+            },
+        }
+        update_profile_from_orcid_record(profile, orcid_record)
+
+    # should die.
+
+    # somehow `profiles` is achieving this state here:
+    # - https://github.com/elifesciences/issues/issues/8275
 
 
 def test_it_adds_email_addresses():
