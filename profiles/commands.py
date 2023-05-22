@@ -1,5 +1,6 @@
 import logging
 from typing import List, Optional
+from sqlalchemy.exc import IntegrityError
 
 from iso3166 import countries
 import jmespath
@@ -13,11 +14,22 @@ LOGGER = logging.getLogger(__name__)
 
 
 def update_profile_from_orcid_record(profile: Profile, orcid_record: dict) -> None:
-    LOGGER.info('Updating profile %s with ORCID record %s', profile.id, orcid_record.get('path'))
-    _update_name_from_orcid_record(profile, orcid_record)
-    _update_affiliations_from_orcid_record(profile, orcid_record)
-    _update_email_addresses_from_orcid_record(profile, orcid_record)
-
+    try:
+        LOGGER.info('Updating profile %s with ORCID record %s', profile.id, orcid_record.get('path'))
+        _update_name_from_orcid_record(profile, orcid_record)
+        _update_affiliations_from_orcid_record(profile, orcid_record)
+        _update_email_addresses_from_orcid_record(profile, orcid_record)
+    except IntegrityError:
+        # lsh@2023-02-22: we've had three cases of an update failing, the transaction not being rolled back and
+        # subsequent incoming updates failing because of this db.session's state.
+        # either it's an orcid record with data that triggers this, or some race condition between two incoming updates
+        # for the same profile, as db.session appears to be shared between all requests.
+        # - https://github.com/elifesciences/issues/issues/8275
+        LOGGER.exception("uncaught database exception updating profile from orcid record, rolling session transaction back", extra={"orcid_record": orcid_record})
+        # hopefully prevents other requests from failing
+        db.session.rollback()
+        # punt error downstream
+        raise
 
 def extract_email_addresses(orcid_record: dict, only_verified: bool = True) -> List[dict]:
     orcid_emails = jmespath.search('person.emails.email[*]', orcid_record) or []

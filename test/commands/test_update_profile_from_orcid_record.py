@@ -1,3 +1,4 @@
+from unittest import mock
 from hypothesis import given
 from hypothesis.searchstrategy import SearchStrategy
 from hypothesis.strategies import sampled_from
@@ -223,7 +224,6 @@ def test_it_removes_affiliations():
 
     assert len(profile.affiliations) == 0
 
-
 def test_it_updates_affiliations():
     profile = Profile('12345678', Name('Name'))
     profile.add_affiliation(Affiliation('1', Address(countries.get('gb'), 'City 1'),
@@ -254,6 +254,49 @@ def test_it_updates_affiliations():
     assert profile.affiliations[0].restricted is True
     assert profile.affiliations[0].position == 0
 
+def test_it_updates_affiliations_2(database, session):
+    """somehow `profiles` is achieving this state here:
+    - https://github.com/elifesciences/issues/issues/8275"""
+
+    # extant profile
+    profile = Profile('12345678', Name('Name'))
+    session.add(profile)
+    session.commit()
+
+    # request comes in to update some affiliations
+    # we simulate that here without committing the session/transaction
+    address = Address(countries.get('gb'), 'City 1')
+    aff1 = Affiliation('1', address, 'Organisation 1', Date(2017))
+    profile.add_affiliation(aff1)
+
+    def killerfn(*args):
+        # meanwhile, another request has come along to also update that profile with the same affiliation.
+        # one of the two requests will succeed.
+        # we can't (easily) simulate multiple threads here and whatever state the database session is in,
+        # so we skip the logic in `profile.add_affiliation` and just add it directly.
+        aff2 = Affiliation('1', address, 'Organisation 1', Date(2017))
+        aff2.profile = profile
+        session.add(aff2)
+
+    with mock.patch("profiles.commands._update_affiliations_from_orcid_record", side_effect=killerfn):
+        # request comes along from orcid to update profile with a new affliation
+        orcid_record = {
+            'person': {
+                'emails': {
+                    'email': [
+                        {'email': '1@example.com', 'primary': False, 'verified': True, 'visibility': 'LIMIT'},
+                    ]
+                }
+            },
+        }
+
+        # ensure logger.exception is capturing the incoming record
+        from sqlalchemy import exc
+        with pytest.raises(exc.IntegrityError):
+            with mock.patch("profiles.commands.LOGGER.exception") as log:
+                update_profile_from_orcid_record(profile, orcid_record)
+        assert log.call_count == 1
+        assert log.call_args[1]['extra']['orcid_record'] == orcid_record
 
 def test_it_adds_email_addresses():
     profile = Profile('12345678', Name('Name'))
