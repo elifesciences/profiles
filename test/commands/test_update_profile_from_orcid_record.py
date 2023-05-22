@@ -226,6 +226,8 @@ def test_it_removes_affiliations():
 
 
 def test_it_updates_affiliations_2(database, session):
+    """somehow `profiles` is achieving this state here:
+    - https://github.com/elifesciences/issues/issues/8275"""
 
     # extant profile
     profile = Profile('12345678', Name('Name'))
@@ -258,13 +260,14 @@ def test_it_updates_affiliations_2(database, session):
                 }
             },
         }
-        update_profile_from_orcid_record(profile, orcid_record)
 
-    # should die.
-
-    # somehow `profiles` is achieving this state here:
-    # - https://github.com/elifesciences/issues/issues/8275
-
+        # ensure logger.exception is capturing the incoming record
+        from sqlalchemy import exc
+        with pytest.raises(exc.IntegrityError):
+            with mock.patch("profiles.commands.LOGGER.exception") as log:
+                update_profile_from_orcid_record(profile, orcid_record)
+        assert log.call_count == 1
+        assert log.call_args[1]['extra']['orcid_record'] == orcid_record
 
 def test_it_adds_email_addresses():
     profile = Profile('12345678', Name('Name'))
