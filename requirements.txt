@@ -1,11 +1,11 @@
-# file generated 2023-05-08 - see update-dependencies.sh
+# file generated 2023-05-26 - see update-dependencies.sh
 alembic==0.9.10
 api-validator-python @ git+https://github.com/elifesciences/api-validator-python.git@01a5a9203b0fdfa8d6c4c3650e9999d8e90fe67b
-astroid==2.15.4
+astroid==2.15.5
 attrs==23.1.0
 blinker==1.6.2
-boto3==1.26.129
-botocore==1.29.129
+boto3==1.26.141
+botocore==1.29.141
 certifi==2023.5.7
 charset-normalizer==3.1.0
 click==8.1.3
@@ -37,7 +37,7 @@ mccabe==0.7.0
 newrelic==8.8.0
 packaging==23.1
 pendulum==1.5.1
-platformdirs==3.5.0
+platformdirs==3.5.1
 pluggy==1.0.0
 psycopg2-binary==2.9.6
 pycodestyle==2.10.0
@@ -51,7 +51,7 @@ python-json-logger==0.1.11
 pytz==2023.3
 pytzdata==2020.1
 PyYAML==5.4
-requests==2.30.0
+requests==2.31.0
 requests-mock==1.10.0
 retrying==1.3.4
 s3transfer==0.6.1
@@ -59,11 +59,11 @@ six==1.16.0
 SQLAlchemy==1.3.24
 tomli==2.0.1
 tomlkit==0.11.8
-typing_extensions==4.5.0
+typing_extensions==4.6.2
 tzlocal==1.5.1
-urllib3==1.26.15
+urllib3==1.26.16
 uWSGI==2.0.21
 uwsgi-tools==1.1.1
-Werkzeug==2.3.3
+Werkzeug==2.3.4
 wrapt==1.15.0
 zipp==3.15.0
