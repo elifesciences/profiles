@@ -10,7 +10,7 @@ services:
                 python_version: ${PYTHON_VERSION}
         image: elifesciences/profiles_venv:${IMAGE_TAG}
     web:
-        image: nginx:1.13.7
+        image: nginx:1.25.1
         ports:
             - "8080:80"
         volumes:
