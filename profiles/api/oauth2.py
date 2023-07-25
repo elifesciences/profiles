@@ -137,6 +137,7 @@ def create_blueprint(orcid: Dict[str, str], clients: Clients, profiles: Profiles
         }
 
         LOGGER.info('Sending POST request to %s', orcid.get('token_uri'))
+        # TODO: add retry behaviour here as well
         response = requests.post(url=orcid['token_uri'],
                                  data=data,
                                  headers={'Accept': 'application/json'})
