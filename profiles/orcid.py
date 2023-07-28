@@ -68,17 +68,12 @@ class OrcidClient(object):
         uri = '{}/{}'.format(self.api_uri, path)
         headers['Authorization'] = 'Bearer ' + access_token
 
-        MAX_RETRIES = 5
+        MAX_RETRIES = 3
 
-        # "max_retries" - The maximum number of retries each connection should attempt.
-        #                 Note, this applies only to failed DNS lookups, socket connections and connection timeouts,
-        #                 never to requests where data has made it to the server.
-        #                 If you need granular control over the conditions under which we retry a request,
-        #                 import urllib3’s Retry class and pass that instead.
-        #
+        # lsh@2023-07-28: handle network errors better.
         # - https://urllib3.readthedocs.io/en/stable/user-guide.html#retrying-requests
         # - https://urllib3.readthedocs.io/en/stable/reference/urllib3.util.html
-        retries_obj = Retry(**{
+        max_retries_obj = Retry(**{
             'total': MAX_RETRIES,
             'connect': MAX_RETRIES,
             'read': MAX_RETRIES,
@@ -88,19 +83,10 @@ class OrcidClient(object):
             'status_forcelist': [413, 429, 503, # defaults
                                  500, 502, 504],
             # {backoff factor} * (2 ** {number of previous retries})
-            # 0.5 => 0.5, 2.0, 4.0, 8.0, 16
             # 0.3 => 0.3, 0.6, 1.2, 2.4, 4.8
             'backoff_factor': 0.3,
-            # not available until urllib3 >=2.0
-            #'backoff_max': 120.0, # seconds, default
-
-            # "Set of uppercased HTTP method verbs that we should retry on.
-            # By default, we only retry on methods which are considered to be idempotent
-            # (multiple requests with the same parameters end with the same state)."
-            # - https://urllib3.readthedocs.io/en/stable/reference/urllib3.util.html
-            #'allowed_methods': ...
         })
-        adaptor = requests.adapters.HTTPAdapter(max_retries=retries_obj)
+        adaptor = requests.adapters.HTTPAdapter(max_retries=max_retries_obj)
         session = requests.Session()
         session.mount('https://', adaptor)
 
