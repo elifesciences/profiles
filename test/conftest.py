@@ -233,7 +233,7 @@ def public_token_resp_data():
 @fixture
 def commit(session: Session) -> Callable[[], None]:
     def wrapped() -> None:
-        with patch('profiles.orcid.request'):
+        with patch('profiles.orcid.requests'):
             session.commit()
 
     return wrapped
