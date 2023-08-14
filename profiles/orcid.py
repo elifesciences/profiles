@@ -73,6 +73,8 @@ class OrcidClient(object):
         # lsh@2023-07-28: handle network errors better.
         # - https://urllib3.readthedocs.io/en/stable/user-guide.html#retrying-requests
         # - https://urllib3.readthedocs.io/en/stable/reference/urllib3.util.html
+        status_forcelist = [413, 429, 503, # defaults
+                            500, 502, 504]
         max_retries_obj = Retry(**{
             'total': MAX_RETRIES,
             'connect': MAX_RETRIES,
@@ -80,17 +82,20 @@ class OrcidClient(object):
             # "How many times to retry on bad status codes.
             # These are retries made on responses, where status code matches status_forcelist."
             'status': MAX_RETRIES,
-            'status_forcelist': [413, 429, 503, # defaults
-                                 500, 502, 504],
+            'status_forcelist': status_forcelist,
             # {backoff factor} * (2 ** {number of previous retries})
             # 0.5 => 1.0, 2.0, 4.0, 8.0, 16.0
             'backoff_factor': 0.5,
+            # do not force an exception when False
+            'raise_on_status': False,
         })
         adaptor = requests.adapters.HTTPAdapter(max_retries=max_retries_obj)
         session = requests.Session()
         session.mount('https://', adaptor)
 
         response = session.request(method, uri, headers=headers)
+        if response.status_code in status_forcelist:
+            # "ORCID API request failed with status 500 after 5 attempts: /some/path"
+            LOGGER.warning("ORCID API request failed with status %s after %s attempts: %s", response.status_code, len(response.raw.retries.history), path)
         response.raise_for_status()
-
         return response
