@@ -56,6 +56,7 @@ def create_blueprint(profiles: Profiles, orcid_config: Dict[str, str],
                     # Let ORCID retry, it will use the public access token
                     raise ServiceUnavailable from exception
 
+            LOGGER.error("unhandled exception requesting ORCID record: %s", orcid, exc_info=exception)
             raise InternalServerError from exception
 
         update_profile_from_orcid_record(profile, orcid_record)
