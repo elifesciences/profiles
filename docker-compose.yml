@@ -25,7 +25,7 @@ services:
                 image_tag: "${IMAGE_TAG}"
                 python_version: ${PYTHON_VERSION}
         image: elifesciences/profiles:${IMAGE_TAG}
-        command: venv/bin/newrelic-admin run-program venv/bin/uwsgi --ini=/srv/profiles/uwsgi.ini --enable-threads
+        command: venv/bin/uwsgi --ini=/srv/profiles/uwsgi.ini --enable-threads
         volumes:
             - ./config/app.cfg:/srv/profiles/app.cfg
             - ./config/clients.yaml:/srv/profiles/clients.yaml
