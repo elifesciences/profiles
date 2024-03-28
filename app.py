@@ -66,6 +66,10 @@ def create_profile_command(name, email):
 def set_orcid_webhooks_command():
     return profiles.cli.SetOrcidWebhooksCommand(APP.profiles, CONFIG.orcid, APP.orcid_client, APP.uri_signer)
 
+@APP.cli.command("foo")
+def foo():
+    return profiles.cli.foo(APP.profiles, CONFIG.orcid, APP.orcid_client, APP.uri_signer)
+
 if __name__ == '__main__':
     # lsh@2023-03-07: manage.py became app.py and manage.py now calls flask with some extra command line args.
     # flask.main can't be called from here because then everything gets initialised twice,
