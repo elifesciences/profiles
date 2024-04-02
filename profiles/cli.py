@@ -54,6 +54,8 @@ def SetOrcidWebhooksCommand(profiles: Profiles, orcid: Dict[str, str], orcid_cli
         orcid_client.set_webhook(profile.orcid, uri, access_token)
 
 def prune_blocked(profiles: Profiles, orcid_tokens: OrcidTokens, orcid_config: Dict[str, str], orcid_client: OrcidClient, uri_signer: URLSafeSerializer) -> None:
+    """command fetches each known profile and purges it if the API responds with a HTTP 409.
+    the API may respond with a HTTP 409 if the profile has been blocked/disabled."""
     access_token = orcid_config.get('webhook_access_token')
 
     problem_profiles = {}
@@ -75,16 +77,16 @@ def prune_blocked(profiles: Profiles, orcid_tokens: OrcidTokens, orcid_config: D
                     # https://github.com/ORCID/ORCID-Source/blob/main/orcid-api-web/tutorial/api_errors.md
                     # "This record was flagged as violating ORCID's Terms of Use and has been hidden from public view."
                     try:
-                        LOGGER.info("removing webhook for orcid %s" % orcid)
+                        LOGGER.info("removing webhook for orcid %s", orcid)
                         orcid_client.remove_webhook(orcid, access_token)
                     except Exception as ex1:
-                        LOGGER.error("failed to remove webhook for orcid %s: %s" % (orcid, str(ex1)))
+                        LOGGER.error("failed to remove webhook for orcid %s: %s", orcid, str(ex1))
 
                     try:
                         LOGGER.info("removing profile for orcid %s", orcid)
                         profiles.remove(orcid)
                     except Exception as ex2:
-                        LOGGER.error("failed to delete profile for orcid %s: %s" % (orcid, str(ex2)))
+                        LOGGER.error("failed to delete profile for orcid %s: %s", orcid, str(ex2))
 
                     try:
                         LOGGER.info("removing orcid token access token for orcid %s", orcid)
