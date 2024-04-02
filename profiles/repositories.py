@@ -56,6 +56,9 @@ class Profiles(CanBeCleared, collections.Sized):
     def list(self, limit: int = None, offset: int = 0, desc: bool = False) -> List[Profile]:
         raise NotImplementedError
 
+    @abstractmethod
+    def remove(self, orcid: str) -> None:
+        raise NotImplementedError
 
 class SQLAlchemyOrcidTokens(OrcidTokens):
     def __init__(self, db: SQLAlchemy) -> None:
@@ -169,6 +172,14 @@ class SQLAlchemyProfiles(Profiles):
             query = query.order_by(Profile.asc())
 
         return query.limit(limit).offset(offset).all()
+
+    def remove(self, orcid: str) -> None:
+        try:
+            # profile.orcid has a UNIQUE constraint, there will only ever be zero or one.
+            orcid_token = self.db.session.query(Profile).filter_by(orcid=orcid).one()
+            self.db.session.delete(orcid_token)
+        except NoResultFound:
+            LOGGER.info('Unable to remove Profile for ORCID %s. Profile not found', orcid)
 
     def clear(self) -> None:
         self.db.session.query(Profile).delete()
