@@ -60,8 +60,6 @@ def prune_blocked(profiles: Profiles, orcid_tokens: OrcidTokens, orcid_config: D
 
     try:
         for profile in profiles.list():
-            time.sleep(1 / 4) # 250ms, max 4req/s when running sequentially
-
             orcid = profile.orcid
             if orcid is None:
                 continue
@@ -98,6 +96,8 @@ def prune_blocked(profiles: Profiles, orcid_tokens: OrcidTokens, orcid_config: D
                 problem_profiles[profile.id] = str(e)
                 LOGGER.error("unhandled exception processing profile with orcid %s: %s", orcid, str(e))
                 break
+
+            time.sleep(1 / 4) # 250ms, max 4req/s when running sequentially
 
     except KeyboardInterrupt:
         pass
