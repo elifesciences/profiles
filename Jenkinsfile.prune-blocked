@@ -1,0 +1,7 @@
+elifeMainlineOnly {
+    stage "Pruning blocked profiles", {
+        lock('profiles--prod') {
+            dockerComposeRun("manage", "prune-blocked")
+        }
+    }
+}
