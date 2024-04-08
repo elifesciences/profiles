@@ -4,4 +4,4 @@ elifePipeline {
             builderCmd "profiles--prod", "docker-compose run manage prune-blocked", "/home/elife/profiles"
         }
     }
-}, 480
+} 480
