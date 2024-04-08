@@ -78,7 +78,8 @@ def prune_blocked(profiles: Profiles, orcid_tokens: OrcidTokens, orcid_config: D
                     # "This record was flagged as violating ORCID's Terms of Use and has been hidden from public view."
                     try:
                         LOGGER.info("removing webhook for orcid %s", orcid)
-                        orcid_client.remove_webhook(orcid, access_token)
+                        uri = url_for('webhook._update', payload=uri_signer.dumps(orcid), _external=True)
+                        orcid_client.remove_webhook(orcid, uri, access_token)
                     except Exception as ex1:
                         LOGGER.error("failed to remove webhook for orcid %s: %s", orcid, str(ex1))
 
