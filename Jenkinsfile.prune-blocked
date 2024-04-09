@@ -1,7 +1,7 @@
-elifePipeline {
+elifePipeline({
     stage "Pruning blocked profiles", {
         lock('profiles--prod') {
             builderCmd "profiles--prod", "docker-compose run manage prune-blocked", "/home/elife/profiles"
         }
     }
-} 480
+}, 480)
