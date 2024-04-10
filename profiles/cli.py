@@ -61,12 +61,15 @@ def prune_blocked(profiles: Profiles, orcid_tokens: OrcidTokens, orcid_config: D
     problem_profiles = {}
 
     try:
-        for profile in profiles.list():
+        profiles_list = profiles.list()
+        num_profiles = len(profiles_list)
+        for i, profile in enumerate(profiles_list):
             orcid = profile.orcid
+
+            LOGGER.info("checking profile %d of %d: %s", i, num_profiles, orcid)
+
             if orcid is None:
                 continue
-
-            LOGGER.info("checking profile: %s", orcid)
 
             try:
                 orcid_client.get_record(orcid, access_token)
@@ -76,12 +79,15 @@ def prune_blocked(profiles: Profiles, orcid_tokens: OrcidTokens, orcid_config: D
                 if ex.response.status_code == 409:
                     # https://github.com/ORCID/ORCID-Source/blob/main/orcid-api-web/tutorial/api_errors.md
                     # "This record was flagged as violating ORCID's Terms of Use and has been hidden from public view."
-                    try:
-                        LOGGER.info("removing webhook for orcid %s", orcid)
-                        uri = url_for('webhook._update', payload=uri_signer.dumps(orcid), _external=True)
-                        orcid_client.remove_webhook(orcid, uri, access_token)
-                    except Exception as ex1:
-                        LOGGER.error("failed to remove webhook for orcid %s: %s", orcid, str(ex1))
+
+                    # lsh@2024-04-10: hook removal is (somehow) tied to deleting a Profile and happens on COMMIT.
+                    # make sure your app.cfg `orcid.api_uri` isn't set to prod during dev.
+                    #try:
+                    #    LOGGER.info("removing webhook for orcid %s", orcid)
+                    #    uri = url_for('webhook._update', payload=uri_signer.dumps(orcid), _external=True)
+                    #    orcid_client.remove_webhook(orcid, uri, access_token)
+                    #except Exception as ex1:
+                    #    LOGGER.error("failed to remove webhook for orcid %s: %s", orcid, str(ex1))
 
                     try:
                         LOGGER.info("removing profile for orcid %s", orcid)
@@ -95,12 +101,19 @@ def prune_blocked(profiles: Profiles, orcid_tokens: OrcidTokens, orcid_config: D
                     except Exception as ex3:
                         LOGGER.error("failed to delete orcid_token for orcid %s: %s", orcid, str(ex3))
 
+                    try:
+                        LOGGER.info("commiting")
+                        profiles.db.session.commit()
+                    except Exception as ex4:
+                        LOGGER.error("failed to commit changes to database for orcid %s: %s", orcid, str(ex4))
+
             except Exception as e:
                 problem_profiles[profile.id] = str(e)
                 LOGGER.error("unhandled exception processing profile with orcid %s: %s", orcid, str(e))
                 break
 
-            time.sleep(1 / 4) # 250ms, max 4req/s when running sequentially
+            # disabled, job isn't completing inside 8hrs
+            #time.sleep(1 / 4) # 250ms, max 4req/s when running sequentially
 
     except KeyboardInterrupt:
         pass
