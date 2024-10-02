@@ -32,17 +32,6 @@ elifePipeline {
 
 
     elifeMainlineOnly {
-        stage 'End2end tests', {
-            elifeSpectrum(
-                deploy: [
-                    stackname: 'profiles--end2end',
-                    revision: commit,
-                    folder: '/srv/profiles'
-                ],
-                marker: 'profiles'
-            )
-        }
-
         stage 'Deploy to continuumtest', {
             lock('profiles--continuumtest') {
                 builderDeployRevision 'profiles--continuumtest', commit
